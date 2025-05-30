@@ -1,13 +1,41 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import styles from './page.module.css';
 
 export default function ConfigurePage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const intent = searchParams.get('intent');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const classifyIntent = async () => {
+      if (intent) {
+        try {
+          const response = await fetch('http://localhost:3001/api/intent/classify', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text: intent })
+          });
+
+          const data = await response.json();
+          
+          if (data.intent === 'settings') {
+            router.push('/settings');
+            return;
+          }
+        } catch (error) {
+          console.error('Error classifying intent:', error);
+        }
+      }
+    };
+
+    classifyIntent();
+  }, [intent, router]);
 
   const handleConfigure = async () => {
     setLoading(true);
