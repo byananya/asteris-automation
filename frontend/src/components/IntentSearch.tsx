@@ -31,11 +31,14 @@ export default function IntentSearch({ onSearch }: IntentSearchProps) {
   }, []);
 
   const commonQueries = [
-    'setup stripe integration',
-    'configure stripe',
-    'manage integrations',
-    'setup automation',
-    'create workflow'
+    'Setup Stripe Integration',
+    'Configure Stripe',
+    'Manage Integrations',
+    'Setup Automation',
+    'Create Workflow',
+    'Configure API Settings',
+    'Set up Integrations',
+    'Manage Authentication'
   ];
 
   const handleSearch = (e: React.FormEvent) => {
@@ -43,14 +46,11 @@ export default function IntentSearch({ onSearch }: IntentSearchProps) {
     if (!query.trim()) return;
 
     setIsLoading(true);
-    // Show suggestions based on the query
-    const suggestedActions = [
-      'Configure API Settings',
-      'Set up Integrations',
-      'Manage Authentication'
-    ];
-    setSuggestions(suggestedActions);
-    setShowResults(true);
+    // Use the query to filter suggestions
+    const filtered = commonQueries.filter(q =>
+      q.toLowerCase().includes(query.toLowerCase())
+    );
+    setSuggestions(filtered);
     setIsLoading(false);
   };
 
@@ -63,10 +63,8 @@ export default function IntentSearch({ onSearch }: IntentSearchProps) {
         q.toLowerCase().includes(value.toLowerCase())
       );
       setSuggestions(filtered);
-      setShowResults(true);
     } else {
       setSuggestions([]);
-      setShowResults(false);
     }
   };
 
@@ -85,7 +83,6 @@ export default function IntentSearch({ onSearch }: IntentSearchProps) {
                 q.toLowerCase().includes(query.toLowerCase())
               );
               setSuggestions(filtered);
-              setShowResults(true);
             }
           }}
           placeholder="What would you like to automate?"
@@ -96,7 +93,7 @@ export default function IntentSearch({ onSearch }: IntentSearchProps) {
         </button>
       </form>
 
-      {suggestions.length > 0 && (
+      {query.trim() && suggestions.length > 0 && (
         <div className={styles.suggestions}>
           {suggestions.map((suggestion, index) => (
             <div
