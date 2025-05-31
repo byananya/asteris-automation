@@ -192,56 +192,62 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.3s ease-out;
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s ease-out;
 }
 
 .loadingPopup {
-  background: white;
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2.5rem;
+  border-radius: 24px;
+  box-shadow: 
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 8px 40px rgba(0, 0, 0, 0.3);
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 1.5rem;
+  animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .loadingPopup p {
-  color: #333;
-  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.875rem;
   margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 500;
 }
 
 .loadingSpinner {
-  display: inline-flex;
-  gap: 4px;
-  align-items: center;
-  justify-content: center;
-  height: 24px;
-}
-
-.loadingSpinner div {
-  width: 8px;
-  height: 8px;
-  background: currentColor;
+  width: 40px;
+  height: 40px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-left: 2px solid #3b82f6;
   border-radius: 50%;
-  animation: bounce 0.8s infinite;
+  animation: spin 0.8s linear infinite;
+  position: relative;
 }
 
-.loadingSpinner div:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.loadingSpinner div:nth-child(3) {
-  animation-delay: 0.4s;
+.loadingSpinner::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 2px solid transparent;
+  border-right: 2px solid rgba(59, 130, 246, 0.5);
+  border-radius: 50%;
+  animation: spinReverse 0.5s linear infinite;
 }
 
 @keyframes popIn {
@@ -255,11 +261,12 @@
   }
 }
 
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes spinReverse {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-180deg); }
 }

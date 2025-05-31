@@ -91,11 +91,7 @@ export default function IntentSearch({ onSearch }: IntentSearchProps) {
         />
         <button type="submit" className={styles.button} disabled={isLoading}>
           {isLoading ? (
-            <div className={styles.loadingSpinner}>
-              <div></div>
-              <div></div>
-              <div></div>
-            </div>
+            <div className={styles.loadingSpinner}></div>
           ) : (
             'Go'
           )}
@@ -103,12 +99,8 @@ export default function IntentSearch({ onSearch }: IntentSearchProps) {
         {isLoading && (
           <div className={styles.loadingOverlay}>
             <div className={styles.loadingPopup}>
-              <div className={styles.loadingSpinner}>
-                <div></div>
-                <div></div>
-                <div></div>
-              </div>
-              <p>Processing your request...</p>
+              <div className={styles.loadingSpinner}></div>
+              <p>Initializing...</p>
             </div>
           </div>
         )}
