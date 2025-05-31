@@ -41,17 +41,18 @@ export default function IntentSearch({ onSearch }: IntentSearchProps) {
     'Manage Authentication'
   ];
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
 
     setIsLoading(true);
-    // Use the query to filter suggestions
-    const filtered = commonQueries.filter(q =>
-      q.toLowerCase().includes(query.toLowerCase())
-    );
-    setSuggestions(filtered);
-    setIsLoading(false);
+    setSuggestions([]);
+
+    // Simulate API call with timeout
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Navigate to settings page
+    router.push('/settings');
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,8 +90,28 @@ export default function IntentSearch({ onSearch }: IntentSearchProps) {
           className={styles.input}
         />
         <button type="submit" className={styles.button} disabled={isLoading}>
-          {isLoading ? 'Searching...' : 'Go'}
+          {isLoading ? (
+            <div className={styles.loadingSpinner}>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+          ) : (
+            'Go'
+          )}
         </button>
+        {isLoading && (
+          <div className={styles.loadingOverlay}>
+            <div className={styles.loadingPopup}>
+              <div className={styles.loadingSpinner}>
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+              <p>Processing your request...</p>
+            </div>
+          </div>
+        )}
       </form>
 
       {query.trim() && suggestions.length > 0 && (
