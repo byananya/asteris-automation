@@ -16,8 +16,7 @@ export default function Home() {
   return (
     <div className={styles.container}>
       <main className={styles.main}>
-        <h1 className={styles.title}>Automate anything.</h1>
-        <p className={styles.description}>Declare your intent. Asteris automates it.</p>
+        <h1 className={styles.title}>Automate.</h1>
         <IntentSearch onSearch={handleSearch} />
       </main>
       <Footer />
