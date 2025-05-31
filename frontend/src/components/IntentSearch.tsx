@@ -55,7 +55,19 @@ export default function IntentSearch({ onSearch }: IntentSearchProps) {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
+    const value = e.target.value;
+    setQuery(value);
+    
+    if (value.trim()) {
+      const filtered = commonQueries.filter(q =>
+        q.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestions(filtered);
+      setShowResults(true);
+    } else {
+      setSuggestions([]);
+      setShowResults(false);
+    }
   };
 
 
@@ -69,9 +81,11 @@ export default function IntentSearch({ onSearch }: IntentSearchProps) {
           onChange={handleInputChange}
           onFocus={() => {
             if (query.trim()) {
-              setSuggestions(commonQueries.filter(q =>
+              const filtered = commonQueries.filter(q =>
                 q.toLowerCase().includes(query.toLowerCase())
-              ));
+              );
+              setSuggestions(filtered);
+              setShowResults(true);
             }
           }}
           placeholder="What would you like to automate?"
@@ -82,14 +96,14 @@ export default function IntentSearch({ onSearch }: IntentSearchProps) {
         </button>
       </form>
 
-      {showResults && suggestions.length > 0 && (
+      {suggestions.length > 0 && (
         <div className={styles.suggestions}>
           {suggestions.map((suggestion, index) => (
             <div
               key={index}
               className={styles.suggestionItem}
               onClick={() => {
-                router.push('/settings');
+                setQuery(suggestion);
                 setSuggestions([]);
                 setShowResults(false);
               }}
