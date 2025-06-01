@@ -12,9 +12,11 @@
   "dependencies": {
     "@tensorflow/tfjs-node": "^4.10.0",
     "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
     "express": "^4.18.2",
     "natural": "^6.5.0",
     "pg": "^8.11.0",
+    "stripe": "^18.2.0",
     "typeorm": "^0.3.16"
   },
   "devDependencies": {
@@ -22,6 +24,7 @@
     "@types/express": "^4.17.17",
     "@types/natural": "^5.1.5",
     "@types/node": "^20.2.5",
+    "@types/stripe": "^8.0.416",
     "nodemon": "^2.0.22",
     "ts-node": "^10.9.2",
     "typescript": "^5.0.4"
