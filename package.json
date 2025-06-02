@@ -8,13 +8,20 @@
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev --workspace=frontend\" \"npm run dev --workspace=backend\"",
-    "build": "npm run build --workspaces",
-    "start": "npm run start --workspaces"
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && npm install --no-package-lock --force && npm run build",
+    "build:frontend": "cd frontend && npm install --no-package-lock && npm run build",
+    "start": "cd backend && node dist/index.js",
+    "postinstall": "cd backend && npm rebuild @tensorflow/tfjs-node --build-from-source=false"
   },
   "devDependencies": {
     "concurrently": "^8.0.1"
   },
   "dependencies": {
-    "lucide-react": "^0.511.0"
+    "lucide-react": "^0.511.0",
+    "serve": "^14.2.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

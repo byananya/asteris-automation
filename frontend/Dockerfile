@@ -1,20 +1,25 @@
-FROM node:18-slim
+FROM node:18-alpine
 
 WORKDIR /app
 
+# Install necessary build dependencies
+RUN apk add --no-cache python3 make g++ curl
+
 # Copy package files first for better caching
 COPY package*.json ./
-COPY frontend/package*.json ./frontend/
 
-# Create .npmrc file with necessary settings
-RUN echo "legacy-peer-deps=true\nstrict-peer-dependencies=false" > ./frontend/.npmrc
+# Create custom .npmrc file with stronger settings
+RUN echo "legacy-peer-deps=true\nstrict-peer-dependencies=false" > ./.npmrc
 
-# Install frontend dependencies
-WORKDIR /app/frontend
-RUN npm install --no-package-lock
+# Install dependencies
+RUN npm install --no-package-lock --legacy-peer-deps
 
-# Copy the frontend code
-COPY frontend/ ./
+# Copy the rest of the application
+COPY . .
+
+# Add environment variable for API URL
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3010}
 
 # Build the frontend
 RUN npm run build
@@ -26,4 +31,4 @@ RUN npm install -g serve
 EXPOSE 3000
 
 # Start the frontend
-CMD ["npx", "serve", "-s", "out", "-p", "3000"]
+CMD ["serve", "-s", "out", "-p", "${PORT:-3000}"]

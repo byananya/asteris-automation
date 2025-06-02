@@ -10,23 +10,26 @@ RUN apt-get update && apt-get install -y \
 
 # Copy package files first for better caching
 COPY package*.json ./
-COPY backend/package*.json ./backend/
 
 # Create custom .npmrc file with stronger settings
-RUN echo "legacy-peer-deps=true\nstrict-peer-dependencies=false\nforce=true" > ./backend/.npmrc
+RUN echo "legacy-peer-deps=true\nstrict-peer-dependencies=false\nforce=true" > ./.npmrc
 
 # Install dependencies with specific flags to handle TensorFlow issues
-WORKDIR /app/backend
-RUN npm install --no-package-lock --force && \
-    npm install @tensorflow-models/universal-sentence-encoder@1.3.3 --force && \
+RUN npm install --no-package-lock --force
+
+# Install specific TensorFlow packages with exact versions
+RUN npm install @tensorflow-models/universal-sentence-encoder@1.3.3 --force && \
     npm install @tensorflow/tfjs-node@4.10.0 --force && \
     npm install @tensorflow/tfjs-core@4.10.0 --force
 
-# Copy the backend code
-COPY backend/ ./
+# Copy the rest of the application
+COPY . .
+
+# Create a simplified tsconfig for build
+RUN echo '{"extends":"./tsconfig.json","compilerOptions":{"skipLibCheck":true,"noEmit":false,"outDir":"dist"}}' > tsconfig.build.json
 
 # Build the backend with skipLibCheck to avoid type errors
-RUN npm run build
+RUN npx tsc -p tsconfig.build.json
 
 # Expose the port
 EXPOSE 3010
