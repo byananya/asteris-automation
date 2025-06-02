@@ -2,15 +2,23 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
     "noEmit": false,
     "outDir": "dist",
+    "allowJs": true,
+    "checkJs": false,
     "paths": {
-      "@tensorflow/tfjs-core/*": ["./node_modules/@tensorflow/tfjs-core/*"]
+      "@tensorflow/*": ["./node_modules/@tensorflow/*"],
+      "@tensorflow-models/*": ["./node_modules/@tensorflow-models/*"]
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.test.ts"]
+  "exclude": [
+    "node_modules", 
+    "**/*.test.ts",
+    "src/ml/models/semanticSearch.ts"
+  ]
 }

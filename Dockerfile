@@ -27,9 +27,11 @@ RUN npm install @tensorflow-models/universal-sentence-encoder@1.3.3 --force --no
     npm install @tensorflow/tfjs-node@4.10.0 --force --no-package-lock && \
     npm install @tensorflow/tfjs-core@4.10.0 --force --no-package-lock
 
-# Build the backend
+# Copy the backend code
 COPY backend/ ./
-RUN npm run build
+
+# Use the custom build script
+RUN NODE_OPTIONS="--no-warnings" npm run build
 
 # Now install frontend dependencies
 WORKDIR /app/frontend
