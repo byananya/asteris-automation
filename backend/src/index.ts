@@ -28,7 +28,7 @@ app.use('/api/stripe/reconciliation', reconciliationRouter);
 app.use('/api/semantic-search', semanticSearchRouter);
 
 // Serve static frontend files if they exist in the expected location
-const frontendPath = path.join(__dirname, '../../frontend/out');
+const frontendPath = path.join(__dirname, '../frontend/out');
 console.log(`Looking for frontend files at: ${frontendPath}`);
 
 try {
