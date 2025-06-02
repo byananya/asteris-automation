@@ -7,7 +7,8 @@
     "dev": "NODE_OPTIONS='--loader ts-node/esm' nodemon src/index.ts",
     "build": "tsc -p tsconfig.deploy.json",
     "start": "node dist/index.js",
-    "train": "node --loader ts-node/esm src/ml/training/train.ts"
+    "train": "node --loader ts-node/esm src/ml/training/train.ts",
+    "postinstall": "npm rebuild @tensorflow/tfjs-node --build-from-source=false"
   },
   "dependencies": {
     "@tensorflow-models/universal-sentence-encoder": "1.3.3",
