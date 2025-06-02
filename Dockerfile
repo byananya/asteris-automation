@@ -24,6 +24,8 @@ RUN npm install --no-package-lock --force
 # Install dependencies for frontend
 WORKDIR /app/frontend
 RUN npm install --no-package-lock --force
+# Explicitly install lucide-react
+RUN npm install lucide-react@0.294.0 --no-package-lock --force
 
 # Copy source files
 WORKDIR /app

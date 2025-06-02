@@ -6,7 +6,8 @@ import IntentSearch from '@/components/IntentSearch';
 import Footer from '@/components/Footer';
 import styles from './page.module.css';
 import { getStripeApiKey } from '@/utils/stripe';
-import { Home, Settings, Database, BarChart3, Users, FileText, Menu, X } from 'lucide-react';
+// Using react-icons instead of lucide-react to avoid dependency issues
+import { FiHome, FiSettings, FiDatabase, FiBarChart2, FiUsers, FiFileText, FiMenu, FiX } from 'react-icons/fi';
 
 export default function HomePage() {
   const router = useRouter();
@@ -54,7 +55,7 @@ export default function HomePage() {
         onClick={toggleSidebar}
         aria-label={sidebarOpen ? "Close menu" : "Open menu"}
       >
-        {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+        {sidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
       </button>
 
       {/* Side Panel - Icons Only */}
@@ -69,37 +70,37 @@ export default function HomePage() {
           <ul>
             <li className={styles.active}>
               <a href="/" title="Home">
-                <Home size={22} />
+                <FiHome size={22} />
                 <span className={styles.tooltipText}>Home</span>
               </a>
             </li>
             <li>
               <a href="/dashboard" title="Dashboard">
-                <BarChart3 size={22} />
+                <FiBarChart2 size={22} />
                 <span className={styles.tooltipText}>Dashboard</span>
               </a>
             </li>
             <li>
               <a href="/integrations" title="Integrations">
-                <Database size={22} />
+                <FiDatabase size={22} />
                 <span className={styles.tooltipText}>Integrations</span>
               </a>
             </li>
             <li>
               <a href="/team" title="Team">
-                <Users size={22} />
+                <FiUsers size={22} />
                 <span className={styles.tooltipText}>Team</span>
               </a>
             </li>
             <li>
               <a href="/documentation" title="Documentation">
-                <FileText size={22} />
+                <FiFileText size={22} />
                 <span className={styles.tooltipText}>Documentation</span>
               </a>
             </li>
             <li>
               <a href="/settings" title="Settings">
-                <Settings size={22} />
+                <FiSettings size={22} />
                 <span className={styles.tooltipText}>Settings</span>
               </a>
             </li>

@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './IntentSearch.module.css';
-import { Search, ArrowRight, Settings, Zap, Command, Mic, Clock, X } from 'lucide-react';
+// Using react-icons instead of lucide-react to avoid dependency issues
+import { FiSearch, FiArrowRight, FiSettings, FiZap, FiCommand, FiMic, FiClock, FiX } from 'react-icons/fi';
 
 // Define SpeechRecognition types for TypeScript
 interface SpeechRecognitionEvent extends Event {
@@ -393,7 +394,7 @@ const IntentSearch = forwardRef<any, IntentSearchProps>(({ onSearch, initialQuer
                 onClick={clearQuery}
                 aria-label="Clear search"
               >
-                <X size={16} />
+                <FiX size={16} />
               </button>
             )}
             <button type="submit" className={styles.button} disabled={isLoading}>
@@ -402,7 +403,7 @@ const IntentSearch = forwardRef<any, IntentSearchProps>(({ onSearch, initialQuer
               ) : (
                 <>
                   <div>Go</div>
-                  <ArrowRight size={24} strokeWidth={2.5} />
+                  <FiArrowRight size={24} strokeWidth={2.5} />
                 </>
               )}
             </button>
@@ -413,7 +414,7 @@ const IntentSearch = forwardRef<any, IntentSearchProps>(({ onSearch, initialQuer
               onClick={startVoiceRecognition}
               aria-label="Voice search"
             >
-              <Mic size={22} />
+              <FiMic size={22} />
             </button>
           </div>
         </div>
@@ -435,11 +436,11 @@ const IntentSearch = forwardRef<any, IntentSearchProps>(({ onSearch, initialQuer
             <div className={styles.suggestions}>
               <div className={styles.suggestionsHeader}>Suggested Actions</div>
               {autocompleteResults.map((item, index) => {
-                let icon = <Command size={16} />;
+                let icon = <FiCommand size={16} />;
                 if (item.toLowerCase().includes('stripe')) {
-                  icon = <Zap size={16} />;
+                  icon = <FiZap size={16} />;
                 } else if (item.toLowerCase().includes('settings') || item.toLowerCase().includes('config')) {
-                  icon = <Settings size={16} />;
+                  icon = <FiSettings size={16} />;
                 }
                 
                 return (
@@ -450,7 +451,7 @@ const IntentSearch = forwardRef<any, IntentSearchProps>(({ onSearch, initialQuer
                   >
                     <div className={styles.suggestionIcon}>{icon}</div>
                     <div className={styles.suggestionText}>{item}</div>
-                    <div className={styles.suggestionArrow}><ArrowRight size={14} /></div>
+                    <div className={styles.suggestionArrow}><FiArrowRight size={14} /></div>
                   </div>
                 );
               })}
@@ -462,11 +463,11 @@ const IntentSearch = forwardRef<any, IntentSearchProps>(({ onSearch, initialQuer
             <div className={styles.suggestions}>
               <div className={styles.suggestionsHeader}>Suggested Actions</div>
               {suggestions.map((suggestion, index) => {
-                let icon = <Command size={16} />;
+                let icon = <FiCommand size={16} />;
                 if (suggestion.toLowerCase().includes('stripe')) {
-                  icon = <Zap size={16} />;
+                  icon = <FiZap size={16} />;
                 } else if (suggestion.toLowerCase().includes('settings') || suggestion.toLowerCase().includes('config')) {
-                  icon = <Settings size={16} />;
+                  icon = <FiSettings size={16} />;
                 }
 
                 return (
@@ -496,7 +497,7 @@ const IntentSearch = forwardRef<any, IntentSearchProps>(({ onSearch, initialQuer
                   >
                     <div className={styles.suggestionIcon}>{icon}</div>
                     <div className={styles.suggestionText}>{suggestion}</div>
-                    <div className={styles.suggestionArrow}><ArrowRight size={14} /></div>
+                    <div className={styles.suggestionArrow}><FiArrowRight size={14} /></div>
                   </div>
                 );
               })}
@@ -513,9 +514,9 @@ const IntentSearch = forwardRef<any, IntentSearchProps>(({ onSearch, initialQuer
                   className={styles.suggestion}
                   onClick={() => selectHistoryItem(item)}
                 >
-                  <div className={styles.suggestionIcon}><Clock size={16} /></div>
+                  <div className={styles.suggestionIcon}><FiClock size={16} /></div>
                   <div className={styles.suggestionText}>{item}</div>
-                  <div className={styles.suggestionArrow}><ArrowRight size={14} /></div>
+                  <div className={styles.suggestionArrow}><FiArrowRight size={14} /></div>
                 </div>
               ))}
             </div>

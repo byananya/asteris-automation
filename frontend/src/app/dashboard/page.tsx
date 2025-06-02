@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import AutomationCard from '@/components/dashboard/AutomationCard';
 import styles from './dashboard.module.css';
-import { FileText, ArrowUpRight, AlertTriangle, MonitorDot, Settings } from 'lucide-react';
+// Using react-icons instead of lucide-react to avoid dependency issues
+import { FiFileText, FiArrowUpRight, FiAlertTriangle, FiMonitor, FiSettings } from 'react-icons/fi';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -28,7 +29,7 @@ export default function Dashboard() {
         <div className={styles.headerRight}>
           <div className={styles.timeDisplay}>{currentTime}</div>
           <button className={styles.settingsButton} onClick={() => router.push('/settings')}>
-            <Settings size={18} />
+            <FiSettings size={18} />
           </button>
         </div>
       </header>
@@ -40,7 +41,7 @@ export default function Dashboard() {
             <h2 className={styles.rowTitle}>Financial Reconciliation</h2>
             <div className={styles.rowCards}>
               <AutomationCard
-                icon={<FileText />}
+                icon={<FiFileText />}
                 title="Invoice Reconciliation"
                 description="Match invoices to payouts and fees"
                 actionLabel="Automate"
@@ -48,7 +49,7 @@ export default function Dashboard() {
               />
               
               <AutomationCard
-                icon={<ArrowUpRight />}
+                icon={<FiArrowUpRight />}
                 title="Stripe Payout Sync"
                 description="Sync and export all Stripe payouts"
                 actionLabel="Automate"
@@ -61,7 +62,7 @@ export default function Dashboard() {
             <h2 className={styles.rowTitle}>Monitoring & Extraction</h2>
             <div className={styles.rowCards}>
               <AutomationCard
-                icon={<AlertTriangle />}
+                icon={<FiAlertTriangle />}
                 title="Failed Payment Alerts"
                 description="Monitor and alert on failed Stripe charges"
                 actionLabel="Configure"
@@ -69,7 +70,7 @@ export default function Dashboard() {
               />
               
               <AutomationCard
-                icon={<MonitorDot />}
+                icon={<FiMonitor />}
                 title="Vendor Portal Extraction"
                 description="Log in to vendor sites and extract invoices"
                 actionLabel="Automate"
