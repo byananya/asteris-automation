@@ -49,15 +49,16 @@ RUN echo "NEXT_SKIP_TYPECHECKING=true\nTYPESCRIPT_IGNORE_FILE=true" > .env.local
 # Build with type checking disabled
 RUN npm run build
 
-# Install serve globally
+# Copy frontend build to where backend can serve it
 WORKDIR /app
-RUN npm install -g serve
+RUN mkdir -p /app/backend/frontend
+RUN cp -r /app/frontend/out /app/backend/
 
 # Copy remaining files
 COPY . .
 
 # Create start script
-RUN echo '#!/bin/bash\nset -e\n\n# Start the backend in the background\ncd /app/backend && node dist/index.js &\nBACKEND_PID=$!\n\n# Wait for backend to start\nsleep 5\n\n# Start the frontend on the port Railway expects\ncd /app/frontend && serve -s out -p ${PORT:-3000} &\nFRONTEND_PID=$!\n\n# Monitor both processes\nwait $BACKEND_PID $FRONTEND_PID' > start.sh && chmod +x start.sh
+RUN echo '#!/bin/bash\nset -e\n\n# Start the backend\ncd /app/backend && node dist/index.js' > start.sh && chmod +x start.sh
 
 # Expose ports
 EXPOSE 3000 3010
