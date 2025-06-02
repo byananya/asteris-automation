@@ -39,12 +39,15 @@ RUN npx tsc -p tsconfig.build.json
 # Build frontend
 WORKDIR /app/frontend
 RUN echo "NEXT_SKIP_TYPECHECKING=true\nTYPESCRIPT_IGNORE_FILE=true" > .env.local
-RUN npm run build
+# Build and export static files
+RUN npm run build:static
 
 # Create directory for frontend files in backend
 WORKDIR /app
 RUN mkdir -p /app/backend/frontend
-RUN cp -r /app/frontend/out /app/backend/frontend/
+# Copy the static export to the backend directory
+RUN ls -la /app/frontend/out || echo "out directory not found"
+RUN cp -r /app/frontend/out/* /app/backend/frontend/ || (echo "Failed to copy frontend files" && exit 1)
 
 # Create start script
 RUN echo '#!/bin/bash\ncd /app/backend && node dist/index.js' > /app/start.sh
