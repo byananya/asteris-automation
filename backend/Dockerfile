@@ -17,11 +17,6 @@ RUN echo "legacy-peer-deps=true\nstrict-peer-dependencies=false\nforce=true" > .
 # Install dependencies with specific flags to handle TensorFlow issues
 RUN npm install --no-package-lock --force
 
-# Install specific TensorFlow packages with exact versions
-RUN npm install @tensorflow-models/universal-sentence-encoder@1.3.3 --force && \
-    npm install @tensorflow/tfjs-node@4.10.0 --force && \
-    npm install @tensorflow/tfjs-core@4.10.0 --force
-
 # Copy the rest of the application
 COPY . .
 
@@ -31,8 +26,8 @@ RUN echo '{"extends":"./tsconfig.json","compilerOptions":{"skipLibCheck":true,"n
 # Build the backend with skipLibCheck to avoid type errors
 RUN npx tsc -p tsconfig.build.json
 
-# Expose the port
+# Expose the port the app runs on
 EXPOSE 3010
 
-# Start the backend
+# Command to run the application
 CMD ["node", "dist/index.js"]
