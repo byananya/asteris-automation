@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_OPTIONS='--loader ts-node/esm' nodemon src/index.ts",
-    "build": "node build.js",
+    "build": "node build.mjs",
     "start": "node dist/index.js",
     "train": "node --loader ts-node/esm src/ml/training/train.ts",
     "postinstall": "npm rebuild @tensorflow/tfjs-node --build-from-source=false"
