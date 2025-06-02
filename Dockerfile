@@ -1,62 +1,79 @@
-FROM node:18
+FROM node:18-alpine AS base
 
-WORKDIR /app
+# Install required system dependencies for Alpine
+RUN apk add --no-cache python3 make g++ curl bash
 
-# Install required system dependencies for TensorFlow
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    python3 \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy package files first for better caching
-COPY package*.json ./
-COPY backend/package*.json ./backend/
-COPY frontend/package*.json ./frontend/
-
-# Create custom .npmrc files with stronger settings
-RUN echo "legacy-peer-deps=true\nstrict-peer-dependencies=false\nforce=true" > ./backend/.npmrc && \
-    echo "legacy-peer-deps=true\nstrict-peer-dependencies=false" > ./frontend/.npmrc
-
-# Install frontend dependencies first (since they're simpler)
+# Create separate stages for frontend and backend
+FROM base AS frontend-deps
 WORKDIR /app/frontend
-RUN npm install --no-package-lock
 
-# Copy frontend files and build
-COPY frontend/ ./
-COPY frontend/.env.production ./
+# Copy frontend package files
+COPY frontend/package*.json ./
 
-# Build the frontend
-RUN npm run build
+# Create .npmrc with necessary settings
+RUN echo "legacy-peer-deps=true\nstrict-peer-dependencies=false" > .npmrc
 
-# Now handle the backend
+# Install dependencies with yarn (more reliable than npm)
+RUN yarn install --frozen-lockfile --network-timeout 600000
+
+FROM base AS backend-deps
 WORKDIR /app/backend
 
-# Install backend dependencies
-RUN npm install --no-package-lock --force
+# Copy backend package files
+COPY backend/package*.json ./
 
-# Install specific TensorFlow packages with exact versions
-RUN npm install @tensorflow-models/universal-sentence-encoder@1.3.3 --force --no-package-lock && \
-    npm install @tensorflow/tfjs-node@4.10.0 --force --no-package-lock && \
-    npm install @tensorflow/tfjs-core@4.10.0 --force --no-package-lock
+# Create .npmrc with necessary settings
+RUN echo "legacy-peer-deps=true\nstrict-peer-dependencies=false\nforce=true" > .npmrc
 
-# Copy the backend code
+# Install dependencies with yarn
+RUN yarn install --frozen-lockfile --network-timeout 600000
+
+# Install TensorFlow packages separately
+RUN yarn add @tensorflow-models/universal-sentence-encoder@1.3.3 --force && \
+    yarn add @tensorflow/tfjs-node@4.10.0 --force && \
+    yarn add @tensorflow/tfjs-core@4.10.0 --force
+
+# Build frontend
+FROM frontend-deps AS frontend-builder
+WORKDIR /app/frontend
+
+# Copy frontend source
+COPY frontend/ ./
+
+# Build frontend
+RUN yarn build
+
+# Build backend
+FROM backend-deps AS backend-builder
+WORKDIR /app/backend
+
+# Copy backend source
 COPY backend/ ./
 
-# Directly compile TypeScript files with skipLibCheck
-RUN echo '{"extends":"./tsconfig.json","compilerOptions":{"skipLibCheck":true,"noEmit":false,"outDir":"dist"}}' > tsconfig.build.json && \
-    npx tsc -p tsconfig.build.json
+# Create simplified tsconfig for build
+RUN echo '{"extends":"./tsconfig.json","compilerOptions":{"skipLibCheck":true,"noEmit":false,"outDir":"dist"}}' > tsconfig.build.json
 
-# Back to main directory
+# Build backend
+RUN yarn tsc -p tsconfig.build.json
+
+# Final image
+FROM base
 WORKDIR /app
 
-# Copy any remaining files
-COPY . .
+# Copy built frontend
+COPY --from=frontend-builder /app/frontend/out /app/frontend/out
 
-# Create a start script with proper error handling
-RUN echo '#!/bin/bash\nset -e\n\n# Start the backend in the background\ncd /app/backend && node dist/index.js &\nBACKEND_PID=$!\n\n# Wait for backend to start\nsleep 5\n\n# Start the frontend on the port Railway expects\ncd /app/frontend && npx serve -s out -p ${PORT:-3000} &\nFRONTEND_PID=$!\n\n# Monitor both processes\nwait $BACKEND_PID $FRONTEND_PID' > start.sh && chmod +x start.sh
+# Copy built backend
+COPY --from=backend-builder /app/backend/dist /app/backend/dist
+COPY --from=backend-builder /app/backend/node_modules /app/backend/node_modules
 
-# Expose the ports
+# Install serve for frontend
+RUN yarn global add serve
+
+# Create start script
+RUN echo '#!/bin/bash\nset -e\n\n# Start the backend in the background\ncd /app/backend && node dist/index.js &\nBACKEND_PID=$!\n\n# Wait for backend to start\nsleep 5\n\n# Start the frontend on the port Railway expects\ncd /app/frontend && serve -s out -p ${PORT:-3000} &\nFRONTEND_PID=$!\n\n# Monitor both processes\nwait $BACKEND_PID $FRONTEND_PID' > start.sh && chmod +x start.sh
+
+# Expose ports
 EXPOSE 3000 3010
 
 # Start both services
