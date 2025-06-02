@@ -22,8 +22,11 @@ export default function InvoiceReconciliationPage() {
     generateReport: true
   });
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    const type = (e.target as HTMLInputElement).type;
+    const checked = (e.target as HTMLInputElement).checked;
+    
     setFormData({
       ...formData,
       [name]: type === 'checkbox' ? checked : value
