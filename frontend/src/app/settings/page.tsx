@@ -62,14 +62,16 @@ export default function Settings() {
           {/* Stripe Integration */}
           <div className={styles.card}>
             <div className={styles.cardHeader}>
-              <div className={styles.cardIcon}>
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm-1.971 16.5v-9l7.5 4.5-7.5 4.5z" />
-                </svg>
-              </div>
-              <div>
-                <h3>Stripe Integration</h3>
-                <p className={styles.cardDescription}>Process payments and manage subscriptions</p>
+              <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                <div className={styles.cardIcon}>
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm-1.971 16.5v-9l7.5 4.5-7.5 4.5z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className={styles.cardTitle}>Stripe Integration</h3>
+                  <p className={styles.cardDescription}>Process payments and manage subscriptions</p>
+                </div>
               </div>
               <span className={styles.connected}>
                 <span className={styles.dot}></span>
@@ -108,14 +110,16 @@ export default function Settings() {
           {/* Slack Integration */}
           <div className={styles.card}>
             <div className={styles.cardHeader}>
-              <div className={styles.cardIcon}>
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                  <path d="M19.1 2.9C16.8.6 13.5.6 11.2 2.9L2.9 11.2c-2.3 2.3-2.3 5.6 0 7.9 2.3 2.3 5.6 2.3 7.9 0l8.3-8.3c2.3-2.3 2.3-5.6 0-7.9zM9.3 17.7c-1.6 1.6-4.1 1.6-5.7 0-1.6-1.6-1.6-4.1 0-5.7l8.3-8.3c1.6-1.6 4.1-1.6 5.7 0 1.6 1.6 1.6 4.1 0 5.7l-8.3 8.3z" />
-                </svg>
-              </div>
-              <div>
-                <h3>Slack Integration</h3>
-                <p className={styles.cardDescription}>Get notifications and updates in Slack</p>
+              <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                <div className={styles.cardIcon}>
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path d="M19.1 2.9C16.8.6 13.5.6 11.2 2.9L2.9 11.2c-2.3 2.3-2.3 5.6 0 7.9 2.3 2.3 5.6 2.3 7.9 0l8.3-8.3c2.3-2.3 2.3-5.6 0-7.9zM9.3 17.7c-1.6 1.6-4.1 1.6-5.7 0-1.6-1.6-1.6-4.1 0-5.7l8.3-8.3c1.6-1.6 4.1-1.6 5.7 0 1.6 1.6 1.6 4.1 0 5.7l-8.3 8.3z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className={styles.cardTitle}>Slack Integration</h3>
+                  <p className={styles.cardDescription}>Get notifications and updates in Slack</p>
+                </div>
               </div>
               <span className={styles.connected}>
                 <span className={styles.dot}></span>

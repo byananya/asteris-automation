@@ -6,11 +6,13 @@ import IntentSearch from '@/components/IntentSearch';
 import Footer from '@/components/Footer';
 import styles from './page.module.css';
 import { getStripeApiKey } from '@/utils/stripe';
+import { Home, Settings, Database, BarChart3, Users, FileText, Menu, X } from 'lucide-react';
 
-export default function Home() {
+export default function HomePage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<any>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Commented out automatic redirection to allow viewing the home page
   // useEffect(() => {
@@ -40,25 +42,99 @@ export default function Home() {
     }
   };
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   return (
     <div className={styles.container}>
-      <main className={styles.main}>
-        <div className={styles.searchContainer}>
-          <h1 className={styles.title}>Automate.</h1>
-          <div className={styles.suggestedKeywords}>
-            <span>Try:</span>
-            <span className={styles.keyword} onClick={() => handleKeywordClick('"stripe reconciliation"')}>"stripe reconciliation"</span>
-            <span className={styles.keyword} onClick={() => handleKeywordClick('"configure api"')}>"configure api"</span>
-            <span className={styles.keyword} onClick={() => handleKeywordClick('"export data"')}>"export data"</span>
+      {/* Mobile menu toggle button */}
+      <button 
+        className={styles.menuToggle} 
+        onClick={toggleSidebar}
+        aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+      >
+        {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
+      {/* Side Panel - Icons Only */}
+      <div className={`${styles.sidePanel} ${sidebarOpen ? styles.open : ''}`}>
+        <div className={styles.sidePanelHeader}>
+          <div className={styles.logo}>
+            <span className={styles.logoIcon}>A</span>
+            <span className={styles.logoText}>Asteris</span>
           </div>
-          <IntentSearch 
-            onSearch={handleSearch} 
-            initialQuery={searchQuery}
-            ref={searchInputRef}
-          />
         </div>
-      </main>
-      <Footer />
+        <nav className={styles.sidePanelNav}>
+          <ul>
+            <li className={styles.active}>
+              <a href="/" title="Home">
+                <Home size={22} />
+                <span className={styles.tooltipText}>Home</span>
+              </a>
+            </li>
+            <li>
+              <a href="/dashboard" title="Dashboard">
+                <BarChart3 size={22} />
+                <span className={styles.tooltipText}>Dashboard</span>
+              </a>
+            </li>
+            <li>
+              <a href="/integrations" title="Integrations">
+                <Database size={22} />
+                <span className={styles.tooltipText}>Integrations</span>
+              </a>
+            </li>
+            <li>
+              <a href="/team" title="Team">
+                <Users size={22} />
+                <span className={styles.tooltipText}>Team</span>
+              </a>
+            </li>
+            <li>
+              <a href="/documentation" title="Documentation">
+                <FileText size={22} />
+                <span className={styles.tooltipText}>Documentation</span>
+              </a>
+            </li>
+            <li>
+              <a href="/settings" title="Settings">
+                <Settings size={22} />
+                <span className={styles.tooltipText}>Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+        <div className={styles.sidePanelFooter}>
+          <div className={styles.userInfo}>
+            <div className={styles.userAvatar} title="Admin User"></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className={`${styles.mainContent} ${sidebarOpen ? styles.shifted : ''}`}>
+        <main className={styles.main}>
+          <div className={styles.searchContainer}>
+            <h1 className={styles.title}>Automate.</h1>
+            <div className={styles.suggestedKeywords}>
+              <span>Try:</span>
+              <span className={styles.keyword} onClick={() => handleKeywordClick('"stripe reconciliation"')}>"stripe reconciliation"</span>
+              <span className={styles.keyword} onClick={() => handleKeywordClick('"configure api"')}>"configure api"</span>
+              <span className={styles.keyword} onClick={() => handleKeywordClick('"export data"')}>"export data"</span>
+            </div>
+            <IntentSearch 
+              onSearch={handleSearch} 
+              initialQuery={searchQuery}
+              ref={searchInputRef}
+            />
+          </div>
+        </main>
+        <Footer />
+      </div>
+
+      {/* Overlay for mobile */}
+      {sidebarOpen && <div className={styles.overlay} onClick={toggleSidebar}></div>}
     </div>
   );
 }

@@ -19,15 +19,27 @@
 .header h1.title {
   font-size: 3.5rem;
   font-weight: 800;
-  background: linear-gradient(to right, #a855f7, #6366f1);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #a855f7;
+  text-shadow: 
+    0 1px 0 #9333ea,
+    0 2px 0 #8b5cf6,
+    0 3px 0 #8b5cf6,
+    0 4px 0 #7c3aed,
+    0 5px 0 #6d28d9,
+    0 6px 0 #5b21b6,
+    0 7px 10px rgba(0, 0, 0, 0.4);
+  transform: perspective(500px) rotateX(10deg);
+  transform-origin: center;
+  transition: transform 0.3s ease;
   text-align: center;
   margin-top: 0;
   margin-bottom: 1rem;
   letter-spacing: -0.03em;
   line-height: 1;
+}
+
+.header h1.title:hover {
+  transform: perspective(500px) rotateX(0deg) scale(1.05);
 }
 
 .subtitle {
@@ -49,7 +61,6 @@
 .container {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
   position: relative;
   z-index: 1;
   background: 
@@ -58,35 +69,6 @@
     radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
     radial-gradient(circle at 20% 80%, rgba(79, 70, 229, 0.1) 0%, transparent 40%);
   color: rgba(255, 255, 255, 0.9);
-  
-  /* Alternative gradient options (uncomment to try):
-  
-  Option 1: Deep Ocean Blue
-  background: 
-    linear-gradient(135deg, #0f172a 0%, #1e293b 100%),
-    radial-gradient(circle at 20% 30%, rgba(56, 189, 248, 0.1) 0%, transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(124, 58, 237, 0.1) 0%, transparent 40%);
-  
-  Option 2: Midnight Purple
-  background:
-    linear-gradient(135deg, #0f0a1e 0%, #1a103a 100%),
-    radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 70% 65%, rgba(217, 70, 239, 0.1) 0%, transparent 40%),
-    radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 40%);
-  
-  Option 3: Dark Teal
-  background:
-    linear-gradient(135deg, #042f2e 0%, #134e4a 100%),
-    radial-gradient(circle at 20% 30%, rgba(45, 212, 191, 0.1) 0%, transparent 40%),
-    radial-gradient(circle at 70% 65%, rgba(99, 102, 241, 0.1) 0%, transparent 40%);
-  
-  Option 4: Elegant Dark
-  background:
-    linear-gradient(135deg, #18181b 0%, #27272a 100%),
-    radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 70% 65%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 40% 80%, rgba(236, 72, 153, 0.08) 0%, transparent 50%);
-  */
 }
 
 .container::before {
@@ -107,6 +89,253 @@
   right: 0;
   height: 1px;
   background: linear-gradient(to right, transparent, rgba(168, 85, 247, 0.1), transparent);
+}
+
+/* Side panel styles */
+.sidePanel {
+  width: 70px;
+  height: 100vh;
+  background-color: rgba(240, 240, 245, 0.08);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  position: fixed;
+  top: 0;
+  left: -70px; /* Hidden by default */
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  /* No transitions to ensure stability */
+  backdrop-filter: blur(10px);
+}
+
+.sidePanel.open {
+  left: 0;
+  /* No transitions to ensure stability */
+}
+
+.sidePanelHeader {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(120deg, #a855f7, #6366f1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: white;
+}
+
+.logoText {
+  display: none;
+}
+
+.sidePanelNav {
+  flex: 1;
+  padding: 1.5rem 0;
+  overflow-y: auto;
+}
+
+.sidePanelNav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.sidePanelNav li {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.sidePanelNav a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  position: relative;
+  /* No transitions to ensure stability */
+}
+
+.sidePanelNav a:hover,
+.sidePanelNav li.active a {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.95);
+  /* No transitions to ensure stability */
+}
+
+.sidePanelNav li.active a {
+  background-color: rgba(99, 102, 241, 0.2);
+  color: #6366f1;
+}
+
+.tooltipText {
+  position: absolute;
+  left: 60px;
+  background-color: rgba(240, 240, 245, 0.9);
+  color: #333;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 101;
+}
+
+.sidePanelNav a:hover .tooltipText {
+  visibility: visible;
+  opacity: 1;
+}
+
+.sidePanelFooter {
+  padding: 1.5rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: center;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.userAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(120deg, #a855f7, #6366f1);
+  position: relative;
+}
+
+.userAvatar:hover::after {
+  content: attr(title);
+  position: absolute;
+  left: 50px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(240, 240, 245, 0.9);
+  color: #333;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 101;
+}
+
+/* Menu toggle button */
+.menuToggle {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 110;
+  background: rgba(240, 240, 245, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  /* No transitions to ensure stability */
+  backdrop-filter: blur(5px);
+}
+
+/* Overlay for mobile */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 90;
+  /* No transitions to ensure stability */
+}
+
+/* Main content container */
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  /* No transitions to ensure stability */
+}
+
+/* When sidebar is open, shift content without animation */
+.shifted {
+  margin-left: 70px;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  /* On mobile, don't shift content when sidebar is open */
+  .shifted {
+    margin-left: 0;
+  }
+  
+  /* Keep sidebar narrow on mobile */
+  .sidePanel {
+    width: 70px;
+  }
+  
+  /* Adjust main content padding */
+  .main {
+    padding: 6rem 1.5rem 0;
+  }
+  
+  /* Ensure search container remains centered */
+  .searchContainer {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/* Larger screens - keep sidebar always visible */
+@media (min-width: 1200px) {
+  .sidePanel {
+    left: 0;
+  }
+  
+  .mainContent {
+    margin-left: 70px;
+  }
+  
+  .menuToggle {
+    display: none;
+  }
+  
+  /* Ensure search container remains properly positioned */
+  .searchContainer {
+    margin-top: 0;
+    padding-top: 0;
+  }
 }
 
 .main {
@@ -144,6 +373,8 @@
   position: static;
   /* Fixed position values to maintain current layout */
   padding-top: 0;
+  /* Ensure search container remains stable when sidebar opens/closes */
+  z-index: 1;
 }
 
 .suggestedKeywords {

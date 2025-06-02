@@ -43,15 +43,15 @@ export default function Dashboard() {
                 icon={<FileText />}
                 title="Invoice Reconciliation"
                 description="Match invoices to payouts and fees"
-                actionLabel="Run Automation"
-                onClick={() => router.push('/reconciliation')}
+                actionLabel="Automate"
+                onClick={() => router.push('/automation/invoice-reconciliation')}
               />
               
               <AutomationCard
                 icon={<ArrowUpRight />}
                 title="Stripe Payout Sync"
                 description="Sync and export all Stripe payouts"
-                actionLabel="Run Automation"
+                actionLabel="Automate"
                 onClick={() => router.push('/payouts')}
               />
             </div>
@@ -72,7 +72,7 @@ export default function Dashboard() {
                 icon={<MonitorDot />}
                 title="Vendor Portal Extraction"
                 description="Log in to vendor sites and extract invoices"
-                actionLabel="Run Automation"
+                actionLabel="Automate"
                 onClick={() => router.push('/vendors')}
               />
             </div>
