@@ -39,15 +39,30 @@ RUN npx tsc -p tsconfig.build.json
 # Build frontend
 WORKDIR /app/frontend
 RUN echo "NEXT_SKIP_TYPECHECKING=true\nTYPESCRIPT_IGNORE_FILE=true" > .env.local
+
+# Debug Next.js config
+RUN cat next.config.js
+
 # Build and export static files
 RUN npm run build:static
+
+# Debug output directories
+RUN echo "Listing frontend directories:" && ls -la /app/frontend
 
 # Create directory for frontend files in backend
 WORKDIR /app
 RUN mkdir -p /app/backend/frontend
-# Copy the static export to the backend directory
-RUN ls -la /app/frontend/out || echo "out directory not found"
-RUN cp -r /app/frontend/out/* /app/backend/frontend/ || (echo "Failed to copy frontend files" && exit 1)
+
+# Copy the static export to the backend directory with verbose output
+RUN if [ -d "/app/frontend/out" ]; then \
+    echo "Found out directory, copying contents..." && \
+    ls -la /app/frontend/out && \
+    cp -rv /app/frontend/out/* /app/backend/frontend/; \
+  else \
+    echo "out directory not found, checking .next directory" && \
+    ls -la /app/frontend/.next || echo ".next directory not found"; \
+    exit 1; \
+  fi
 
 # Create start script
 RUN echo '#!/bin/bash\ncd /app/backend && node dist/index.js' > /app/start.sh

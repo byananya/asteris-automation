@@ -5,8 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build --no-lint",
-    "export": "next export",
-    "build:static": "next build --no-lint && next export",
+    "build:static": "next build --no-lint",
     "start": "next start",
     "lint": "next lint"
   },
