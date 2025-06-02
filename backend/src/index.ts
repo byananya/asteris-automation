@@ -11,6 +11,11 @@ const port = process.env.PORT || 3010;
 app.use(cors());
 app.use(express.json());
 
+// Health check endpoint for Railway
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Routes
 app.use('/api/intent', intentRouter);
 app.use('/api/stripe/reconciliation', reconciliationRouter);
