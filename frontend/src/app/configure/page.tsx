@@ -7,7 +7,7 @@ import styles from './page.module.css';
 export default function ConfigurePage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const intent = searchParams.get('intent');
+  const intent = searchParams ? searchParams.get('intent') : null;
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

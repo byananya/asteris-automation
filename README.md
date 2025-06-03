@@ -2,19 +2,6 @@
 
 A comprehensive automation platform for managing and executing automation flows.
 
-## Project Structure
-
-```
-├── frontend/          # React/Next.js frontend application
-│   └── src/          # Frontend source code
-├── backend/          # Node.js/Express backend service
-│   └── src/          # Backend source code
-├── database/         # Database related files
-│   └── migrations/   # Database migration files
-├── shared/           # Shared utilities and types
-│   └── utils/        # Common utility functions
-└── docs/             # Project documentation
-```
 
 ## Getting Started
 
