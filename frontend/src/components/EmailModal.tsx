@@ -12,6 +12,8 @@ const EmailModal: React.FC<EmailModalProps> = ({ onClose }) => {
   const [isFadingOut, setIsFadingOut] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   // Focus the input field when the modal appears
   useEffect(() => {
@@ -25,86 +27,59 @@ const EmailModal: React.FC<EmailModalProps> = ({ onClose }) => {
     return re.test(email);
   };
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (validateEmail(email)) {
-      setIsValid(true);
-      setIsSubmitting(true);
-      setSubmitError('');
-      
-      // Store email in local storage immediately as a fallback
-      // This ensures the user can proceed even if the API call fails
-      localStorage.setItem('user_email', email);
+    if (!validateEmail(email)) {
+      setIsValid(false);
+      return;
+    }
+    
+    setIsValid(true);
+    setIsSubmitting(true);
+    setSubmitError('');
+    
+    // Always save to localStorage first for reliability
+    localStorage.setItem('user_email', email);
+    
+    try {
+      // In production with static export, API routes don't work
+      // So we'll make a direct call to the backend instead
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3011';
       
       try {
-        console.log('Submitting email:', email);
-        
-        // Try to send directly to backend API first
-        const backendUrl = 'http://localhost:3011/api/email-signup';
-        console.log(`Attempting to connect directly to backend at: ${backendUrl}`);
-        
-        // Send email to backend API
-        const response = await fetch(backendUrl, {
+        // Attempt to send to backend API
+        const response = await fetch(`${backendUrl}/api/email-signup`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ 
-            email,
-            source: 'modal'
-          }),
+          body: JSON.stringify({ email, source: 'modal' }),
         });
         
-        console.log('Response status:', response.status);
+        const data = await response.json();
         
-        // Try to parse the response as JSON
-        let data;
-        try {
-          data = await response.json();
-          console.log('Response data:', data);
-        } catch (parseError) {
-          console.error('Error parsing response:', parseError);
-          data = { message: 'Invalid response from server' };
+        if (!response.ok) {
+          console.log('Backend response not OK, but continuing with local storage');
         }
-        
-        if (response.ok) {
-          // API call was successful
-          console.log('Email successfully saved to backend');
-          setIsFadingOut(true);
-          setTimeout(() => {
-            onClose();
-          }, 500);
-        } else {
-          // Handle API error but still proceed with local storage
-          const errorMessage = data?.message || `Error ${response.status}: Failed to save email to backend`;
-          console.error('API error:', errorMessage);
-          console.log('Continuing with local storage fallback');
-          
-          // Still close the modal since we saved to localStorage
-          setIsFadingOut(true);
-          setTimeout(() => {
-            onClose();
-          }, 500);
-        }
-      } catch (error) {
-        console.error('Network error submitting email:', error);
-        // Still proceed with local storage
-        console.log('Continuing with local storage fallback due to network error');
-        
-        // Still close the modal since we saved to localStorage
-        setIsFadingOut(true);
-        setTimeout(() => {
-          onClose();
-        }, 500);
-      } finally {
-        setIsSubmitting(false);
+      } catch (apiError) {
+        // If API call fails, just log it - we'll still close the modal
+        // since we've saved to localStorage
+        console.log('API call failed, but continuing with local storage:', apiError);
       }
-    } else {
-      setIsValid(false);
+      
+      // Always close modal after submission attempt, since we saved to localStorage
+      setIsFadingOut(true);
+      setTimeout(() => {
+        onClose();
+      }, 500);
+      
+    } catch (error) {
+      console.error('Error in email submission process:', error);
+      setSubmitError(error instanceof Error ? error.message : 'Failed to submit email');
+      // Keep modal open on critical errors
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

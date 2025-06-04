@@ -27,17 +27,22 @@ export const EmailModalProvider: React.FC<{ children: ReactNode }> = ({ children
 
   // Check if user has already provided email
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedEmail = localStorage.getItem('user_email');
-      if (storedEmail) {
-        setUserEmail(storedEmail);
-        setHasAccess(true);
-      } else {
-        // Show modal immediately on load if no email is stored
-        setIsModalOpen(true);
+    // Add a slight delay to ensure DOM is fully loaded in production
+    const timer = setTimeout(() => {
+      if (typeof window !== 'undefined') {
+        const storedEmail = localStorage.getItem('user_email');
+        if (storedEmail) {
+          setUserEmail(storedEmail);
+          setHasAccess(true);
+        } else {
+          // Show modal immediately on load if no email is stored
+          setIsModalOpen(true);
+        }
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    }
+    }, 500); // 500ms delay to ensure everything is loaded
+    
+    return () => clearTimeout(timer);
   }, []);
 
   // Prevent scrolling when modal is open

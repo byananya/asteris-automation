@@ -1,19 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Remove static export to enable API routes
-  // output: 'export',
+  // Use static export but with proper configuration
+  output: 'export',
   
-  // Enable rewrites for API routes
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: process.env.BACKEND_URL || 'http://localhost:3011/api/:path*',
-      },
-    ];
-  },
+  // Configure output directory explicitly
+  distDir: '.next',
   
-  // Configure images
+  // API routes won't work with static export, but we'll handle this client-side
+  // by making direct calls to the backend
+  
+  // Configure images for static export
   images: {
     unoptimized: true,
   },
