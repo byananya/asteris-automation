@@ -402,8 +402,8 @@ const IntentSearch = forwardRef<any, IntentSearchProps>(({ onSearch, initialQuer
                 <div className={styles.loadingSpinner}></div>
               ) : (
                 <>
-                  <div>Go</div>
-                  <FiArrowRight size={24} strokeWidth={2.5} />
+                  <div className={styles.goText}>Go</div>
+                  <FiArrowRight size={24} strokeWidth={2.5} className={styles.goArrow} />
                 </>
               )}
             </button>

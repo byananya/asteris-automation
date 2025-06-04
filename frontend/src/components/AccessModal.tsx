@@ -34,8 +34,8 @@ const AccessModal: React.FC<AccessModalProps> = ({ onAccess }) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50" style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
       <div className="bg-white rounded-lg shadow-xl w-[450px] max-w-[90vw]">
-        <div className="p-8 pl-12 flex flex-col items-center justify-center text-center">
-          <h1 className="text-4xl font-bold mb-4 font-playfair" 
+        <div className="p-10 pl-12 flex flex-col items-center justify-center text-center">
+          <h1 className="text-4xl font-bold mb-8 font-playfair" 
               style={{ 
                 fontFamily: 'var(--font-playfair)',
                 letterSpacing: '0.05em',
@@ -46,16 +46,16 @@ const AccessModal: React.FC<AccessModalProps> = ({ onAccess }) => {
               }}>
             Access Asteris
           </h1>
-          <p className="text-gray-600 text-lg mb-6">Enter your email to unlock your workspace</p>
+          <p className="text-gray-600 text-lg mb-10">Enter your email to unlock your workspace</p>
           
-          <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">
-            <div className="w-full mb-0">
+          <form onSubmit={handleSubmit} className="w-full flex flex-col items-center mt-4">
+            <div className="w-full mb-16">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
-                className="w-full px-4 py-3 border border-gray-300 rounded-t-md focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500 text-center border-b-0"
+                className="w-full px-4 py-4 border border-gray-300 rounded-t-md focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500 text-center border-b-0"
                 required
                 autoFocus
               />

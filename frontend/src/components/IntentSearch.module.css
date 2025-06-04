@@ -73,6 +73,29 @@
   margin: 0 auto;
 }
 
+@media (max-width: 768px) {
+  .inputWrapper {
+    height: 70px;
+    border-radius: 12px;
+  }
+}
+
+/* iPhone 14 Pro (390px) */
+@media (max-width: 390px) {
+  .inputWrapper {
+    height: 60px;
+    border-radius: 10px;
+  }
+}
+
+/* Pixel 7 (412px) and iPhone 14 Pro Max (428px) */
+@media (min-width: 391px) and (max-width: 428px) {
+  .inputWrapper {
+    height: 65px;
+    border-radius: 11px;
+  }
+}
+
 .input {
   flex: 1;
   height: 100%;
@@ -84,6 +107,32 @@
   padding: 0 20px;
   padding-right: 190px; /* Increased to accommodate wider Go button */
   caret-color: #6366f1;
+}
+
+@media (max-width: 768px) {
+  .input {
+    font-size: 1rem;
+    padding-right: 150px;
+    padding-left: 15px;
+  }
+}
+
+/* iPhone 14 Pro (390px) */
+@media (max-width: 390px) {
+  .input {
+    font-size: 0.9rem;
+    padding-right: 120px;
+    padding-left: 12px;
+  }
+}
+
+/* Pixel 7 (412px) and iPhone 14 Pro Max (428px) */
+@media (min-width: 391px) and (max-width: 428px) {
+  .input {
+    font-size: 0.95rem;
+    padding-right: 135px;
+    padding-left: 14px;
+  }
 }
 
 .input:focus {
@@ -124,6 +173,44 @@
   z-index: 3;
 }
 
+@media (max-width: 768px) {
+  .button {
+    height: 60px;
+    width: 70px;
+    right: 65px;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+  
+  .goText {
+    display: none;
+  }
+  
+  .goArrow {
+    margin: 0;
+  }
+}
+
+/* iPhone 14 Pro (390px) */
+@media (max-width: 390px) {
+  .button {
+    height: 50px;
+    width: 50px;
+    right: 55px;
+    border-radius: 6px;
+  }
+}
+
+/* Pixel 7 (412px) and iPhone 14 Pro Max (428px) */
+@media (min-width: 391px) and (max-width: 428px) {
+  .button {
+    height: 55px;
+    width: 60px;
+    right: 60px;
+    border-radius: 7px;
+  }
+}
+
 .button:hover {
   background: linear-gradient(45deg, #4f46e5, #7c3aed);
   box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.15);
@@ -154,6 +241,29 @@
   z-index: 3;
 }
 
+@media (max-width: 768px) {
+  .divider {
+    right: 55px;
+    height: 30px;
+  }
+}
+
+/* iPhone 14 Pro (390px) */
+@media (max-width: 390px) {
+  .divider {
+    right: 45px;
+    height: 25px;
+  }
+}
+
+/* Pixel 7 (412px) and iPhone 14 Pro Max (428px) */
+@media (min-width: 391px) and (max-width: 428px) {
+  .divider {
+    right: 50px;
+    height: 28px;
+  }
+}
+
 .voiceButton {
   position: absolute;
   right: 10px;
@@ -174,6 +284,35 @@
   z-index: 3;
 }
 
+@media (max-width: 768px) {
+  .voiceButton {
+    width: 45px;
+    height: 50px;
+    right: 5px;
+    border-radius: 8px;
+  }
+}
+
+/* iPhone 14 Pro (390px) */
+@media (max-width: 390px) {
+  .voiceButton {
+    width: 38px;
+    height: 42px;
+    right: 3px;
+    border-radius: 6px;
+  }
+}
+
+/* Pixel 7 (412px) and iPhone 14 Pro Max (428px) */
+@media (min-width: 391px) and (max-width: 428px) {
+  .voiceButton {
+    width: 42px;
+    height: 46px;
+    right: 4px;
+    border-radius: 7px;
+  }
+}
+
 .clearButton {
   position: absolute;
   right: 80px;
@@ -189,6 +328,29 @@
   padding: 8px;
   transition: color 0.2s ease;
   z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .clearButton {
+    right: 60px;
+    padding: 5px;
+  }
+}
+
+/* iPhone 14 Pro (390px) */
+@media (max-width: 390px) {
+  .clearButton {
+    right: 50px;
+    padding: 3px;
+  }
+}
+
+/* Pixel 7 (412px) and iPhone 14 Pro Max (428px) */
+@media (min-width: 391px) and (max-width: 428px) {
+  .clearButton {
+    right: 55px;
+    padding: 4px;
+  }
 }
 
 .clearButton:hover {

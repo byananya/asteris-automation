@@ -8,12 +8,38 @@ interface EmailModalProps {
 
 const EmailModal: React.FC<EmailModalProps> = ({ onClose }) => {
   const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isValid, setIsValid] = useState(true);
-  const [isFadingOut, setIsFadingOut] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
   const modalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+
+  // Handle responsive design based on screen width
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  // Determine styling based on device width
+  const getModalPadding = () => {
+    if (windowWidth <= 390) { // iPhone 14 Pro
+      return '1.25rem';
+    } else if (windowWidth <= 428) { // iPhone 14 Pro Max and Pixel 7
+      return '1.5rem';
+    } else {
+      return '2rem';
+    }
+  };
+  
+  const getFontSize = () => {
+    return windowWidth <= 390 ? '0.9rem' : '1rem';
+  };
 
   // Focus the input field when the modal appears
   useEffect(() => {
@@ -69,10 +95,8 @@ const EmailModal: React.FC<EmailModalProps> = ({ onClose }) => {
       }
       
       // Always close modal after submission attempt, since we saved to localStorage
-      setIsFadingOut(true);
-      setTimeout(() => {
-        onClose();
-      }, 500);
+      setIsSubmitting(false);
+      onClose();
       
     } catch (error) {
       console.error('Error in email submission process:', error);
@@ -85,7 +109,7 @@ const EmailModal: React.FC<EmailModalProps> = ({ onClose }) => {
 
   return (
     <div 
-      className={`fixed inset-0 z-[99999] flex items-center justify-center bg-black bg-opacity-60 ${isFadingOut ? 'animate-fadeOut' : 'animate-fadeIn'}`}
+      className={`fixed inset-0 z-[99999] flex items-center justify-center bg-black bg-opacity-60 animate-fadeIn`}
       style={{ 
         backdropFilter: 'blur(18px)', 
         WebkitBackdropFilter: 'blur(18px)',
@@ -97,7 +121,8 @@ const EmailModal: React.FC<EmailModalProps> = ({ onClose }) => {
         zIndex: 99999,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        padding: '1rem'
       }}
     >
       <div 
@@ -105,21 +130,27 @@ const EmailModal: React.FC<EmailModalProps> = ({ onClose }) => {
         className="bg-gray-900 rounded-3xl shadow-lg w-full max-w-md text-center flex flex-col justify-center items-center"
         style={{
           boxShadow: '0 10px 25px rgba(0, 0, 0, 0.4)',
-          minWidth: '420px',
-          padding: '3rem',
+          width: '92%',
+          maxWidth: '420px',
+          padding: getModalPadding(),
           backgroundColor: '#1a1a1a'
         }}
       >
         <div className="flex flex-col items-center justify-center w-full">
-          <h2 className="text-4xl font-bold mb-8 text-center" style={{ color: '#ffffff' }}>
-            Access Asteris
-          </h2>
-          <p className="text-lg text-gray-300 mb-10 text-center">
-            Enter your email to unlock your workspace
-          </p>
+          <h1 className="text-4xl font-bold mb-4 font-playfair" 
+          style={{ 
+            color: 'white',
+            fontSize: windowWidth <= 390 ? '2rem' : '2.25rem'
+          }}
+        >Access Asteris</h1>
+        <p className="text-gray-400 mb-8" 
+          style={{ 
+            fontSize: windowWidth <= 390 ? '1rem' : '1.125rem'
+          }}
+        >Enter your email to unlock your workspace</p>
           
-          <form onSubmit={handleSubmit} className="text-center mt-4 w-full flex flex-col items-center space-y-6">
-            <div className="w-full mb-0">
+          <form onSubmit={handleSubmit} className="text-center mt-8 w-full flex flex-col items-center">
+            <div className="w-full mb-12">
               <input
                 ref={inputRef}
                 type="email"
@@ -129,10 +160,11 @@ const EmailModal: React.FC<EmailModalProps> = ({ onClose }) => {
                   if (!isValid) setIsValid(true);
                 }}
                 placeholder="you@company.com"
-                className={`w-full px-4 py-3 text-base border ${!isValid ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-center`}
+                className={`w-full px-4 py-4 text-base border ${!isValid ? 'border-red-500' : 'border-gray-200'} rounded-lg focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 text-center`}
                 style={{ 
                   color: '#555',
-                  fontSize: '16px'
+                  fontSize: getFontSize(),
+                  marginBottom: windowWidth <= 390 ? '16px' : '20px'
                 }}
                 required
                 autoFocus
@@ -140,20 +172,21 @@ const EmailModal: React.FC<EmailModalProps> = ({ onClose }) => {
             </div>
             
             {!isValid && (
-              <p className="text-red-500 text-sm mb-2 text-center">Please enter a valid email address</p>
+              <p className="text-red-500 text-sm -mt-8 mb-8 text-center">Please enter a valid email address</p>
             )}
             
             {submitError && (
-              <p className="text-red-500 text-sm mb-2 text-center">{submitError}</p>
+              <p className="text-red-500 text-sm -mt-8 mb-8 text-center">{submitError}</p>
             )}
             
-            <button
-              type="submit"
+            <button 
+              type="submit" 
+              className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium transition-colors duration-300 mb-2"
               disabled={isSubmitting}
-              className="w-full py-3 px-4 flex items-center justify-center rounded-lg transition-all bg-black text-white hover:bg-gray-800 disabled:opacity-70 disabled:cursor-not-allowed"
               style={{ 
-                fontSize: '1rem',
-                fontWeight: 500
+                fontSize: getFontSize(),
+                fontWeight: 500,
+                padding: windowWidth <= 390 ? '0.875rem 0' : '1rem 0'
               }}
             >
               {isSubmitting ? (
