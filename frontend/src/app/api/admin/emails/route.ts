@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
-export const dynamic = 'force-dynamic';
+// Remove dynamic export for static build compatibility
+// export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
