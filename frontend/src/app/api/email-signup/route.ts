@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Add this to make the route dynamic
+// Configure the API route for both static builds and dynamic execution
 export const dynamic = 'force-dynamic';
+
+// Don't use edge runtime as it might cause issues with static builds
+// export const runtime = 'edge';
+
+// Ensure no caching
+export const fetchCache = 'force-no-store';
 
 export async function POST(request: NextRequest) {
   try {

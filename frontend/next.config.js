@@ -1,16 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
-  // Disable rewrites when using static export
-  // async rewrites() {
-  //   return [
-  //     {
-  //       source: '/api/:path*',
-  //       destination: 'http://localhost:3010/api/:path*',
-  //     },
-  //   ];
-  // },
-  // Configure images for static export
+  // Remove static export to enable API routes
+  // output: 'export',
+  
+  // Enable rewrites for API routes
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: process.env.BACKEND_URL || 'http://localhost:3011/api/:path*',
+      },
+    ];
+  },
+  
+  // Configure images
   images: {
     unoptimized: true,
   },
