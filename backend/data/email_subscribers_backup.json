@@ -1,0 +1,40 @@
+[
+  {
+    "email": "test1749012600233@example.com",
+    "name": "Test User",
+    "source": "command-line",
+    "timestamp": "2025-06-04T04:50:00.233Z"
+  },
+  {
+    "email": "test1749013041719@example.com",
+    "name": "Test User",
+    "source": "test-script",
+    "timestamp": "2025-06-04T04:57:21.719Z",
+    "ip": "127.0.0.1",
+    "userAgent": "Test Script"
+  },
+  {
+    "email": "test-curl@example.com",
+    "name": "",
+    "source": "curl-test",
+    "ip": "::ffff:127.0.0.1",
+    "userAgent": "curl/7.82.0",
+    "timestamp": "2025-06-04T04:59:19.686Z"
+  },
+  {
+    "email": "anyads111@gmail.com",
+    "name": "",
+    "source": "modal",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "timestamp": "2025-06-04T05:01:25.605Z"
+  },
+  {
+    "email": "dasananya2607@gmail.com",
+    "name": "",
+    "source": "modal",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "timestamp": "2025-06-04T06:20:27.183Z"
+  }
+]

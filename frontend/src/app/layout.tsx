@@ -1,12 +1,18 @@
-import './globals.css'
-import { Space_Grotesk } from 'next/font/google'
+import { Space_Grotesk, Playfair_Display } from 'next/font/google';
+import EmailModalProvider from '../contexts/EmailModalContext';
+import './globals.css';
 
-const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['300', '400', '500', '600', '700'] })
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'] });
+const playfairDisplay = Playfair_Display({ 
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-playfair',
+});
 
 export const metadata = {
-  title: 'Asteris - Automation Platform',
-  description: 'Declare your intent. Asteris automates it.',
-}
+  title: 'Asteris Automation',
+  description: 'Automation platform for your workflow',
+};
 
 export default function RootLayout({
   children,
@@ -15,7 +21,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={spaceGrotesk.className}>{children}</body>
+      <head>
+        <link rel="canonical" href="https://asteris.ai" />
+      </head>
+      <body className={`${spaceGrotesk.className} ${playfairDisplay.variable}`}>
+        <EmailModalProvider>
+          {children}
+        </EmailModalProvider>
+      </body>
     </html>
-  )
+  );
 }

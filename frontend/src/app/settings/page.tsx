@@ -39,10 +39,9 @@ export default function Settings() {
   return (
     <div className={styles.container}>
       <nav className={styles.nav}>
-        <h1 className={styles.title}>Asteris</h1>
-        <button onClick={() => router.push('/dashboard')} className={styles.backButton}>
-          <span>←</span> Back to Dashboard
-        </button>
+        <div style={{ marginLeft: '70px' }}>
+          <h1 className={styles.title}>Asteris</h1>
+        </div>
       </nav>
       
       <div className={styles.content}>

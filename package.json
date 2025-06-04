@@ -15,6 +15,7 @@
     "postinstall": "cd backend && npm rebuild @tensorflow/tfjs-node --build-from-source=false"
   },
   "devDependencies": {
+    "@types/react-dom": "^19.1.5",
     "concurrently": "^8.0.1"
   },
   "dependencies": {
