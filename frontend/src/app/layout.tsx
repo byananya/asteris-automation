@@ -10,8 +10,11 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata = {
-  title: 'Asteris Automation',
+  title: 'Asteris',
   description: 'Automation platform for your workflow',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({

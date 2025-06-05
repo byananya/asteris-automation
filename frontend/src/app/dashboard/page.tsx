@@ -46,14 +46,16 @@ export default function Dashboard() {
                 description="Match invoices to payouts and fees"
                 actionLabel="Automate"
                 onClick={() => router.push('/automation/invoice-reconciliation')}
+                enabled={true}
               />
               
               <AutomationCard
                 icon={<FiArrowUpRight />}
                 title="Stripe Payout Sync"
                 description="Sync and export all Stripe payouts"
-                actionLabel="Automate"
+                actionLabel="Coming Soon"
                 onClick={() => router.push('/payouts')}
+                enabled={false}
               />
             </div>
           </div>
@@ -65,16 +67,18 @@ export default function Dashboard() {
                 icon={<FiAlertTriangle />}
                 title="Failed Payment Alerts"
                 description="Monitor and alert on failed Stripe charges"
-                actionLabel="Configure"
+                actionLabel="Coming Soon"
                 onClick={() => router.push('/alerts')}
+                enabled={false}
               />
               
               <AutomationCard
                 icon={<FiMonitor />}
                 title="Vendor Portal Extraction"
                 description="Log in to vendor sites and extract invoices"
-                actionLabel="Automate"
+                actionLabel="Coming Soon"
                 onClick={() => router.push('/vendors')}
+                enabled={false}
               />
             </div>
           </div>

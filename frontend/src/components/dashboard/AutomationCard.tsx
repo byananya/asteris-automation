@@ -7,6 +7,7 @@ interface AutomationCardProps {
   description: string;
   actionLabel: string;
   onClick: () => void;
+  enabled?: boolean;
 }
 
 export default function AutomationCard({
@@ -15,6 +16,7 @@ export default function AutomationCard({
   description,
   actionLabel,
   onClick,
+  enabled = true,
 }: AutomationCardProps) {
   return (
     <div className={styles.card}>
@@ -27,7 +29,11 @@ export default function AutomationCard({
               <p className={styles.description}>{description}</p>
             </div>
           </div>
-          <button className={styles.actionButton} onClick={onClick}>
+          <button 
+            className={`${styles.actionButton} ${!enabled ? styles.disabledButton : ''}`} 
+            onClick={enabled ? onClick : undefined}
+            disabled={!enabled}
+          >
             <span className={styles.buttonText}>{actionLabel}</span>
           </button>
         </div>

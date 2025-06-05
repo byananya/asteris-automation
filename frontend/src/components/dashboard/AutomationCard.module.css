@@ -155,3 +155,27 @@
 .actionButton:hover .buttonIcon {
   transform: translateX(3px);
 }
+
+/* Disabled state */
+.actionButton:disabled,
+.disabledButton,
+.actionButton[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: linear-gradient(90deg, rgba(120, 120, 120, 0.7), rgba(100, 100, 100, 0.8)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.actionButton:disabled .buttonText,
+.disabledButton .buttonText {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Hover state for disabled buttons */
+.actionButton:disabled:hover,
+.disabledButton:hover {
+  transform: none !important;
+  cursor: not-allowed !important;
+}

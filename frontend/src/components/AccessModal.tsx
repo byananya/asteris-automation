@@ -36,9 +36,9 @@ const AccessModal: React.FC<AccessModalProps> = ({ onAccess }) => {
     <div className="fixed inset-0 flex items-center justify-center z-50" style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
       <div className="bg-white rounded-lg shadow-xl w-[450px] max-w-[90vw] ml-8">
         <div className="p-10 pl-12 flex flex-col items-center justify-center text-center">
-          <h1 className="text-4xl font-bold mb-8 font-playfair" 
+          <h1 className="text-4xl font-bold mb-8 font-austin" 
               style={{ 
-                fontFamily: 'var(--font-playfair)',
+                fontFamily: 'var(--font-austin)',
                 letterSpacing: '0.05em',
                 background: 'linear-gradient(to right, #2c3e50, #4a5568)',
                 WebkitBackgroundClip: 'text',
