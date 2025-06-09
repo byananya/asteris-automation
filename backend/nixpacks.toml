@@ -1,0 +1,22 @@
+[phases.setup]
+nixPkgs = ["nodejs-18_x", "nodePackages.npm"]
+
+[phases.install]
+cmds = [
+  "npm install"
+]
+
+[phases.build]
+cmds = [
+  "npm run build"
+]
+
+[phases.start]
+cmds = [
+  "node dist/minimal-server.js"
+]
+
+[phases.cleanup]
+cmds = [
+  "rm -rf node_modules/.cache"
+]

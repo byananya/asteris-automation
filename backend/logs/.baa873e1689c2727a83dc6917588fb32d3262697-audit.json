@@ -1,0 +1,25 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "/Users/ananya/Documents/asteris-automation/backend/logs/.baa873e1689c2727a83dc6917588fb32d3262697-audit.json",
+    "files": [
+        {
+            "date": 1749270585062,
+            "name": "/Users/ananya/Documents/asteris-automation/backend/logs/error-2025-06-07.log",
+            "hash": "d2a7250f98efdda76e8a5038942c3b84bfb070e5beb12149c1328c210e3d223a"
+        },
+        {
+            "date": 1749363688098,
+            "name": "/Users/ananya/Documents/asteris-automation/backend/logs/error-2025-06-08.log",
+            "hash": "9e7cc56c26c2fbf0ec420d71ce6a8328b9518bfb35920d85d4c2df272ec25b05"
+        },
+        {
+            "date": 1749451630739,
+            "name": "/Users/ananya/Documents/asteris-automation/backend/logs/error-2025-06-09.log",
+            "hash": "ebbf6385ff575a14aa298fb718ac571c7b05d4c7067a59651b3c123551637c38"
+        }
+    ],
+    "hashType": "sha256"
+}

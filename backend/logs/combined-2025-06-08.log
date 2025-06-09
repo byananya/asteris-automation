@@ -1,0 +1,95 @@
+{"database":"asteris_db","host":"localhost","level":"info","message":"Database configuration:","password":"***","port":5432,"service":"invoice-reconciliation","ssl":false,"timestamp":"2025-06-08 11:51:28","username":"asteris"}
+{"level":"info","message":"Attempting to connect to database (attempt 1/5)","service":"invoice-reconciliation","timestamp":"2025-06-08 11:51:28"}
+{"level":"info","message":"Initializing database connection...","service":"invoice-reconciliation","timestamp":"2025-06-08 11:51:28"}
+{"level":"info","message":"Database connection established successfully","service":"invoice-reconciliation","timestamp":"2025-06-08 11:51:28"}
+{"environment":"development","level":"info","memoryUsage":{"arrayBuffers":67059,"external":3659440,"heapTotal":118358016,"heapUsed":77412048,"rss":745275392},"message":"Server is running on port 3001","nodeVersion":"v23.7.0","platform":"darwin","service":"invoice-reconciliation","timestamp":"2025-06-08 06:21:28"}
+{"level":"info","message":"Received SIGTERM, shutting down gracefully...","service":"invoice-reconciliation","timestamp":"2025-06-08 06:22:39"}
+{"database":"asteris_db","host":"localhost","level":"info","message":"Database configuration:","password":"***","port":5432,"service":"invoice-reconciliation","ssl":false,"timestamp":"2025-06-08 11:54:11","username":"asteris"}
+{"level":"info","message":"Attempting to connect to database (attempt 1/5)","service":"invoice-reconciliation","timestamp":"2025-06-08 11:54:15"}
+{"level":"info","message":"Initializing database connection...","service":"invoice-reconciliation","timestamp":"2025-06-08 11:54:15"}
+{"level":"info","message":"Database connection established successfully","service":"invoice-reconciliation","timestamp":"2025-06-08 11:54:15"}
+{"environment":"development","level":"info","memoryUsage":{"arrayBuffers":67060,"external":3659441,"heapTotal":114688000,"heapUsed":88696680,"rss":688783360},"message":"Server is running on port 3001","nodeVersion":"v23.7.0","platform":"darwin","service":"invoice-reconciliation","timestamp":"2025-06-08 06:24:15"}
+{"database":"asteris_db","host":"localhost","level":"info","message":"Database configuration:","password":"***","port":5432,"service":"invoice-reconciliation","ssl":false,"timestamp":"2025-06-08 11:55:03","username":"asteris"}
+{"level":"info","message":"Attempting to connect to database (attempt 1/5)","service":"invoice-reconciliation","timestamp":"2025-06-08 11:55:03"}
+{"level":"info","message":"Initializing database connection...","service":"invoice-reconciliation","timestamp":"2025-06-08 11:55:03"}
+{"level":"info","message":"Database connection established successfully","service":"invoice-reconciliation","timestamp":"2025-06-08 11:55:03"}
+{"level":"info","message":"Received SIGTERM, shutting down gracefully...","service":"invoice-reconciliation","timestamp":"2025-06-08 06:25:22"}
+{"database":"asteris_db","host":"localhost","level":"info","message":"Database configuration:","password":"***","port":5432,"service":"invoice-reconciliation","ssl":false,"timestamp":"2025-06-08 11:55:45","username":"asteris"}
+{"level":"info","message":"Attempting to connect to database (attempt 1/5)","service":"invoice-reconciliation","timestamp":"2025-06-08 11:55:46"}
+{"level":"info","message":"Initializing database connection...","service":"invoice-reconciliation","timestamp":"2025-06-08 11:55:46"}
+{"level":"info","message":"Database connection established successfully","service":"invoice-reconciliation","timestamp":"2025-06-08 11:55:46"}
+{"environment":"development","level":"info","memoryUsage":{"arrayBuffers":67059,"external":3762031,"heapTotal":119226368,"heapUsed":93521504,"rss":833486848},"message":"Server is running on port 4001","nodeVersion":"v23.7.0","platform":"darwin","service":"invoice-reconciliation","timestamp":"2025-06-08 06:25:46"}
+{"customerName":"all","level":"info","matchThreshold":0.9,"message":"Starting invoice reconciliation","service":"invoice-reconciliation","status":"all","timestamp":"2025-06-08 06:28:57"}
+{"level":"info","message":"Starting invoice reconciliation...","service":"invoice-reconciliation","timestamp":"2025-06-08 06:28:57"}
+{"level":"info","message":"Fetching invoices and payouts from Stripe...","service":"invoice-reconciliation","timestamp":"2025-06-08 06:28:57"}
+{"level":"info","message":"Fetching payouts from Stripe...","service":"invoice-reconciliation","timestamp":"2025-06-08 06:28:57"}
+{"fetchLimit":100,"fetchedSoFar":0,"level":"debug","message":"Making request to Stripe API for payouts","service":"invoice-reconciliation","startingAfter":"none","timestamp":"2025-06-08 06:28:57"}
+{"level":"info","message":"Fetched 1 invoices and 0 payouts","service":"invoice-reconciliation","timestamp":"2025-06-08 06:28:57"}
+{"amount_paid":0,"created":1745390649,"customer_email":"test2@example.com","id":"in_1RGx2TLNq3d7iesZFRXUrxUC","level":"info","message":"Sample invoice:","service":"invoice-reconciliation","status":"draft","timestamp":"2025-06-08 06:28:57"}
+{"level":"debug","message":"Skipping invoice in_1RGx2TLNq3d7iesZFRXUrxUC with status: draft","service":"invoice-reconciliation","timestamp":"2025-06-08 06:28:57"}
+{"level":"info","message":"Found 0 paid invoices to reconcile","service":"invoice-reconciliation","timestamp":"2025-06-08 06:28:57"}
+{"invoiceCount":0,"level":"info","matchedCount":0,"message":"Invoice reconciliation completed","processingTime":"616.11ms","service":"invoice-reconciliation","timestamp":"2025-06-08 06:28:57"}
+{"database":"asteris_db","host":"localhost","level":"info","message":"Database configuration:","password":"***","port":5432,"service":"invoice-reconciliation","ssl":false,"timestamp":"2025-06-08 16:30:35","username":"asteris"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:30:35"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:30:35"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:30:35"}
+{"level":"info","message":"Attempting to connect to database (attempt 1/5)","service":"invoice-reconciliation","timestamp":"2025-06-08 16:30:35"}
+{"level":"info","message":"Initializing database connection...","service":"invoice-reconciliation","timestamp":"2025-06-08 16:30:35"}
+{"level":"info","message":"Database connection established successfully","service":"invoice-reconciliation","timestamp":"2025-06-08 16:30:35"}
+{"environment":"development","level":"info","memoryUsage":{"arrayBuffers":67059,"external":3659440,"heapTotal":119406592,"heapUsed":77492472,"rss":759513088},"message":"Server is running on port 4001","nodeVersion":"v23.7.0","platform":"darwin","service":"invoice-reconciliation","timestamp":"2025-06-08 11:00:35"}
+{"database":"asteris_db","host":"localhost","level":"info","message":"Database configuration:","password":"***","port":5432,"service":"invoice-reconciliation","ssl":false,"timestamp":"2025-06-08 16:48:55","username":"asteris"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:48:55"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:48:55"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:48:55"}
+{"level":"info","message":"Attempting to connect to database (attempt 1/5)","service":"invoice-reconciliation","timestamp":"2025-06-08 16:48:55"}
+{"level":"info","message":"Initializing database connection...","service":"invoice-reconciliation","timestamp":"2025-06-08 16:48:55"}
+{"level":"info","message":"Database connection established successfully","service":"invoice-reconciliation","timestamp":"2025-06-08 16:48:55"}
+{"environment":"development","level":"info","memoryUsage":{"arrayBuffers":67059,"external":3659440,"heapTotal":117047296,"heapUsed":77340336,"rss":794427392},"message":"Server is running on port 4001","nodeVersion":"v23.7.0","platform":"darwin","service":"invoice-reconciliation","timestamp":"2025-06-08 11:18:55"}
+{"database":"asteris_db","host":"localhost","level":"info","message":"Database configuration:","password":"***","port":5432,"service":"invoice-reconciliation","ssl":false,"timestamp":"2025-06-08 16:49:10","username":"asteris"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:49:10"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:49:10"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:49:10"}
+{"level":"info","message":"Attempting to connect to database (attempt 1/5)","service":"invoice-reconciliation","timestamp":"2025-06-08 16:49:10"}
+{"level":"info","message":"Initializing database connection...","service":"invoice-reconciliation","timestamp":"2025-06-08 16:49:10"}
+{"level":"info","message":"Database connection established successfully","service":"invoice-reconciliation","timestamp":"2025-06-08 16:49:10"}
+{"environment":"development","level":"info","memoryUsage":{"arrayBuffers":67059,"external":3694105,"heapTotal":118177792,"heapUsed":93735368,"rss":792297472},"message":"Server is running on port 4001","nodeVersion":"v23.7.0","platform":"darwin","service":"invoice-reconciliation","timestamp":"2025-06-08 11:19:10"}
+{"database":"asteris_db","host":"localhost","level":"info","message":"Database configuration:","password":"***","port":5432,"service":"invoice-reconciliation","ssl":false,"timestamp":"2025-06-08 16:57:10","username":"asteris"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:11"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:11"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:11"}
+{"level":"info","message":"Attempting to connect to database (attempt 1/5)","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:11"}
+{"level":"info","message":"Initializing database connection...","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:11"}
+{"level":"info","message":"Database connection established successfully","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:11"}
+{"environment":"development","level":"info","memoryUsage":{"arrayBuffers":67060,"external":3659441,"heapTotal":114688000,"heapUsed":88493888,"rss":781352960},"message":"Server is running on port 4001","nodeVersion":"v23.7.0","platform":"darwin","service":"invoice-reconciliation","timestamp":"2025-06-08 11:27:11"}
+{"database":"asteris_db","host":"localhost","level":"info","message":"Database configuration:","password":"***","port":5432,"service":"invoice-reconciliation","ssl":false,"timestamp":"2025-06-08 16:57:23","username":"asteris"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:24"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:24"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:24"}
+{"level":"info","message":"Attempting to connect to database (attempt 1/5)","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:24"}
+{"level":"info","message":"Initializing database connection...","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:24"}
+{"level":"info","message":"Database connection established successfully","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:24"}
+{"environment":"development","level":"info","memoryUsage":{"arrayBuffers":67059,"external":4084343,"heapTotal":119930880,"heapUsed":89049160,"rss":831930368},"message":"Server is running on port 4001","nodeVersion":"v23.7.0","platform":"darwin","service":"invoice-reconciliation","timestamp":"2025-06-08 11:27:24"}
+{"database":"asteris_db","host":"localhost","level":"info","message":"Database configuration:","password":"***","port":5432,"service":"invoice-reconciliation","ssl":false,"timestamp":"2025-06-08 16:57:50","username":"asteris"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:51"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:51"}
+{"level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:51"}
+{"level":"info","message":"Attempting to connect to database (attempt 1/5)","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:51"}
+{"level":"info","message":"Initializing database connection...","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:51"}
+{"level":"info","message":"Database connection established successfully","service":"invoice-reconciliation","timestamp":"2025-06-08 16:57:51"}
+{"environment":"development","level":"info","memoryUsage":{"arrayBuffers":67059,"external":3677461,"heapTotal":118636544,"heapUsed":93617128,"rss":832421888},"message":"Server is running on port 4001","nodeVersion":"v23.7.0","platform":"darwin","service":"invoice-reconciliation","timestamp":"2025-06-08 11:27:51"}
+{"database":"asteris_db","environment":"development","host":"localhost","level":"info","message":"Database configuration:","password":"***","port":5432,"service":"invoice-reconciliation","ssl":false,"timestamp":"2025-06-08 16:58:28","username":"asteris"}
+{"environment":"development","level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:58:28"}
+{"environment":"development","level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:58:28"}
+{"environment":"development","level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 16:58:28"}
+{"environment":"development","level":"info","message":"Attempting to connect to database (attempt 1/5)","service":"invoice-reconciliation","timestamp":"2025-06-08 16:58:28"}
+{"environment":"development","level":"info","message":"Initializing database connection...","service":"invoice-reconciliation","timestamp":"2025-06-08 16:58:28"}
+{"environment":"development","level":"info","message":"Database connection established successfully","service":"invoice-reconciliation","timestamp":"2025-06-08 16:58:28"}
+{"environment":"development","level":"info","memoryUsage":{"arrayBuffers":67059,"external":4075787,"heapTotal":120324096,"heapUsed":89460448,"rss":696107008},"message":"Server is running on port 4001","nodeVersion":"v23.7.0","platform":"darwin","service":"invoice-reconciliation","timestamp":"2025-06-08 11:28:28"}
+{"database":"asteris_db","environment":"development","host":"localhost","level":"info","message":"Database configuration:","password":"***","port":5432,"service":"invoice-reconciliation","ssl":false,"timestamp":"2025-06-08 17:09:39","username":"asteris"}
+{"environment":"development","level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 17:09:43"}
+{"environment":"development","level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 17:09:43"}
+{"environment":"development","level":"info","message":"Stripe service initialized","service":"invoice-reconciliation","timestamp":"2025-06-08 17:09:43"}
+{"environment":"development","level":"info","message":"Attempting to connect to database (attempt 1/5)","service":"invoice-reconciliation","timestamp":"2025-06-08 17:09:43"}
+{"environment":"development","level":"info","message":"Initializing database connection...","service":"invoice-reconciliation","timestamp":"2025-06-08 17:09:43"}
+{"environment":"development","level":"info","message":"Database connection established successfully","service":"invoice-reconciliation","timestamp":"2025-06-08 17:09:43"}
+{"environment":"development","level":"info","memoryUsage":{"arrayBuffers":67059,"external":3659440,"heapTotal":118587392,"heapUsed":80805328,"rss":585121792},"message":"Server is running on port 4001","nodeVersion":"v23.7.0","platform":"darwin","service":"invoice-reconciliation","timestamp":"2025-06-08 11:39:43"}
