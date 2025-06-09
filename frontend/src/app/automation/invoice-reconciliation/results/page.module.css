@@ -93,6 +93,87 @@
   border-color: rgba(255, 255, 255, 0.3);
 }
 
+.apiKeyInputContainer {
+  display: flex;
+  gap: 16px;
+  margin: 0 32px 32px;
+  align-items: center;
+}
+
+.apiKeyInput {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(25, 27, 36, 0.7);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.apiKeyInput::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.apiKeyInput:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+}
+
+.runButton {
+  background: linear-gradient(90deg, #a855f7, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.runButton:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.runButton:disabled {
+  background: #4a4a4a;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.errorMessage {
+  margin: 0 32px 24px;
+  padding: 16px;
+  background-color: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 8px;
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+}
+
+.errorMessage p {
+  margin: 0;
+}
+
 .loadingContainer {
   margin: 0 32px;
   background: rgba(30, 30, 60, 0.3);
@@ -102,75 +183,28 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  min-height: 200px; /* Ensure it takes up space */
+  gap: 20px;
 }
 
-.progressContainer {
-  width: 100%;
-  max-width: 600px;
-  margin-bottom: 40px;
-}
-
-.progressBar {
-  height: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-
-.progressFill {
-  height: 100%;
-  background: linear-gradient(90deg, #a855f7, #8b5cf6);
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-.progressText {
-  text-align: center;
-  font-size: 14px;
+.loadingContainer p {
+  font-size: 18px;
   color: rgba(255, 255, 255, 0.7);
 }
 
-.loadingSteps {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-  max-width: 500px;
-}
-
-.loadingStep {
-  display: flex;
-  align-items: center;
-}
-
-.stepIndicator {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 16px;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.stepIndicator.current {
-  background: linear-gradient(135deg, #a855f7, #8b5cf6);
-  color: white;
-  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
-}
-
-.stepIndicator.completed {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-}
-
+/* Remove old loading specific styles */
+.progressContainer,
+.progressBar,
+.progressFill,
+.progressText,
+.loadingSteps,
+.loadingStep,
+.stepIndicator,
+.stepIndicator.current,
+.stepIndicator.completed,
 .stepText {
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.8);
+  display: none; /* Hide old loading elements */
 }
 
 .resultsContainer {
@@ -220,6 +254,11 @@
 .summaryIcon.warning {
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1));
   color: rgba(245, 158, 11, 0.9);
+}
+
+.summaryIcon.info {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.1));
+  color: rgba(59, 130, 246, 0.9);
 }
 
 .summaryContent {
@@ -553,4 +592,137 @@
   background: rgba(255, 255, 255, 0.8);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tableSection {
+  background: rgba(30, 30, 60, 0.3);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.tableSection h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tableSection .downloadButton {
+  margin-left: auto; /* Pushes the download button to the right */
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.resultsTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.resultsTable th,
+.resultsTable td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.resultsTable th {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.resultsTable tr:last-child td {
+  border-bottom: none;
+}
+
+.resultsTable tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.resultsTable td {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 15px;
+}
+
+.noData {
+  text-align: center;
+  padding: 32px !important;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+}
+
+.viewDetailsButton {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewDetailsButton:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: #8b5cf6;
+}
+
+.issuesDetected {
+  background: rgba(30, 30, 60, 0.3);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 24px;
+}
+
+.issuesDetected h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.issueCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.issueCard {
+  background-color: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+}
+
+.issueCard svg {
+  color: #f59e0b;
+}
+
+.issueCard p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.summaryIcon.info {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.1));
+  color: rgba(59, 130, 246, 0.9);
 }
