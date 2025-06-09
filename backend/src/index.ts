@@ -3,12 +3,12 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import intentRouter from './api/routes/intentRouter.js';
-import reconciliationRouter from './routes/stripe/reconciliation.js';
+import stripeReconciliationRoutes from './routes/stripeReconciliationRoutes.js';
 import semanticSearchRouter from './routes/semanticSearch.js';
 import emailSignupRouter from './routes/emailSignup.js';
 
 const app = express();
-const port = process.env.PORT || 3011;
+const port = process.env.PORT || 3001;
 
 // Get __dirname equivalent in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -25,7 +25,7 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api/intent', intentRouter);
-app.use('/api/stripe/reconciliation', reconciliationRouter);
+app.use('/api/reconcile', stripeReconciliationRoutes);
 app.use('/api/semantic-search', semanticSearchRouter);
 app.use('/api/email-signup', emailSignupRouter);
 
