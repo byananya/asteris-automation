@@ -1,64 +1,72 @@
 import express from 'express';
-import cors from 'cors';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import intentRouter from './api/routes/intentRouter.js';
-import stripeReconciliationRoutes from './routes/stripeReconciliationRoutes.js';
-import semanticSearchRouter from './routes/semanticSearch.js';
-import emailSignupRouter from './routes/emailSignup.js';
+// import cors from 'cors';
+// import path from 'path';
+// import { fileURLToPath } from 'url';
+// import intentRouter from './api/routes/intentRouter.js';
+// import stripeReconciliationRoutes from './routes/stripeReconciliationRoutes.js';
+// import semanticSearchRouter from './routes/semanticSearch.js';
+// import emailSignupRouter from './routes/emailSignup.js';
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3002;
 
-// Get __dirname equivalent in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// // Get __dirname equivalent in ESM
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// // Middleware
+// app.use(cors());
+// app.use(express.json());
 
 // Health check endpoint for Railway
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// API Routes
-app.use('/api/intent', intentRouter);
-app.use('/api/reconcile', stripeReconciliationRoutes);
-app.use('/api/semantic-search', semanticSearchRouter);
-app.use('/api/email-signup', emailSignupRouter);
+// // API Routes
+// app.use('/api/intent', intentRouter);
+// app.use('/api/reconcile', stripeReconciliationRoutes);
+// app.use('/api/semantic-search', semanticSearchRouter);
+// app.use('/api/email-signup', emailSignupRouter);
 
-// Serve static frontend files if they exist in the expected location
-const frontendPath = path.join(__dirname, '../frontend');
-console.log(`Looking for frontend files at: ${frontendPath}`);
+// // Serve static frontend files if they exist in the expected location
+// const frontendPath = path.join(__dirname, '../frontend');
+// console.log(`Looking for frontend files at: ${frontendPath}`);
 
-try {
-  // Serve static files
-  app.use(express.static(frontendPath));
+// try {
+//   // Serve static files
+//   app.use(express.static(frontendPath);
   
-  // Handle root path and all frontend routes
-  app.get('*', (req, res) => {
-    // Skip API routes
-    if (req.path.startsWith('/api/')) {
-      return res.status(404).json({ error: 'API endpoint not found' });
-    }
+//   // Handle root path and all frontend routes
+//   app.get('*', (req, res) => {
+//     // Skip API routes
+//     if (req.path.startsWith('/api/')) {
+//       return res.status(404).json({ error: 'API endpoint not found' });
+//     }
     
-    // For all other routes, serve the index.html
-    res.sendFile(path.join(frontendPath, 'index.html'));
-  });
+//     // For all other routes, serve the index.html
+//     res.sendFile(path.join(frontendPath, 'index.html'));
+//   });
   
-  console.log('Frontend static files are being served');
-} catch (error) {
-  console.error('Error setting up frontend static files:', error);
+//   console.log('Frontend static files are being served');
+// } catch (error) {
+//   console.error('Error setting up frontend static files:', error);
   
-  // Fallback route handler for root path
-  app.get('/', (req, res) => {
-    res.send('Backend API is running. Frontend is not available.');
-  });
-}
+//   // Fallback route handler for root path
+//   app.get('/', (req, res) => {
+//     res.send('Backend API is running. Frontend is not available.');
+//   });
+// }
 
 // Start server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+});
+
+// Global error handler for uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('UNCAUGHT EXCEPTION:', error.stack || error.message);
+  // It's critical to exit the process after an uncaught exception in production,
+  // but for debugging, we might keep it running to inspect.
+  // In a real app, you would typically exit here: process.exit(1);
 });
