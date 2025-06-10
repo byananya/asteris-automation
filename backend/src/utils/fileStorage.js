@@ -6,20 +6,27 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Path to data directory
-const DATA_DIR = path.join(__dirname, '../../data');
+// Path to data directory - use absolute path
+const DATA_DIR = path.join(process.cwd(), 'data');
 const EMAIL_STORAGE_PATH = path.join(DATA_DIR, 'email_subscribers.json');
 
 /**
  * Ensures the data directory exists
  */
 export const ensureDataDirExists = () => {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-  
-  if (!fs.existsSync(EMAIL_STORAGE_PATH)) {
-    fs.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify([], null, 2));
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true, mode: 0o755 });
+      console.log(`Created data directory at: ${DATA_DIR}`);
+    }
+    
+    if (!fs.existsSync(EMAIL_STORAGE_PATH)) {
+      fs.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify([], null, 2), { mode: 0o644 });
+      console.log(`Created email subscribers file at: ${EMAIL_STORAGE_PATH}`);
+    }
+  } catch (error) {
+    console.error('Error ensuring data directory exists:', error);
+    throw error;
   }
 };
 
@@ -38,7 +45,7 @@ export const saveEmail = async (emailData) => {
       const emailDataStr = fs.readFileSync(EMAIL_STORAGE_PATH, 'utf8');
       emails = JSON.parse(emailDataStr);
     } catch (err) {
-      // If file doesn't exist or is invalid JSON, start with empty array
+      console.warn('Error reading email file, starting with empty array:', err);
       emails = [];
     }
     
@@ -51,13 +58,11 @@ export const saveEmail = async (emailData) => {
     emails.push(newEmail);
     
     // Save updated emails
-    fs.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify(emails, null, 2));
+    fs.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify(emails, null, 2), { mode: 0o644 });
     
     // Also save a backup copy in case the main file gets corrupted
-    fs.writeFileSync(
-      path.join(DATA_DIR, 'email_subscribers_backup.json'), 
-      JSON.stringify(emails, null, 2)
-    );
+    const backupPath = path.join(DATA_DIR, 'email_subscribers_backup.json');
+    fs.writeFileSync(backupPath, JSON.stringify(emails, null, 2), { mode: 0o644 });
     
     console.log(`Email saved successfully: ${emailData.email}`);
     return true;
@@ -90,7 +95,7 @@ export const getAllEmails = () => {
           const backupData = JSON.parse(backupDataStr);
           
           // Restore main file from backup
-          fs.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify(backupData, null, 2));
+          fs.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify(backupData, null, 2), { mode: 0o644 });
           
           return backupData;
         }
