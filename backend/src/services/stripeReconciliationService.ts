@@ -80,8 +80,8 @@ export class StripeReconciliationService {
 
       for (const invoice of invoices) {
         // Ensure invoice has a charge and customer data
-        if (!invoice.charge || typeof invoice.charge === 'string') {
-            continue; // Skip if charge is not expanded or not present
+        if (typeof invoice.charge !== 'object' || invoice.charge === null) {
+            continue; // Skip if charge is not an object (i.e., string or null)
         }
 
         const charge = invoice.charge as Stripe.Charge;
