@@ -6,8 +6,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Path to data directory - use absolute path
-const DATA_DIR = path.join(process.cwd(), 'data');
+// Path to data directory - use backend directory as base
+const DATA_DIR = path.join(__dirname, '../../data');
 const EMAIL_STORAGE_PATH = path.join(DATA_DIR, 'email_subscribers.json');
 
 /**
