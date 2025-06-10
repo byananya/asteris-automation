@@ -24,10 +24,16 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// API Routes
+// API Routes - THESE MUST BE DEFINED BEFORE ANY STATIC FILE SERVING OR CATCH-ALL ROUTES
 app.use('/api/intent', intentRouter);
 app.use('/api/reconcile', stripeReconciliationRoutes);
-app.use('/api/semantic-search', semanticSearchRouter);
+// Only use semantic search routes if the service is available
+try {
+  app.use('/api/semantic-search', semanticSearchRouter);
+  console.log('Semantic search routes enabled');
+} catch (error) {
+  console.warn('Semantic search routes disabled:', error);
+}
 app.use('/api/email-signup', emailSignupRouter);
 
 // Serve static frontend files if they exist in the expected location
@@ -67,7 +73,6 @@ app.listen(port, () => {
 // Global error handler for uncaught exceptions
 process.on('uncaughtException', (error) => {
   console.error('UNCAUGHT EXCEPTION:', error.stack || error.message);
-  // It's critical to exit the process after an uncaught exception in production,
-  // but for debugging, we might keep it running to inspect.
-  // In a real app, you would typically exit here: process.exit(1);
+  // Don't exit the process in development to allow for debugging
+  // In production, you would typically exit here: process.exit(1);
 });
