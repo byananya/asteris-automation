@@ -3,6 +3,11 @@ import { format } from 'date-fns';
 
 const STRIPE_API_VERSION = '2025-05-28.basil' as const;
 
+// Define an expanded Invoice type to include the 'charge' object
+interface ExpandedInvoice extends Stripe.Invoice {
+  charge: Stripe.Charge | null; // Explicitly define charge as an object or null
+}
+
 interface ReconciliationRecord {
   invoiceId: string;
   customerId: string;
@@ -46,8 +51,8 @@ export class StripeReconciliationService {
     return '';
   }
 
-  private async fetchInvoices(startDate?: Date, endDate: Date = new Date()): Promise<Stripe.Invoice[]> {
-    const invoices: Stripe.Invoice[] = [];
+  private async fetchInvoices(startDate?: Date, endDate: Date = new Date()): Promise<ExpandedInvoice[]> {
+    const invoices: ExpandedInvoice[] = [];
     let hasMore = true;
     let startingAfter: string | undefined;
 
@@ -63,7 +68,8 @@ export class StripeReconciliationService {
         expand: ['data.charge', 'data.customer'] // Expand charge and customer objects
       });
 
-      invoices.push(...response.data);
+      // Type assertion for each invoice to ExpandedInvoice
+      invoices.push(...(response.data as ExpandedInvoice[]));
       hasMore = response.has_more;
       startingAfter = response.data[response.data.length - 1]?.id;
     }
@@ -79,12 +85,12 @@ export class StripeReconciliationService {
       let totalNet = 0;
 
       for (const invoice of invoices) {
-        // Ensure invoice has a charge and customer data
-        if (typeof invoice.charge !== 'object' || invoice.charge === null) {
-            continue; // Skip if charge is not an object (i.e., string or null)
+        // Now, invoice.charge is already typed as Stripe.Charge | null
+        if (!invoice.charge) {
+            continue; // Skip if charge is not present or null
         }
 
-        const charge = invoice.charge as Stripe.Charge;
+        const charge = invoice.charge;
         if (!charge.balance_transaction) continue; // Skip if no balance transaction
 
         const balanceTransaction = await this.stripe.balanceTransactions.retrieve(
