@@ -4,7 +4,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import intentRouter from './api/routes/intentRouter.js';
 import stripeReconciliationRoutes from './routes/stripeReconciliationRoutes.js';
-import semanticSearchRouter from './routes/semanticSearch.js';
 import emailSignupRouter from './routes/emailSignup.js';
 
 const app = express();
@@ -27,13 +26,6 @@ app.get('/api/health', (req, res) => {
 // API Routes - THESE MUST BE DEFINED BEFORE ANY STATIC FILE SERVING OR CATCH-ALL ROUTES
 app.use('/api/intent', intentRouter);
 app.use('/api/reconcile', stripeReconciliationRoutes);
-// Only use semantic search routes if the service is available
-try {
-  app.use('/api/semantic-search', semanticSearchRouter);
-  console.log('Semantic search routes enabled');
-} catch (error) {
-  console.warn('Semantic search routes disabled:', error);
-}
 app.use('/api/email-signup', emailSignupRouter);
 
 // Serve static frontend files if they exist in the expected location
