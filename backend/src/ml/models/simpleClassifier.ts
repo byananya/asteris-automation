@@ -1,5 +1,5 @@
-import { TrainingExample } from '../data/trainingData.js';
-import { TextPreprocessor } from '../utils/textPreprocessor.js';
+import { TrainingExample } from '../data/trainingData';
+import { TextPreprocessor } from '../utils/textPreprocessor';
 
 export class SimpleClassifier {
   private preprocessor: TextPreprocessor;

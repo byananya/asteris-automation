@@ -11,7 +11,7 @@ interface ExpandedInvoice extends Stripe.Invoice {
 interface ReconciliationRecord {
   invoiceId: string;
   customerId: string;
-  customerEmail: string;
+  customerEmail?: string; // Made optional with ?
   invoiceAmount: number;
   chargeId: string;
   grossAmount: number;
@@ -46,9 +46,12 @@ export class StripeReconciliationService {
   }
 
   private getCustomerId(customer: string | Stripe.Customer | Stripe.DeletedCustomer | null): string {
-    if (typeof customer === 'string') return customer;
-    if (customer?.id) return customer.id;
-    return '';
+    if (!customer) return 'unknown-customer';
+    if (typeof customer === 'string') return customer || 'unknown-customer';
+    if ('id' in customer && typeof customer.id === 'string' && customer.id) {
+      return customer.id;
+    }
+    return 'unknown-customer';
   }
 
   private async fetchInvoices(startDate?: Date, endDate: Date = new Date()): Promise<ExpandedInvoice[]> {
@@ -97,12 +100,14 @@ export class StripeReconciliationService {
           charge.balance_transaction as string
         );
 
+        // Ensure all required fields are properly typed and non-null
         const record: ReconciliationRecord = {
-          invoiceId: invoice.id,
+          invoiceId: String(invoice.id), // Ensure id is a string
           customerId: this.getCustomerId(invoice.customer),
-          customerEmail: invoice.customer_email || '',
+          // Explicitly handle the customer email assignment
+          ...(invoice.customer_email ? { customerEmail: invoice.customer_email } : {}),
           invoiceAmount: invoice.amount_due / 100, // Or amount_paid if you only want paid invoices
-          chargeId: charge.id,
+          chargeId: String(charge.id), // Ensure charge.id is a string
           grossAmount: balanceTransaction.amount / 100,
           fee: Math.abs(balanceTransaction.fee) / 100,
           netAmount: balanceTransaction.net / 100,

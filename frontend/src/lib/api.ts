@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3011';
+// Direct backend URL
+const API_BASE_URL = 'http://localhost:3002'
 
 export interface ReconciliationParams {
   startDate?: string;

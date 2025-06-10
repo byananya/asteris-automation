@@ -14,7 +14,7 @@ export default function ConfigurePage() {
     const classifyIntent = async () => {
       if (intent) {
         try {
-          const response = await fetch('http://localhost:3001/api/intent/classify', {
+          const response = await fetch('http://localhost:3002/api/intent/classify', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

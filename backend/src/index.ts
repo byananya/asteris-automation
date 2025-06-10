@@ -1,20 +1,31 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import intentRouter from './api/routes/intentRouter.js';
-import stripeReconciliationRoutes from './routes/stripeReconciliationRoutes.js';
-import emailSignupRouter from './routes/emailSignup.js';
+import intentRouter from './api/routes/intentRouter';
+import stripeReconciliationRoutes from './routes/stripeReconciliationRoutes';
+import emailSignupRouter from './routes/emailSignup';
 
 const app = express();
 const port = process.env.PORT || 3002;
 
 // Get __dirname equivalent in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// In CommonJS, __dirname is available by default
+
+// CORS configuration
+const corsOptions = {
+  origin: 'http://localhost:3000', // Frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-stripe-key'],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+};
 
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

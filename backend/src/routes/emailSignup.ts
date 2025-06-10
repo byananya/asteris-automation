@@ -2,13 +2,10 @@ import express, { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
 const router = express.Router();
 
-// Get __dirname equivalent in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// In CommonJS, __dirname is available by default
 
 // Simple in-file storage for emails (in production, you'd use a database)
 const EMAIL_STORAGE_PATH = path.join(__dirname, '../../data/email_subscribers.json');

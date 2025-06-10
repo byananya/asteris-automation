@@ -1,10 +1,7 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+const fs = require('fs');
+const path = require('path');
 
-// Get __dirname equivalent in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// In CommonJS, __dirname is available by default
 
 // Path to data directory - use backend directory as base
 const DATA_DIR = path.join(__dirname, '../../data');
@@ -13,7 +10,7 @@ const EMAIL_STORAGE_PATH = path.join(DATA_DIR, 'email_subscribers.json');
 /**
  * Ensures the data directory exists
  */
-export const ensureDataDirExists = () => {
+const ensureDataDirExists = () => {
   try {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true, mode: 0o755 });
@@ -35,7 +32,7 @@ export const ensureDataDirExists = () => {
  * @param {Object} emailData - The email data to save
  * @returns {Promise<boolean>} - Whether the save was successful
  */
-export const saveEmail = async (emailData) => {
+const saveEmail = async (emailData) => {
   try {
     ensureDataDirExists();
     
@@ -76,7 +73,7 @@ export const saveEmail = async (emailData) => {
  * Get all emails from the subscribers list
  * @returns {Array} - Array of email objects
  */
-export const getAllEmails = () => {
+const getAllEmails = () => {
   try {
     ensureDataDirExists();
     
@@ -110,4 +107,11 @@ export const getAllEmails = () => {
     console.error('Error getting all emails:', error);
     return [];
   }
+};
+
+// Export all functions
+module.exports = {
+  ensureDataDirExists,
+  saveEmail,
+  getAllEmails
 };
