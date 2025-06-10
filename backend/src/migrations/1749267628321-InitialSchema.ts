@@ -1,6 +1,7 @@
-import { Table, TableForeignKey, TableIndex } from "typeorm";
-export class InitialSchema1749267628321 {
-    async up(queryRunner) {
+import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from "typeorm";
+
+export class InitialSchema1749267628321 implements MigrationInterface {
+    public async up(queryRunner: QueryRunner): Promise<void> {
         // Create invoices table
         await queryRunner.createTable(new Table({
             name: 'invoices',
@@ -76,6 +77,7 @@ export class InitialSchema1749267628321 {
                 },
             ],
         }), true);
+
         // Create payouts table
         await queryRunner.createTable(new Table({
             name: 'payouts',
@@ -164,6 +166,7 @@ export class InitialSchema1749267628321 {
                 },
             ],
         }), true);
+
         // Create foreign key for payouts -> invoices relationship
         await queryRunner.createForeignKey('payouts', new TableForeignKey({
             columnNames: ['invoiceId'],
@@ -172,39 +175,48 @@ export class InitialSchema1749267628321 {
             onDelete: 'SET NULL',
             onUpdate: 'CASCADE',
         }));
+
         // Create indexes using TableIndex
         await queryRunner.createIndex('invoices', new TableIndex({
             name: 'IDX_INVOICE_NUMBER',
             columnNames: ['invoiceNumber'],
             isUnique: true
         }));
+        
         await queryRunner.createIndex('invoices', new TableIndex({
             name: 'IDX_INVOICE_STATUS',
             columnNames: ['status']
         }));
+        
         await queryRunner.createIndex('payouts', new TableIndex({
             name: 'IDX_PAYOUT_REFERENCE',
             columnNames: ['referenceNumber'],
             isUnique: true
         }));
+        
         await queryRunner.createIndex('payouts', new TableIndex({
             name: 'IDX_PAYOUT_STATUS',
             columnNames: ['status']
         }));
+        
         await queryRunner.createIndex('payouts', new TableIndex({
             name: 'IDX_PAYOUT_INVOICE',
             columnNames: ['invoiceId']
         }));
     }
-    async down(queryRunner) {
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
         // Drop foreign key first
         const table = await queryRunner.getTable('payouts');
         if (table) {
-            const foreignKey = table.foreignKeys.find(fk => fk.columnNames.indexOf('invoiceId') !== -1);
+            const foreignKey = table.foreignKeys.find(
+                fk => fk.columnNames.indexOf('invoiceId') !== -1,
+            );
             if (foreignKey) {
                 await queryRunner.dropForeignKey('payouts', foreignKey);
             }
         }
+
         // Drop tables
         await queryRunner.dropTable('payouts');
         await queryRunner.dropTable('invoices');

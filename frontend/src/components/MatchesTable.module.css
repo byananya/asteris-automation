@@ -1,0 +1,732 @@
+.container {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.container:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tableHeader {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--card-bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+@media (prefers-color-scheme: dark) {
+  .tableHeader {
+    background-color: rgba(26, 32, 44, 0.8);
+  }
+}
+
+.searchContainer {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.6rem 1rem 0.6rem 2.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  transition: all 0.2s ease;
+  height: 40px;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  outline: none;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-10);
+}
+
+.filterGroup {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.filterSelect {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.filterIcon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.statusSelect {
+  padding: 0.5rem 2.5rem 0.5rem 2.25rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.statusSelect:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-10);
+}
+
+.downloadButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 40px;
+  min-width: 100px;
+  position: relative;
+  overflow: hidden;
+}
+
+.downloadButton::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    45deg,
+    transparent 25%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 75%
+  );
+  background-size: 200% 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.downloadButton:hover::after {
+  opacity: 1;
+  animation: shine 1.5s infinite;
+}
+
+@keyframes shine {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.downloadButton:hover {
+  background: var(--primary-dark);
+}
+
+.downloadButton:active {
+  transform: translateY(1px);
+}
+
+.downloadButton:disabled {
+  background: var(--disabled);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.9375rem;
+  position: relative;
+}
+
+.table th:first-child,
+.table td:first-child {
+  padding-left: 1.5rem;
+}
+
+.table th:last-child,
+.table td:last-child {
+  padding-right: 1.5rem;
+}
+
+.table th {
+  text-align: left;
+  padding: 1rem 1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--table-header-bg);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.table th:hover {
+  background-color: var(--row-hover-bg);
+}
+
+/* Status Badges */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.statusBadge.sm {
+  padding: 0.15rem 0.4rem;
+  font-size: 0.6875rem;
+}
+
+.statusBadge.md {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.statusBadge.lg {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.statusMatched {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.statusPartial {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.statusUnmatched {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.statusIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Confidence Meter */
+.confidenceMeter {
+  width: 100%;
+  height: 6px;
+  background-color: var(--border-color);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+  margin: 0.5rem 0;
+}
+
+.confidenceBar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.confidenceBar.high {
+  background-color: #10b981;
+}
+
+.confidenceBar.medium {
+  background-color: #f59e0b;
+}
+
+.confidenceBar.low {
+  background-color: #ef4444;
+}
+
+.confidenceValue {
+  position: absolute;
+  top: -1.5rem;
+  left: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+}
+
+.paginationInfo {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.paginationButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background-color: var(--row-hover-bg);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.paginationButton.active {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.paginationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.paginationEllipsis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+/* Responsive adjustments for pagination */
+@media (max-width: 768px) {
+  .pagination {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.75rem;
+  }
+  
+  .paginationInfo {
+    text-align: center;
+    width: 100%;
+  }
+  
+  .paginationControls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .itemsPerPage {
+    margin: 0 0.5rem 0.5rem 0;
+  }
+  
+  .paginationButton {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+
+/* Animation for page changes */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.pagination {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.itemsPerPage {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  margin-right: 0.5rem;
+  cursor: pointer;
+}
+
+/* Action Buttons */
+.actionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover {
+  background-color: var(--row-hover-bg);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Empty State */
+.emptyState {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.emptyIcon {
+  margin-bottom: 1rem;
+  color: var(--border-color);
+}
+
+.emptyState h3 {
+  margin: 0 0 0.5rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .tableHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .searchContainer {
+    max-width: 100%;
+  }
+  
+  .pagination {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .paginationControls {
+    justify-content: center;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tableRow {
+  animation: fadeIn 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+.tableRow:nth-child(1) { animation-delay: 0.05s; }
+.tableRow:nth-child(2) { animation-delay: 0.1s; }
+.tableRow:nth-child(3) { animation-delay: 0.15s; }
+.tableRow:nth-child(4) { animation-delay: 0.2s; }
+.tableRow:nth-child(5) { animation-delay: 0.25s; }
+
+.sortableHeader {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.sortableHeader:hover {
+  color: var(--primary);
+}
+
+.sorted {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.table td {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.tableRow {
+  transition: background-color 0.2s;
+}
+
+.tableRow:hover {
+  background-color: var(--row-hover-bg);
+}
+
+.monoFont {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.875em;
+}
+
+.amountCell {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.customerCell {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.customerName {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.description {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 1rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.statusMatched {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.statusPartial {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+}
+
+.statusUnmatched {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+}
+
+.confidenceBadge {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  border-radius: 1rem;
+  background-color: var(--primary-10);
+  color: var(--primary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-align: center;
+  min-width: 50px;
+}
+
+.actionButton {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--primary);
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.actionButton:hover {
+  background: var(--primary-5);
+  border-color: var(--primary);
+}
+
+.emptyState {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.emptyIcon {
+  font-size: 2.5rem;
+  color: var(--text-tertiary);
+  margin-bottom: 1rem;
+}
+
+.emptyState h3 {
+  margin: 0 0 0.5rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.tableFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  background: var(--card-bg);
+}
+
+.resultsCount {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.pagination {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.paginationButton {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--border-color);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background: var(--primary-5);
+  border-color: var(--primary);
+}
+
+.paginationButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.paginationButton.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tableHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .searchContainer {
+    max-width: 100%;
+  }
+  
+  .filterGroup {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .tableFooter {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .pagination {
+    justify-content: center;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .searchInput,
+  .statusSelect {
+    border-color: var(--border-color-dark);
+  }
+  
+  .downloadButton {
+    background: var(--primary-dark);
+  }
+  
+  .downloadButton:hover {
+    background: var(--primary-darker);
+  }
+}
