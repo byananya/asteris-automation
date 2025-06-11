@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:18-slim as builder
 
 WORKDIR /app
 
@@ -8,6 +8,10 @@ RUN apt-get update && apt-get install -y \
     python3 \
     curl \
     && rm -rf /var/lib/apt/lists/*
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3010
 
 # Create .npmrc file with settings to handle dependency issues
 RUN echo "legacy-peer-deps=true\nstrict-peer-dependencies=false\nforce=true" > /root/.npmrc
@@ -19,13 +23,11 @@ COPY frontend/package.json ./frontend/
 
 # Install dependencies for backend
 WORKDIR /app/backend
-RUN npm install --no-package-lock --force
+RUN npm install --no-package-lock --force --production=false
 
 # Install dependencies for frontend
 WORKDIR /app/frontend
 RUN npm install --no-package-lock --force
-# Explicitly install lucide-react
-RUN npm install lucide-react@0.294.0 --no-package-lock --force
 
 # Copy source files
 WORKDIR /app
@@ -40,14 +42,56 @@ RUN npx tsc -p tsconfig.build.json
 WORKDIR /app/frontend
 RUN echo "NEXT_SKIP_TYPECHECKING=true\nTYPESCRIPT_IGNORE_FILE=true" > .env.local
 
-# Debug Next.js config
-RUN cat next.config.js
-
 # Make build script executable
 RUN chmod +x build.sh
 
 # Build frontend using our custom script
 RUN ./build.sh
+
+# Production stage
+FROM node:18-slim
+
+WORKDIR /app
+
+# Install required system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3010
+
+# Create non-root user
+RUN useradd -m appuser
+
+# Copy built files from builder
+COPY --from=builder /app/backend/package*.json ./backend/
+COPY --from=builder /app/backend/dist ./backend/dist
+COPY --from=builder /app/backend/node_modules ./backend/node_modules
+COPY --from=builder /app/frontend/.next/standalone ./frontend
+COPY --from=builder /app/frontend/.next/static ./frontend/.next/static
+COPY --from=builder /app/frontend/public ./frontend/public
+
+# Create necessary directories and set permissions
+RUN mkdir -p /app/logs /app/scripts && \
+    chown -R appuser:appuser /app
+
+# Copy healthcheck script
+COPY --chown=appuser:appuser scripts/healthcheck.sh /app/scripts/
+RUN chmod +x /app/scripts/healthcheck.sh
+
+WORKDIR /app/backend
+
+# Health check with retry logic
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD ["/bin/sh", "-c", "/app/scripts/healthcheck.sh"]
+
+# Use non-root user
+USER appuser
+
+# Expose the port the app runs on
+EXPOSE 3010
 
 # Verify the output directory structure
 RUN echo "Verifying backend/frontend directory structure:" && \
@@ -65,11 +109,8 @@ RUN echo "Final backend/frontend directory structure:" && \
     ls -la /app/backend/frontend/public/
 
 # Create start script
-RUN echo '#!/bin/bash\ncd /app/backend && node dist/index.js' > /app/start.sh
-RUN chmod +x /app/start.sh
-
-# Expose port
-EXPOSE 3010
+RUN echo '#!/bin/bash\ncd /app/backend && node dist/index.js' > /app/start.sh && \
+    chmod +x /app/start.sh
 
 # Start the application
 CMD ["/app/start.sh"]

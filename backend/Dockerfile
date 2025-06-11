@@ -1,12 +1,20 @@
-FROM node:18
+FROM node:18-slim
 
 WORKDIR /app
 
-# Install required system dependencies for TensorFlow
+# Install required system dependencies for TensorFlow and health checks
 RUN apt-get update && apt-get install -y \
     build-essential \
     python3 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3010
+
+# Create non-root user
+RUN useradd -m appuser
 
 # Copy package files first for better caching
 COPY package*.json ./
@@ -15,7 +23,7 @@ COPY package*.json ./
 RUN echo "legacy-peer-deps=true\nstrict-peer-dependencies=false\nforce=true" > ./.npmrc
 
 # Install dependencies with specific flags to handle TensorFlow issues
-RUN npm install --no-package-lock --force
+RUN npm install --no-package-lock --force --production=false
 
 # Copy the rest of the application
 COPY . .
@@ -26,8 +34,22 @@ RUN echo '{"extends":"./tsconfig.json","compilerOptions":{"skipLibCheck":true,"n
 # Build the backend with skipLibCheck to avoid type errors
 RUN npx tsc -p tsconfig.build.json
 
+# Install production dependencies only
+RUN npm prune --production
+
+# Create necessary directories
+RUN mkdir -p /app/logs && \
+    chown -R appuser:appuser /app
+
 # Expose the port the app runs on
 EXPOSE 3010
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3010/api/health || exit 1
+
+# Use non-root user
+USER appuser
 
 # Command to run the application
 CMD ["node", "dist/index.js"]
