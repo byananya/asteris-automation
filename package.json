@@ -10,8 +10,8 @@
     "dev": "concurrently \"npm run dev --workspace=frontend\" \"npm run dev --workspace=backend\"",
     "build": "npm run install:all && npm run build:frontend && npm run build:backend",
     "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install --build-from-source=@tensorflow/tfjs-node",
-    "build:frontend": "cd frontend && npm install && npm run build",
-    "build:static": "cd frontend && npm install && npm run build:static",
+    "build:frontend": "cd frontend && npm install && ./build.sh",
+    "build:static": "cd frontend && npm install && ./build.sh",
     "build:backend": "cd backend && npm run build",
     "start": "cd backend && node dist/index.js",
     "postinstall": "echo 'Skipping postinstall in root package.json'"
