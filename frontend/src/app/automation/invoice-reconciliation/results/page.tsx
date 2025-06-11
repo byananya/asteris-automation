@@ -3,162 +3,124 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
-import { FiArrowLeft, FiDownload, FiCheckCircle, FiAlertCircle, FiHelpCircle } from 'react-icons/fi';
+import { FiArrowLeft, FiDownload, FiCheckCircle, FiAlertCircle, FiHelpCircle, FiLoader } from 'react-icons/fi';
+import { getStripeApiKey } from '@/utils/stripe';
+
+// Define frontend interfaces to match backend's ReconciliationResult
+interface ReconciliationRecord {
+  invoiceId: string;
+  customerId: string;
+  customerEmail: string;
+  invoiceAmount: number;
+  chargeId: string;
+  grossAmount: number;
+  fee: number;
+  netAmount: number;
+  date: string;
+  currency: string;
+}
+
+interface ReconciliationSummary {
+  totalGross: number;
+  totalFees: number;
+  totalNet: number;
+  recordCount: number;
+}
+
+interface ReconciliationResult {
+  records: ReconciliationRecord[];
+  summary: ReconciliationSummary;
+}
 
 export default function InvoiceReconciliationResultsPage() {
   const router = useRouter();
+  const [results, setResults] = useState<ReconciliationResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [progress, setProgress] = useState(0);
-  const [results, setResults] = useState<{
-    status: string;
-    timestamp: string;
-    summary: {
-      totalInvoices: number;
-      matchedInvoices: number;
-      unmatchedInvoices: number;
-      totalAmount: number;
-      matchedAmount: number;
-      unmatchedAmount: number;
-      processingTime: string;
-    };
-    matches: Array<{
-      id: string;
-      amount: number;
-      status: string;
-      confidence: number;
-    }>;
-    issues: Array<{
-      type: string;
-      count: number;
-      totalAmount: number;
-      message: string;
-    }>;
-  } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Simulate loading and processing - no actual API calls
-    // Set initial data immediately to avoid "Failed to fetch" errors
-    setResults({
-      status: 'processing',
-      timestamp: new Date().toISOString(),
-      summary: {
-        totalInvoices: 0,
-        matchedInvoices: 0,
-        unmatchedInvoices: 0,
-        totalAmount: 0,
-        matchedAmount: 0,
-        unmatchedAmount: 0,
-        processingTime: '0s'
-      },
-      matches: [],
-      issues: []
-    });
-    
-    // Create a counter for the steps
-    let currentStep = 0;
-    const steps = [
-      'Fetching invoice data',
-      'Fetching payout data',
-      'Matching invoices to payouts',
-      'Generating report',
-      'Finalizing results'
-    ];
-    
-    // Simulate progress updates with faster completion
-    const timer = setInterval(() => {
-      if (currentStep < steps.length) {
-        // Move to next step
-        setProgress((currentStep + 1) * (100 / steps.length));
-        currentStep++;
-        
-        // When we reach the last step, complete after a short delay
-        if (currentStep === steps.length) {
-          setTimeout(() => {
-            setIsLoading(false);
-            
-            // Simulate final results data
-            setResults({
-              status: 'completed',
-              timestamp: new Date().toISOString(),
-              summary: {
-                totalInvoices: 127,
-                matchedInvoices: 108,
-                unmatchedInvoices: 19,
-                totalAmount: 28750.42,
-                matchedAmount: 23731.40,
-                unmatchedAmount: 5019.02,
-                processingTime: '2m 34s'
-              },
-              matches: [
-                { id: 'INV-2023-001', amount: 1250.00, status: 'matched', confidence: 0.98 },
-                { id: 'INV-2023-002', amount: 750.50, status: 'matched', confidence: 0.95 },
-                { id: 'INV-2023-003', amount: 2100.75, status: 'partial', confidence: 0.82 },
-                { id: 'INV-2023-004', amount: 1500.00, status: 'unmatched', confidence: 0.45 },
-                { id: 'INV-2023-005', amount: 3200.25, status: 'matched', confidence: 0.97 }
-              ],
-              issues: [
-                { type: 'unmatched', count: 16, totalAmount: 3768.27, message: 'No matching payout found' },
-                { type: 'warning', count: 3, totalAmount: 1250.75, message: 'Multiple potential matches found' }
-              ]
-            });
-          }, 800);
-        }
+  // Function to fetch reconciliation data
+  const fetchReconciliationData = async () => {
+    const apiKey = getStripeApiKey();
+    if (!apiKey) {
+      setError('Stripe API key not found. Please configure it in the settings.');
+      setIsLoading(false);
+      return;
+    }
+
+    setError(null);
+    setIsLoading(true);
+    setResults(null); // Clear previous results
+
+    try {
+      const response = await fetch('http://localhost:3002/api/reconcile/invoices', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-stripe-key': apiKey,
+        },
+        body: JSON.stringify({
+          // You can add startDate and endDate from UI elements here
+          // startDate: '2023-01-01',
+          // endDate: '2023-12-31',
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch reconciliation results');
       }
-    }, 700);
 
-    return () => clearInterval(timer);
+      const data: ReconciliationResult = await response.json();
+      setResults(data);
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred');
+      console.error('Frontend fetch error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch data when component mounts
+  useEffect(() => {
+    fetchReconciliationData();
   }, []);
 
   const handleBackToDashboard = () => {
     router.push('/dashboard');
   };
 
-  const handleViewDetails = (invoiceId: string): void => {
-    // In a real app, this would navigate to a detailed view
-    console.log(`View details for invoice ${invoiceId}`);
-  };
-
   const handleDownloadReport = (): void => {
     if (!results) return;
-    
-    // Create CSV content
-    const headers = ['Invoice ID', 'Amount', 'Status', 'Confidence', 'Date'];
-    
-    // Convert matches to CSV rows
-    const rows = results.matches.map(invoice => [
-      invoice.id,
-      invoice.amount.toFixed(2),
-      invoice.status,
-      (invoice.confidence * 100).toFixed(0) + '%',
-      new Date().toLocaleDateString() // In a real app, this would be the invoice date
+
+    // Create CSV content based on ReconciliationRecord interface
+    const headers = [
+      'Invoice ID', 'Customer ID', 'Customer Email', 'Invoice Amount',
+      'Charge ID', 'Gross Amount', 'Fee', 'Net Amount', 'Date', 'Currency'
+    ];
+
+    const rows = results.records.map(record => [
+      record.invoiceId,
+      record.customerId,
+      record.customerEmail,
+      record.invoiceAmount.toFixed(2),
+      record.chargeId,
+      record.grossAmount.toFixed(2),
+      record.fee.toFixed(2),
+      record.netAmount.toFixed(2),
+      record.date,
+      record.currency
     ]);
-    
-    // Add summary row
-    rows.push(['', '', '', '', '']);
-    rows.push(['Summary', '', '', '', '']);
-    rows.push(['Total Invoices', results.summary.totalInvoices.toString(), '', '', '']);
-    rows.push(['Matched Invoices', results.summary.matchedInvoices.toString(), '$' + results.summary.matchedAmount.toFixed(2), '', '']);
-    rows.push(['Unmatched Invoices', results.summary.unmatchedInvoices.toString(), '$' + results.summary.unmatchedAmount.toFixed(2), '', '']);
-    
-    // Add issues section
-    rows.push(['', '', '', '', '']);
-    rows.push(['Issues Detected', '', '', '', '']);
-    results.issues.forEach(issue => {
-      rows.push([issue.message, issue.count.toString(), '$' + issue.totalAmount.toFixed(2), '', '']);
-    });
-    
-    // Convert to CSV string
+
     const csvContent = [
       headers.join(','),
       ...rows.map(row => row.join(','))
     ].join('\n');
-    
-    // Create blob and download
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `invoice-reconciliation-${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `stripe-reconciliation-report-${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -173,66 +135,47 @@ export default function InvoiceReconciliationResultsPage() {
           Back to Dashboard
         </button>
       </div>
-      
+
       <div className={styles.content}>
         <div className={styles.header}>
           <button className={styles.backButton} onClick={() => router.push('/automation/invoice-reconciliation')}>
             <FiArrowLeft size={16} />
             <span>Back</span>
           </button>
-          <h1 className={styles.subtitle}>Invoice Reconciliation Results</h1>
+          <h1 className={styles.subtitle}>Stripe Reconciliation Results</h1>
           <p className={styles.description}>
-            {isLoading 
-              ? 'Processing your invoice reconciliation request...' 
-              : 'Your invoice reconciliation has been completed'}
+            Viewing reconciliation results using your saved Stripe API key
           </p>
         </div>
-        
-        {isLoading ? (
-          <div className={styles.loadingContainer}>
-            <div className={styles.progressContainer}>
-              <div className={styles.progressBar}>
-                <div 
-                  className={styles.progressFill} 
-                  style={{ width: `${progress}%` }}
-                ></div>
-              </div>
-              <div className={styles.progressText}>{Math.round(progress)}%</div>
-            </div>
-            <div className={styles.loadingSteps}>
-              <div className={styles.loadingStep}>
-                <div className={`${styles.stepIndicator} ${progress > 20 ? styles.completed : styles.current}`}>
-                  {progress > 20 ? <FiCheckCircle size={16} /> : '1'}
-                </div>
-                <div className={styles.stepText}>Fetching invoice data</div>
-              </div>
-              <div className={styles.loadingStep}>
-                <div className={`${styles.stepIndicator} ${progress > 40 ? styles.completed : (progress > 20 ? styles.current : '')}`}>
-                  {progress > 40 ? <FiCheckCircle size={16} /> : '2'}
-                </div>
-                <div className={styles.stepText}>Fetching payout data</div>
-              </div>
-              <div className={styles.loadingStep}>
-                <div className={`${styles.stepIndicator} ${progress > 60 ? styles.completed : (progress > 40 ? styles.current : '')}`}>
-                  {progress > 60 ? <FiCheckCircle size={16} /> : '3'}
-                </div>
-                <div className={styles.stepText}>Matching invoices to payouts</div>
-              </div>
-              <div className={styles.loadingStep}>
-                <div className={`${styles.stepIndicator} ${progress > 80 ? styles.completed : (progress > 60 ? styles.current : '')}`}>
-                  {progress > 80 ? <FiCheckCircle size={16} /> : '4'}
-                </div>
-                <div className={styles.stepText}>Generating report</div>
-              </div>
-              <div className={styles.loadingStep}>
-                <div className={`${styles.stepIndicator} ${progress >= 100 ? styles.completed : (progress > 80 ? styles.current : '')}`}>
-                  {progress >= 100 ? <FiCheckCircle size={16} /> : '5'}
-                </div>
-                <div className={styles.stepText}>Finalizing results</div>
-              </div>
-            </div>
+
+        {error && (
+          <div className={styles.errorMessage}>
+            <FiAlertCircle size={20} />
+            <p>Error: {error}</p>
+            <button 
+              onClick={() => router.push('/settings')}
+              className={styles.settingsButton}
+            >
+              Go to Settings
+            </button>
           </div>
-        ) : (
+        )}
+
+        {isLoading && !error && (
+          <div className={styles.loadingContainer}>
+            <FiLoader size={48} className={styles.spinner} />
+            <p>Fetching and reconciling data from Stripe...</p>
+          </div>
+        )}
+
+        {isLoading && !error && (
+          <div className={styles.loadingContainer}>
+            <FiLoader size={48} className={styles.spinner} />
+            <p>Fetching and reconciling data from Stripe...</p>
+          </div>
+        )}
+
+        {!isLoading && !error && results && (
           <div className={styles.resultsContainer}>
             <div className={styles.summaryCards}>
               <div className={styles.summaryCard}>
@@ -240,8 +183,8 @@ export default function InvoiceReconciliationResultsPage() {
                   <FiCheckCircle size={24} />
                 </div>
                 <div className={styles.summaryContent}>
-                  <h3>Total Invoices</h3>
-                  <div className={styles.summaryValue}>{results?.summary.totalInvoices}</div>
+                  <h3>Total Records</h3>
+                  <div className={styles.summaryValue}>{results.summary.recordCount}</div>
                 </div>
               </div>
               <div className={styles.summaryCard}>
@@ -249,9 +192,8 @@ export default function InvoiceReconciliationResultsPage() {
                   <FiCheckCircle size={24} />
                 </div>
                 <div className={styles.summaryContent}>
-                  <h3>Matched</h3>
-                  <div className={styles.summaryValue}>{results?.summary.matchedInvoices}</div>
-                  <div className={styles.summarySubtext}>${results?.summary.matchedAmount.toLocaleString()}</div>
+                  <h3>Total Gross Amount</h3>
+                  <div className={styles.summaryValue}>${results.summary.totalGross.toFixed(2)}</div>
                 </div>
               </div>
               <div className={styles.summaryCard}>
@@ -259,136 +201,105 @@ export default function InvoiceReconciliationResultsPage() {
                   <FiAlertCircle size={24} />
                 </div>
                 <div className={styles.summaryContent}>
-                  <h3>Unmatched</h3>
-                  <div className={styles.summaryValue}>{results?.summary.unmatchedInvoices}</div>
-                  <div className={styles.summarySubtext}>${results?.summary.unmatchedAmount.toLocaleString()}</div>
+                  <h3>Total Fees</h3>
+                  <div className={styles.summaryValue}>${results.summary.totalFees.toFixed(2)}</div>
                 </div>
               </div>
               <div className={styles.summaryCard}>
-                <div className={styles.summaryIcon}>
+                <div className={`${styles.summaryIcon} ${styles.info}`}>
                   <FiHelpCircle size={24} />
                 </div>
                 <div className={styles.summaryContent}>
-                  <h3>Processing Time</h3>
-                  <div className={styles.summaryValue}>{results?.summary.processingTime}</div>
+                  <h3>Total Net Amount</h3>
+                  <div className={styles.summaryValue}>${results.summary.totalNet.toFixed(2)}</div>
                 </div>
               </div>
             </div>
-            
-            <div className={styles.section}>
-              <div className={styles.sectionHeader}>
-                <h2 className={styles.sectionTitle}>Invoice Matching Results</h2>
+
+            <div className={styles.tableSection}>
+              <h2>
+                Reconciliation Records
                 <button className={styles.downloadButton} onClick={handleDownloadReport}>
                   <FiDownload size={16} />
                   <span>Download Full Report</span>
                 </button>
-              </div>
-              
-              <div className={styles.tableContainer}>
-                <table className={styles.table}>
+              </h2>
+              <div className={styles.tableWrapper}>
+                <table className={styles.resultsTable}>
                   <thead>
                     <tr>
                       <th>Invoice ID</th>
-                      <th>Amount</th>
-                      <th>Status</th>
-                      <th>Confidence</th>
+                      <th>Customer Email</th>
+                      <th>Invoice Amount</th>
+                      <th>Gross Amount</th>
+                      <th>Fee</th>
+                      <th>Net Amount</th>
+                      <th>Date</th>
+                      <th>Currency</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {results?.matches.map((invoice) => (
-                      <tr key={invoice.id}>
-                        <td>{invoice.id}</td>
-                        <td>${invoice.amount.toLocaleString()}</td>
-                        <td>
-                          <span className={`${styles.status} ${styles[invoice.status]}`}>
-                            {invoice.status === 'matched' ? (
-                              <>
-                                <FiCheckCircle size={14} />
-                                <span>Matched</span>
-                              </>
-                            ) : (
-                              <>
-                                <FiAlertCircle size={14} />
-                                <span>Unmatched</span>
-                              </>
-                            )}
-                          </span>
-                        </td>
-                        <td>
-                          <div className={styles.confidenceBar}>
-                            <div 
-                              className={`${styles.confidenceFill} ${
-                                invoice.confidence > 0.9 ? styles.high : 
-                                invoice.confidence > 0.7 ? styles.medium : 
-                                styles.low
-                              }`}
-                              style={{ width: `${invoice.confidence * 100}%` }}
-                            ></div>
-                          </div>
-                          <span className={styles.confidenceValue}>
-                            {Math.round(invoice.confidence * 100)}%
-                          </span>
-                        </td>
-                        <td>
-                          <button 
-                            className={styles.actionButton}
-                            onClick={() => handleViewDetails(invoice.id)}
-                          >
-                            View Details
-                          </button>
-                        </td>
+                    {results.records.length > 0 ? (
+                      results.records.map((record, index) => (
+                        <tr key={record.invoiceId || index}>
+                          <td>{record.invoiceId}</td>
+                          <td>{record.customerEmail}</td>
+                          <td>${record.invoiceAmount.toFixed(2)}</td>
+                          <td>${record.grossAmount.toFixed(2)}</td>
+                          <td>${record.fee.toFixed(2)}</td>
+                          <td>${record.netAmount.toFixed(2)}</td>
+                          <td>{record.date}</td>
+                          <td>{record.currency}</td>
+                          <td>
+                            <button className={styles.viewDetailsButton} onClick={() => console.log('View details for', record.invoiceId)}>
+                              View Details
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={9} className={styles.noData}>No reconciliation records found for the given period.</td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
-              
-              <div className={styles.pagination}>
-                <span>Showing 1-5 of {results?.summary.totalInvoices} invoices</span>
-                <div className={styles.paginationControls}>
-                  <button className={styles.paginationButton} disabled>Previous</button>
-                  <button className={styles.paginationButton}>Next</button>
+            </div>
+            {/* Issues Detected section (can be simplified if needed, based on backend issues) */}
+            {results.records.length > 0 && (
+              <div className={styles.issuesDetected}>
+                <h2>Issues Detected</h2>
+                <div className={styles.issueCards}>
+                  {results.summary.recordCount === 0 && (
+                     <div className={styles.issueCard}>
+                       <FiAlertCircle size={20} />
+                       <p>No records found. Adjust your date range or check API key.</p>
+                     </div>
+                  )}
+                  {results.summary.totalFees > 0 && (
+                     <div className={styles.issueCard}>
+                       <FiAlertCircle size={20} />
+                       <p>Fees detected: ${results.summary.totalFees.toFixed(2)} in total.</p>
+                     </div>
+                  )}
+                  {/* You can add more specific issue detection based on your data */}
+                  {results.records.filter(r => r.invoiceAmount !== r.grossAmount).length > 0 && (
+                     <div className={styles.issueCard}>
+                       <FiAlertCircle size={20} />
+                       <p>{results.records.filter(r => r.invoiceAmount !== r.grossAmount).length} records with invoice amount mismatch with gross amount.</p>
+                     </div>
+                  )}
+                  {results.records.filter(r => r.fee > 0 && r.grossAmount === 0).length > 0 && (
+                     <div className={styles.issueCard}>
+                       <FiAlertCircle size={20} />
+                       <p>{results.records.filter(r => r.fee > 0 && r.grossAmount === 0).length} records with fees but zero gross amount.</p>
+                     </div>
+                  )}
                 </div>
               </div>
-            </div>
-            
-            <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>Issues Detected</h2>
-              <div className={styles.issuesContainer}>
-                {results?.issues.map((issue, index) => (
-                  <div key={index} className={`${styles.issueCard} ${styles[issue.type]}`}>
-                    <div className={styles.issueIcon}>
-                      {issue.type === 'unmatched' ? (
-                        <FiAlertCircle size={20} />
-                      ) : (
-                        <FiHelpCircle size={20} />
-                      )}
-                    </div>
-                    <div className={styles.issueContent}>
-                      <h3>{issue.message}</h3>
-                      <p>
-                        {issue.count} invoices affected, 
-                        totaling ${issue.totalAmount.toLocaleString()}
-                      </p>
-                    </div>
-                    <button className={styles.issueAction}>
-                      View Affected
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className={styles.actions}>
-              <button className={styles.secondaryButton} onClick={handleBackToDashboard}>
-                Back to Dashboard
-              </button>
-              <button className={styles.primaryButton} onClick={handleDownloadReport}>
-                <FiDownload size={16} />
-                <span>Download Full Report</span>
-              </button>
-            </div>
+            )}
           </div>
         )}
       </div>

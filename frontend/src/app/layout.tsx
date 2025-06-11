@@ -1,4 +1,4 @@
-import { Space_Grotesk, Playfair_Display } from 'next/font/google';
+import { Space_Grotesk, Playfair_Display, Cormorant_Garamond } from 'next/font/google';
 import EmailModalProvider from '../contexts/EmailModalContext';
 import './globals.css';
 
@@ -7,6 +7,12 @@ const playfairDisplay = Playfair_Display({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800', '900'],
   variable: '--font-playfair',
+});
+
+const cormorant = Cormorant_Garamond({
+  weight: ['400', '500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-cormorant',
 });
 
 export const metadata = {
@@ -27,7 +33,7 @@ export default function RootLayout({
       <head>
         <link rel="canonical" href="https://asteris.ai" />
       </head>
-      <body className={`${spaceGrotesk.className} ${playfairDisplay.variable}`}>
+      <body className={`${spaceGrotesk.className} ${playfairDisplay.variable} ${cormorant.variable}`}>
         <EmailModalProvider>
           {children}
         </EmailModalProvider>

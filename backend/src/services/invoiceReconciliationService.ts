@@ -1,44 +1,125 @@
 import { v4 as uuidv4 } from 'uuid';
+import 'uuid'; // Ensure types are loaded
+import { DataSource } from 'typeorm';
 import { AppDataSource } from '../config/data-source.js';
+import { format, parseISO, subDays } from 'date-fns';
 import { logger } from '../utils/consoleLogger.js'; // Using console-based logger for ES modules
+
 // Initialize database connection
-async function getDbConnection() {
+async function getDbConnection(): Promise<DataSource> {
     if (!AppDataSource.isInitialized) {
         await AppDataSource.initialize();
     }
     return AppDataSource;
 }
-export const reconcileInvoices = async (params = {}) => {
+
+interface MatchResult {
+    invoiceId: number;
+    payoutId: number | null;
+    invoiceAmount: number;
+    payoutAmount: number;
+    fee: number;
+    status: 'matched' | 'partial' | 'unmatched';
+    confidence: number;
+    invoiceNumber?: string;
+    customerName?: string;
+    issueDate?: string;
+    dueDate?: string;
+    invoiceStatus?: string;
+    payoutDate?: string;
+    payoutStatus?: string;
+}
+
+export interface ReconciliationResult {
+    id: string;
+    timestamp: string;
+    summary: {
+        totalInvoices: number;
+        matchedInvoices: number;
+        unmatchedInvoices: number;
+        totalAmount: number;
+        matchedAmount: number;
+        unmatchedAmount: number;
+        processingTime: string;
+    };
+    matches: MatchResult[];
+    issues: Array<{
+        type: string;
+        count: number;
+        totalAmount: number;
+        message: string;
+    }>;
+}
+
+export interface ReconciliationParams {
+    startDate?: string;
+    endDate?: string;
+    matchThreshold?: number;
+    customerName?: string;
+    status?: string;
+}
+
+interface PayoutRecord {
+    id: number;
+    amount: string;
+    status: string;
+    transaction_date: string;
+    invoice_id?: number;
+}
+
+interface InvoiceRecord {
+    id: number;
+    invoice_number: string;
+    amount: string;
+    customer_name: string;
+    issue_date: string;
+    due_date: string;
+    status: string;
+    payouts: PayoutRecord[];
+}
+
+export const reconcileInvoices = async (params: ReconciliationParams = {}): Promise<ReconciliationResult> => {
     const startTime = process.hrtime();
     const db = await getDbConnection();
+
     try {
         // Build date range filter
         let dateFilter = '';
         if (params.startDate && params.endDate) {
             dateFilter = `WHERE i.issue_date BETWEEN '${params.startDate}' AND '${params.endDate}'`;
         }
+
         // Build additional filters
-        const filters = [];
+        const filters: string[] = [];
         if (params.status) {
             filters.push(`i.status = '${params.status}'`);
         }
+
         const whereClause = filters.length > 0
             ? `${dateFilter ? dateFilter + ' AND ' : 'WHERE '}${filters.join(' AND ')}`
             : dateFilter;
+
         // Fetch invoices from database
-        const invoices = await db.query(`
+        const invoices = await db.query<Array<InvoiceRecord & { 
+            payout_id: number | null; 
+            payout_amount: string | null; 
+            payout_status: string | null;
+            transaction_date?: string;
+        }>>(`
             SELECT i.*, p.id as payout_id, p.amount as payout_amount, p.status as payout_status, p.transaction_date
             FROM invoices i
             LEFT JOIN payouts p ON i.id = p.invoice_id
             ${whereClause}
             ORDER BY i.issue_date DESC
         `);
+
         logger.info(`Found ${invoices.length} invoice records for reconciliation`);
+
         // Group invoices with their payouts
-        const invoiceMap = new Map();
+        const invoiceMap = new Map<number, InvoiceRecord>();
         invoices.forEach((row) => {
             if (!invoiceMap.has(row.id)) {
-                const newInvoice = {
+                const newInvoice: InvoiceRecord = {
                     id: row.id,
                     invoice_number: row.invoice_number,
                     amount: row.amount,
@@ -47,15 +128,14 @@ export const reconcileInvoices = async (params = {}) => {
                     due_date: row.due_date,
                     status: row.status,
                     payouts: row.payout_id ? [{
-                            id: row.payout_id,
-                            amount: row.payout_amount || '0',
-                            status: row.payout_status || '',
-                            transaction_date: row.transaction_date || new Date().toISOString()
-                        }] : []
+                        id: row.payout_id,
+                        amount: row.payout_amount || '0',
+                        status: row.payout_status || '',
+                        transaction_date: row.transaction_date || new Date().toISOString()
+                    }] : []
                 };
                 invoiceMap.set(row.id, newInvoice);
-            }
-            else if (row.payout_id) {
+            } else if (row.payout_id) {
                 const existing = invoiceMap.get(row.id);
                 if (existing && row.payout_id) {
                     existing.payouts.push({
@@ -67,24 +147,35 @@ export const reconcileInvoices = async (params = {}) => {
                 }
             }
         });
+
         const invoicesWithPayouts = Array.from(invoiceMap.values());
+
         // Fetch unmatched payouts (those not linked to any invoice)
-        const payouts = await db.query(`
+        const payouts = await db.query<PayoutRecord[]>(`
             SELECT * FROM payouts 
             WHERE invoice_id IS NULL 
             ORDER BY transaction_date DESC
         `);
+
         logger.info(`Found ${payouts.length} unmatched payouts for reconciliation`);
+
         // Match invoices with payouts
-        const matches = [];
-        const issues = [];
+        const matches: MatchResult[] = [];
+        const issues: Array<{
+            type: string;
+            count: number;
+            totalAmount: number;
+            message: string;
+        }> = [];
+
         let matchedCount = 0;
         let unmatchedCount = 0;
         let matchedAmount = 0;
         let unmatchedAmount = 0;
+
         // Process each invoice
         for (const invoice of invoicesWithPayouts) {
-            const match = {
+            const match: MatchResult = {
                 invoiceId: invoice.id,
                 payoutId: null,
                 invoiceAmount: parseFloat(invoice.amount),
@@ -100,6 +191,7 @@ export const reconcileInvoices = async (params = {}) => {
                 payoutDate: invoice.payouts[0]?.transaction_date,
                 payoutStatus: invoice.payouts[0]?.status
             };
+
             // Check if invoice has payouts
             if (invoice.payouts && invoice.payouts.length > 0) {
                 const payout = invoice.payouts[0]; // Take first payout for now
@@ -107,13 +199,14 @@ export const reconcileInvoices = async (params = {}) => {
                 match.payoutAmount = parseFloat(payout.amount);
                 match.fee = match.invoiceAmount - match.payoutAmount;
                 const amountDiff = Math.abs(match.fee);
+
                 if (amountDiff < 0.01) {
                     match.status = 'matched';
                     match.confidence = 1.0;
-                }
-                else {
+                } else {
                     match.status = 'partial';
                     match.confidence = 0.8;
+
                     // Log partial match issue
                     issues.push({
                         type: 'partial_match',
@@ -122,12 +215,13 @@ export const reconcileInvoices = async (params = {}) => {
                         message: `Partial match for invoice ${invoice.invoice_number}: ${match.invoiceAmount} vs ${match.payoutAmount}`
                     });
                 }
+
                 matchedCount++;
                 matchedAmount += match.invoiceAmount;
-            }
-            else {
+            } else {
                 unmatchedCount++;
                 unmatchedAmount += match.invoiceAmount;
+
                 // Log issue for unmatched invoice
                 issues.push({
                     type: 'unmatched_invoice',
@@ -136,8 +230,10 @@ export const reconcileInvoices = async (params = {}) => {
                     message: `No matching payout found for invoice ${invoice.invoice_number} (${match.invoiceAmount})`
                 });
             }
+
             matches.push(match);
         }
+
         // Process remaining unmatched payouts
         for (const payout of payouts) {
             issues.push({
@@ -147,14 +243,18 @@ export const reconcileInvoices = async (params = {}) => {
                 message: `No matching invoice found for payout ${payout.id} (${payout.amount})`
             });
         }
+
         // Calculate summary
         const totalInvoices = invoicesWithPayouts.length;
-        const totalAmount = invoicesWithPayouts.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+        const totalAmount = invoicesWithPayouts.reduce((sum: number, inv: InvoiceRecord) =>
+            sum + parseFloat(inv.amount), 0);
+
         // Calculate processing time
         const [seconds, nanoseconds] = process.hrtime(startTime);
         const processingTimeMs = (seconds * 1000) + (nanoseconds / 1000000);
+
         // Create result
-        const result = {
+        const result: ReconciliationResult = {
             id: uuidv4(),
             timestamp: new Date().toISOString(),
             summary: {
@@ -169,11 +269,12 @@ export const reconcileInvoices = async (params = {}) => {
             matches,
             issues
         };
+
         logger.info(`Reconciliation completed in ${processingTimeMs.toFixed(2)}ms`);
         logger.info(`Matched: ${matchedCount}, Unmatched: ${unmatchedCount}`);
+
         return result;
-    }
-    catch (error) {
+    } catch (error) {
         logger.error('Error during invoice reconciliation:', error);
         throw new Error(`Failed to reconcile invoices: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }

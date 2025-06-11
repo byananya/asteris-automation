@@ -82,13 +82,11 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: linear-gradient(135deg, rgba(30, 30, 60, 0.5), rgba(20, 20, 40, 0.7));
 }
 
 .card:hover {
-  transform: translateY(-2px);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: linear-gradient(135deg, rgba(35, 35, 65, 0.5), rgba(25, 25, 45, 0.7));
@@ -176,7 +174,6 @@
   background-color: currentColor;
   border-radius: 50%;
   opacity: 0.3;
-  animation: pulse 2s ease-in-out infinite;
 }
 
 .formGroup {
@@ -206,7 +203,6 @@
   border-radius: 8px;
   font-size: 14px;
   color: rgba(255, 255, 255, 0.9);
-  transition: all 0.3s ease;
   font-family: 'SF Mono', 'Courier New', monospace;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
@@ -241,7 +237,6 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -250,9 +245,7 @@
 }
 
 .backButton:hover {
-  transform: translateY(-1px);
   background: #f5f5f5;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 .helpButton {
@@ -265,7 +258,6 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -274,9 +266,7 @@
 }
 
 .helpButton:hover {
-  transform: translateY(-1px);
   background: #f5f5f5;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 .copyButton {
@@ -289,12 +279,10 @@
   color: #000000;
   font-size: 0.75rem;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .copyButton:hover {
   background: rgba(255, 255, 255, 0.15);
-  color: #000000;
 }
 
 .primaryButton {
@@ -307,7 +295,6 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   white-space: nowrap;
@@ -318,9 +305,7 @@
 }
 
 .primaryButton:hover {
-  transform: translateY(-1px);
   background: #f5f5f5;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 .primaryButton:disabled {
@@ -354,11 +339,7 @@
   animation: spin 0.8s linear infinite;
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 0.3; }
-  50% { transform: scale(2); opacity: 0; }
-  100% { transform: scale(1); opacity: 0.3; }
-}
+/* Pulse animation removed */
 
 @keyframes spin {
   0% { transform: rotate(0deg); }

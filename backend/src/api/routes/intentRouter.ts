@@ -1,6 +1,6 @@
 import express from 'express';
-import { SimpleClassifier } from '../../ml/models/simpleClassifier.js';
-import { trainingData } from '../../ml/data/trainingData.js';
+import { SimpleClassifier } from '../../ml/models/simpleClassifier';
+import { trainingData } from '../../ml/data/trainingData';
 
 const router = express.Router();
 const classifier = new SimpleClassifier();

@@ -74,28 +74,28 @@ export default function HomePage() {
                 <span className={styles.tooltipText}>Home</span>
               </a>
             </li>
-            <li>
-              <a href="/dashboard" title="Dashboard">
+            <li className={styles.disabled}>
+              <a href="#" title="Dashboard (Coming Soon)" onClick={(e) => e.preventDefault()}>
                 <FiBarChart2 size={22} />
-                <span className={styles.tooltipText}>Dashboard</span>
+                <span className={styles.tooltipText}>Dashboard (Coming Soon)</span>
               </a>
             </li>
-            <li>
-              <a href="/integrations" title="Integrations">
+            <li className={styles.disabled}>
+              <a href="#" title="Integrations (Coming Soon)" onClick={(e) => e.preventDefault()}>
                 <FiDatabase size={22} />
-                <span className={styles.tooltipText}>Integrations</span>
+                <span className={styles.tooltipText}>Integrations (Coming Soon)</span>
               </a>
             </li>
-            <li>
-              <a href="/team" title="Team">
+            <li className={styles.disabled}>
+              <a href="#" title="Team (Coming Soon)" onClick={(e) => e.preventDefault()}>
                 <FiUsers size={22} />
-                <span className={styles.tooltipText}>Team</span>
+                <span className={styles.tooltipText}>Team (Coming Soon)</span>
               </a>
             </li>
-            <li>
-              <a href="/documentation" title="Documentation">
+            <li className={styles.disabled}>
+              <a href="#" title="Documentation (Coming Soon)" onClick={(e) => e.preventDefault()}>
                 <FiFileText size={22} />
-                <span className={styles.tooltipText}>Documentation</span>
+                <span className={styles.tooltipText}>Documentation (Coming Soon)</span>
               </a>
             </li>
             <li>

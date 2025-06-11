@@ -1,0 +1,96 @@
+npm warn using --force Recommended protections disabled.
+
+> asteris-automation@1.0.0 dev
+> concurrently "npm run dev --workspace=frontend" "npm run dev --workspace=backend"
+
+[0] npm warn using --force Recommended protections disabled.
+[1] npm warn using --force Recommended protections disabled.
+[1] 
+[1] > @asteris/backend@1.0.0 dev
+[1] > NODE_OPTIONS='--loader ts-node/esm' nodemon src/index.ts
+[1] 
+[0] 
+[0] > @asteris/frontend@1.0.0 dev
+[0] > next dev
+[0] 
+[1] (node:78028) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+[1] --import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+[1] (Use `node --trace-warnings ...` to show where the warning was created)
+[1] (node:78028) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+[1] (Use `node --trace-deprecation ...` to show where the warning was created)
+[1] [33m[nodemon] 2.0.22[39m
+[1] [33m[nodemon] to restart at any time, enter `rs`[39m
+[1] [33m[nodemon] watching path(s): *.*[39m
+[1] [33m[nodemon] watching extensions: ts,json[39m
+[1] [32m[nodemon] starting `node src/index.ts`[39m
+[1] (node:78032) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+[1] --import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+[1] (Use `node --trace-warnings ...` to show where the warning was created)
+[1] (node:78032) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+[1] (Use `node --trace-deprecation ...` to show where the warning was created)
+[0]  ⚠ Port 3000 is in use, trying 3001 instead.
+[0]  ⚠ Port 3001 is in use, trying 3002 instead.
+[0]   ▲ Next.js 13.5.11
+[0]   - Local:        http://localhost:3002
+[0]   - Environments: .env.local
+[0] 
+[0]  ✓ Ready in 748ms
+[1] 
+[1] node:internal/modules/run_main:104
+[1]     triggerUncaughtException(
+[1]     ^
+[1] [Object: null prototype] {
+[1]   [Symbol(nodejs.util.inspect.custom)]: [Function: [nodejs.util.inspect.custom]]
+[1] }
+[1] 
+[1] Node.js v23.7.0
+[1] [31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[1] [32m[nodemon] restarting child process[39m
+[1] [32m[nodemon] starting `node src/index.ts`[39m
+[0] npm run dev --workspace=frontend exited with code SIGHUP
+[1] (node:79374) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+[1] --import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+[1] (Use `node --trace-warnings ...` to show where the warning was created)
+[1] (node:79374) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+[1] (Use `node --trace-deprecation ...` to show where the warning was created)
+[1] 
+[1] node:internal/modules/run_main:104
+[1]     triggerUncaughtException(
+[1]     ^
+[1] [Object: null prototype] {
+[1]   [Symbol(nodejs.util.inspect.custom)]: [Function: [nodejs.util.inspect.custom]]
+[1] }
+[1] 
+[1] Node.js v23.7.0
+[1] [31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[1] [32m[nodemon] restarting due to changes...[39m
+[1] [32m[nodemon] starting `node src/index.ts`[39m
+[1] [32m[nodemon] restarting due to changes...[39m
+[1] [32m[nodemon] starting `node src/index.ts`[39m
+[1] [32m[nodemon] restarting due to changes...[39m
+[1] [32m[nodemon] starting `node src/index.ts`[39m
+[1] (node:80267) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+[1] --import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+[1] (Use `node --trace-warnings ...` to show where the warning was created)
+[1] (node:80267) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+[1] (Use `node --trace-deprecation ...` to show where the warning was created)
+[1] 
+[1] node:internal/modules/run_main:104
+[1]     triggerUncaughtException(
+[1]     ^
+[1] [Object: null prototype] {
+[1]   [Symbol(nodejs.util.inspect.custom)]: [Function: [nodejs.util.inspect.custom]]
+[1] }
+[1] 
+[1] Node.js v23.7.0
+[1] [31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[1] [32m[nodemon] restarting due to changes...[39m
+[1] [32m[nodemon] starting `node src/index.ts`[39m
+[1] [32m[nodemon] restarting due to changes...[39m
+[1] [32m[nodemon] starting `node src/index.ts`[39m
+[1] (node:80417) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+[1] --import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./"));'
+[1] (Use `node --trace-warnings ...` to show where the warning was created)
+[1] (node:80417) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+[1] (Use `node --trace-deprecation ...` to show where the warning was created)
+[1] npm run dev --workspace=backend exited with code SIGHUP

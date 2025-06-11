@@ -1,0 +1,46 @@
+npm warn using --force Recommended protections disabled.
+
+> asteris-automation@1.0.0 start
+> cd backend && node dist/index.js
+
+Intent classifier trained successfully
+Loading Universal Sentence Encoder...
+Looking for frontend files at: /Users/ananya/Documents/asteris-automation/backend/frontend
+Frontend static files are being served
+Server is running on port 3002
+Universal Sentence Encoder loaded successfully
+Indexing 40 examples...
+Error indexing data: TypeError: (0 , util_1.isNullOrUndefined) is not a function
+    at createTensorsTypeOpAttr (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-node/dist/nodejs_kernel_backend.js:675:38)
+    at /Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-node/dist/kernels/StridedSlice.js:39:69
+    at /Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4559:22
+    at Engine.scopedRun (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4569:23)
+    at Engine.tidy (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4558:21)
+    at tidy (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:8304:19)
+    at Object.kernelFunc (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-node/dist/kernels/StridedSlice.js:34:32)
+    at kernelFunc (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4704:32)
+    at /Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4764:27
+    at Engine.scopedRun (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4569:23)
+Failed to initialize semantic search service: TypeError: (0 , util_1.isNullOrUndefined) is not a function
+    at createTensorsTypeOpAttr (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-node/dist/nodejs_kernel_backend.js:675:38)
+    at /Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-node/dist/kernels/StridedSlice.js:39:69
+    at /Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4559:22
+    at Engine.scopedRun (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4569:23)
+    at Engine.tidy (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4558:21)
+    at tidy (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:8304:19)
+    at Object.kernelFunc (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-node/dist/kernels/StridedSlice.js:34:32)
+    at kernelFunc (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4704:32)
+    at /Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4764:27
+    at Engine.scopedRun (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4569:23)
+Failed to initialize semantic search service on startup: TypeError: (0 , util_1.isNullOrUndefined) is not a function
+    at createTensorsTypeOpAttr (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-node/dist/nodejs_kernel_backend.js:675:38)
+    at /Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-node/dist/kernels/StridedSlice.js:39:69
+    at /Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4559:22
+    at Engine.scopedRun (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4569:23)
+    at Engine.tidy (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4558:21)
+    at tidy (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:8304:19)
+    at Object.kernelFunc (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-node/dist/kernels/StridedSlice.js:34:32)
+    at kernelFunc (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4704:32)
+    at /Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4764:27
+    at Engine.scopedRun (/Users/ananya/Documents/asteris-automation/node_modules/@tensorflow/tfjs-core/dist/tf-core.node.js:4569:23)
+sh: line 1: 84031 Killed: 9               node dist/index.js
