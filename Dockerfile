@@ -43,26 +43,26 @@ RUN echo "NEXT_SKIP_TYPECHECKING=true\nTYPESCRIPT_IGNORE_FILE=true" > .env.local
 # Debug Next.js config
 RUN cat next.config.js
 
-# Build and export static files
-RUN npm run build:static
+# Make build script executable
+RUN chmod +x build.sh
 
-# Debug output directories
-RUN echo "Listing frontend directories:" && ls -la /app/frontend
+# Build frontend using our custom script
+RUN ./build.sh
 
-# Create directory for frontend files in backend
-WORKDIR /app
-RUN mkdir -p /app/backend/frontend
+# Verify the output directory structure
+RUN echo "Verifying backend/frontend directory structure:" && \
+    mkdir -p /app/backend/frontend && \
+    echo "Copied files:" && \
+    ls -la /app/backend/frontend/
 
-# Copy the static export to the backend directory with verbose output
-RUN if [ -d "/app/frontend/out" ]; then \
-    echo "Found out directory, copying contents..." && \
-    ls -la /app/frontend/out && \
-    cp -rv /app/frontend/out/* /app/backend/frontend/; \
-  else \
-    echo "out directory not found, checking .next directory" && \
-    ls -la /app/frontend/.next || echo ".next directory not found"; \
-    exit 1; \
-  fi
+# The build.sh script already handles copying files to /app/backend/frontend
+# Verify the final directory structure
+RUN echo "Final backend/frontend directory structure:" && \
+    ls -la /app/backend/frontend/ && \
+    echo "\n.next directory:" && \
+    ls -la /app/backend/frontend/.next/ && \
+    echo "\npublic directory:" && \
+    ls -la /app/backend/frontend/public/
 
 # Create start script
 RUN echo '#!/bin/bash\ncd /app/backend && node dist/index.js' > /app/start.sh
