@@ -3,6 +3,8 @@ import { Payout } from './Payout.js';
 
 type InvoiceStatus = 'pending' | 'paid' | 'overdue' | 'cancelled';
 
+// TypeORM types are already included in the type definitions
+
 @Entity('invoices')
 export class Invoice {
   @PrimaryGeneratedColumn('uuid')
@@ -44,6 +46,6 @@ export class Invoice {
   @UpdateDateColumn({ type: 'datetime', precision: 3 })
   updatedAt: Date;
 
-  @OneToMany('Payout', 'invoice')
+  @OneToMany(() => Payout, payout => payout.invoice, { cascade: true })
   payouts: Payout[];
 }

@@ -2,7 +2,7 @@ import { Between, DataSource, IsNull, Repository } from 'typeorm';
 import { AppDataSource } from '../config/data-source.js';
 import { Invoice } from '../entities/Invoice.js';
 import { Payout } from '../entities/Payout.js';
-import { logger } from '../utils/logger.js';
+import logger from '../utils/logger.js';
 
 interface MatchResult {
     invoiceId: string;

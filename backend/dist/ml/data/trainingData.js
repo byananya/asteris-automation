@@ -1,4 +1,7 @@
-export const trainingData = [
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.trainingData = void 0;
+exports.trainingData = [
     // Settings/Integration related
     { text: "connect stripe", label: "settings" },
     { text: "setup stripe integration", label: "settings" },
@@ -42,3 +45,4 @@ export const trainingData = [
     { text: "create automated pipeline", label: "automation" },
     { text: "schedule periodic tasks", label: "automation" }
 ];
+//# sourceMappingURL=trainingData.js.map

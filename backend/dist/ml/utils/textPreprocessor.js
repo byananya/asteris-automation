@@ -1,7 +1,13 @@
-import natural from 'natural';
-const tokenizer = new natural.WordTokenizer();
-const stemmer = natural.PorterStemmer;
-export class TextPreprocessor {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TextPreprocessor = void 0;
+const natural_1 = __importDefault(require("natural"));
+const tokenizer = new natural_1.default.WordTokenizer();
+const stemmer = natural_1.default.PorterStemmer;
+class TextPreprocessor {
     constructor() {
         this.vocabulary = new Set();
     }
@@ -33,3 +39,5 @@ export class TextPreprocessor {
         return stopwords.has(word);
     }
 }
+exports.TextPreprocessor = TextPreprocessor;
+//# sourceMappingURL=textPreprocessor.js.map

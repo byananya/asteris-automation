@@ -37,11 +37,12 @@ app.post('/api/reconcile/invoices', async (req, res) => {
       message: 'Stripe reconciliation endpoint is working',
       receivedKey: stripeApiKey ? 'Key received (hidden for security)' : 'No key received'
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in minimal endpoint:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
     return res.status(500).json({ 
       error: 'An error occurred',
-      details: error.message 
+      details: errorMessage 
     });
   }
 });

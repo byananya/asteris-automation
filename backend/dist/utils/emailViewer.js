@@ -1,25 +1,30 @@
 #!/usr/bin/env node
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const url_1 = require("url");
 // Get __dirname equivalent in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = (0, url_1.fileURLToPath)(import.meta.url);
+const __dirname = path_1.default.dirname(__filename);
 // Path to email subscribers file
-const EMAIL_STORAGE_PATH = path.join(__dirname, '../../data/email_subscribers.json');
+const EMAIL_STORAGE_PATH = path_1.default.join(__dirname, '../../data/email_subscribers.json');
 // Ensure the file exists
-if (!fs.existsSync(EMAIL_STORAGE_PATH)) {
+if (!fs_1.default.existsSync(EMAIL_STORAGE_PATH)) {
     console.error(`Email subscribers file not found at: ${EMAIL_STORAGE_PATH}`);
     process.exit(1);
 }
 // Read the file
 try {
-    const data = fs.readFileSync(EMAIL_STORAGE_PATH, 'utf8');
+    const data = fs_1.default.readFileSync(EMAIL_STORAGE_PATH, 'utf8');
     // Check if the file is empty or has invalid JSON
     if (!data || data.trim() === '') {
         console.log('Email subscribers file is empty. No emails have been submitted yet.');
         // Initialize with empty array
-        fs.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify([], null, 2));
+        fs_1.default.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify([], null, 2));
         process.exit(0);
     }
     // Parse the JSON
@@ -29,14 +34,14 @@ try {
         if (!Array.isArray(emails)) {
             console.error('Email subscribers file does not contain a valid array.');
             emails = [];
-            fs.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify(emails, null, 2));
+            fs_1.default.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify(emails, null, 2));
         }
     }
     catch (parseError) {
         console.error('Error parsing email subscribers file:', parseError.message);
         console.log('Resetting file to empty array...');
         emails = [];
-        fs.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify(emails, null, 2));
+        fs_1.default.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify(emails, null, 2));
     }
     // Display the emails
     if (emails.length === 0) {
@@ -70,7 +75,7 @@ if (process.argv.includes('--add-test')) {
         timestamp: new Date().toISOString()
     };
     try {
-        const data = fs.readFileSync(EMAIL_STORAGE_PATH, 'utf8');
+        const data = fs_1.default.readFileSync(EMAIL_STORAGE_PATH, 'utf8');
         let emails = [];
         try {
             emails = JSON.parse(data);
@@ -81,7 +86,7 @@ if (process.argv.includes('--add-test')) {
             emails = [];
         }
         emails.push(testEmail);
-        fs.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify(emails, null, 2));
+        fs_1.default.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify(emails, null, 2));
         console.log('\nAdded test email:');
         console.log(`Email: ${testEmail.email}`);
         console.log(`Name: ${testEmail.name}`);
@@ -92,3 +97,4 @@ if (process.argv.includes('--add-test')) {
         console.error('Error adding test email:', error.message);
     }
 }
+//# sourceMappingURL=emailViewer.js.map

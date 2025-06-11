@@ -1,10 +1,15 @@
-import express from 'express';
-import { semanticSearchService } from '../services/semanticSearch.js';
-const router = express.Router();
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const semanticSearch_js_1 = require("../services/semanticSearch.js");
+const router = express_1.default.Router();
 // Initialize the semantic search service when the server starts
 (async () => {
     try {
-        await semanticSearchService.initialize();
+        await semanticSearch_js_1.semanticSearchService.initialize();
         console.log('Semantic search service initialized on server startup');
     }
     catch (error) {
@@ -22,7 +27,7 @@ router.get('/', async (req, res) => {
         if (!query) {
             return res.status(400).json({ error: 'Query parameter is required' });
         }
-        const results = await semanticSearchService.searchIntents(query, limit);
+        const results = await semanticSearch_js_1.semanticSearchService.searchIntents(query, limit);
         res.json({ results });
     }
     catch (error) {
@@ -41,7 +46,7 @@ router.get('/suggestions', async (req, res) => {
         if (!query) {
             return res.status(400).json({ error: 'Query parameter is required' });
         }
-        const suggestions = await semanticSearchService.generateSuggestions(query, limit);
+        const suggestions = await semanticSearch_js_1.semanticSearchService.generateSuggestions(query, limit);
         res.json({ suggestions });
     }
     catch (error) {
@@ -49,4 +54,5 @@ router.get('/suggestions', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-export default router;
+exports.default = router;
+//# sourceMappingURL=semanticSearch.js.map

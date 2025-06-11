@@ -1,35 +1,47 @@
-import express from 'express';
-import cors from 'cors';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import intentRouter from './api/routes/intentRouter.js';
-import stripeReconciliationRoutes from './routes/stripeReconciliationRoutes.js';
-import semanticSearchRouter from './routes/semanticSearch.js';
-import emailSignupRouter from './routes/emailSignup.js';
-const app = express();
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
+const path_1 = __importDefault(require("path"));
+const intentRouter_1 = __importDefault(require("./api/routes/intentRouter"));
+const stripeReconciliationRoutes_1 = __importDefault(require("./routes/stripeReconciliationRoutes"));
+const emailSignup_1 = __importDefault(require("./routes/emailSignup"));
+const app = (0, express_1.default)();
 const port = process.env.PORT || 3002;
 // Get __dirname equivalent in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// In CommonJS, __dirname is available by default
+// CORS configuration
+const corsOptions = {
+    origin: 'http://localhost:3000', // Frontend URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-stripe-key'],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+};
 // Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use((0, cors_1.default)(corsOptions));
+// Handle preflight requests
+app.options('*', (0, cors_1.default)(corsOptions));
+app.use(express_1.default.json());
+app.use(express_1.default.urlencoded({ extended: true }));
 // Health check endpoint for Railway
 app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
-// API Routes
-app.use('/api/intent', intentRouter);
-app.use('/api/reconcile', stripeReconciliationRoutes);
-app.use('/api/semantic-search', semanticSearchRouter);
-app.use('/api/email-signup', emailSignupRouter);
+// API Routes - THESE MUST BE DEFINED BEFORE ANY STATIC FILE SERVING OR CATCH-ALL ROUTES
+app.use('/api/intent', intentRouter_1.default);
+app.use('/api/reconcile', stripeReconciliationRoutes_1.default);
+app.use('/api/email-signup', emailSignup_1.default);
 // Serve static frontend files if they exist in the expected location
-const frontendPath = path.join(__dirname, '../frontend');
+const frontendPath = path_1.default.join(__dirname, '../frontend');
 console.log(`Looking for frontend files at: ${frontendPath}`);
 try {
     // Serve static files
-    app.use(express.static(frontendPath));
+    app.use(express_1.default.static(frontendPath));
     // Handle root path and all frontend routes
     app.get('*', (req, res) => {
         // Skip API routes
@@ -37,7 +49,7 @@ try {
             return res.status(404).json({ error: 'API endpoint not found' });
         }
         // For all other routes, serve the index.html
-        res.sendFile(path.join(frontendPath, 'index.html'));
+        res.sendFile(path_1.default.join(frontendPath, 'index.html'));
     });
     console.log('Frontend static files are being served');
 }
@@ -55,7 +67,7 @@ app.listen(port, () => {
 // Global error handler for uncaught exceptions
 process.on('uncaughtException', (error) => {
     console.error('UNCAUGHT EXCEPTION:', error.stack || error.message);
-    // It's critical to exit the process after an uncaught exception in production,
-    // but for debugging, we might keep it running to inspect.
-    // In a real app, you would typically exit here: process.exit(1);
+    // Don't exit the process in development to allow for debugging
+    // In production, you would typically exit here: process.exit(1);
 });
+//# sourceMappingURL=index.js.map

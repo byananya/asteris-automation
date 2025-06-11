@@ -3,6 +3,8 @@ import { Invoice } from './Invoice.js';
 
 type PayoutStatus = 'pending' | 'completed' | 'failed' | 'cancelled';
 
+type Metadata = Record<string, any>;
+
 @Entity('payouts')
 export class Payout {
   @PrimaryGeneratedColumn('uuid')
@@ -35,18 +37,18 @@ export class Payout {
   @Column({ type: 'varchar', length: 20, default: 'pending' })
   status: PayoutStatus;
 
-  @ManyToOne('Invoice', 'payouts', { nullable: true })
+  @ManyToOne(() => Invoice, invoice => invoice.payouts, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'invoiceId' })
-  invoice: Invoice;
+  invoice?: Invoice | null;
 
   @Column({ type: 'uuid', nullable: true })
-  invoiceId: string;
+  invoiceId?: string | null;
 
   @Column({ type: 'text', nullable: true, transformer: {
     to: (value: any) => value ? JSON.stringify(value) : null,
     from: (value: string) => value ? JSON.parse(value) : null
   } })
-  metadata: Record<string, any>;
+  metadata?: Metadata | null;
 
   @CreateDateColumn({ type: 'datetime', precision: 3 })
   createdAt: Date;

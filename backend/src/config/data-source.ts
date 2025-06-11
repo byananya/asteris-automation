@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-import { logger } from '../utils/logger.js';
+import logger from '../utils/logger.js';
 
 function getDbConfig() {
   const config = {

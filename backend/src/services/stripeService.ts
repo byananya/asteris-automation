@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { logger } from '../utils/logger.js';
+import logger from '../utils/logger.js';
 
 export class StripeService {
   private stripe: Stripe;

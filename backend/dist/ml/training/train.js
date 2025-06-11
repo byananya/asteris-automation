@@ -1,11 +1,13 @@
-import { SimpleClassifier } from '../models/simpleClassifier.js';
-import { trainingData } from '../data/trainingData.js';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const simpleClassifier_js_1 = require("../models/simpleClassifier.js");
+const trainingData_js_1 = require("../data/trainingData.js");
 async function trainModel() {
     try {
         console.log('Starting model training...');
-        const classifier = new SimpleClassifier();
-        console.log('Training with', trainingData.length, 'examples');
-        classifier.train(trainingData);
+        const classifier = new simpleClassifier_js_1.SimpleClassifier();
+        console.log('Training with', trainingData_js_1.trainingData.length, 'examples');
+        classifier.train(trainingData_js_1.trainingData);
         console.log('Training completed.');
         console.log('Testing the model...');
         const testCases = [
@@ -43,3 +45,4 @@ async function trainModel() {
     }
 }
 trainModel();
+//# sourceMappingURL=train.js.map

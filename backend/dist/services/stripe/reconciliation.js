@@ -1,7 +1,13 @@
-import Stripe from 'stripe';
-import { format } from 'date-fns';
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.StripeReconciliationService = void 0;
+const stripe_1 = __importDefault(require("stripe"));
+const date_fns_1 = require("date-fns");
 const STRIPE_API_VERSION = '2025-05-28.basil';
-export class StripeReconciliationService {
+class StripeReconciliationService {
     getCustomerId(customer) {
         if (typeof customer === 'string')
             return customer;
@@ -13,7 +19,7 @@ export class StripeReconciliationService {
         if (!apiKey || !apiKey.startsWith('sk_')) {
             throw new Error('Invalid Stripe API key provided');
         }
-        this.stripe = new Stripe(apiKey, {
+        this.stripe = new stripe_1.default(apiKey, {
             apiVersion: STRIPE_API_VERSION,
         });
     }
@@ -94,7 +100,7 @@ export class StripeReconciliationService {
                     grossAmount: balanceTransaction.amount / 100,
                     fee: Math.abs(balanceTransaction.fee) / 100,
                     netAmount: balanceTransaction.net / 100,
-                    date: format(new Date(invoice.created * 1000), 'yyyy-MM-dd'),
+                    date: (0, date_fns_1.format)(new Date(invoice.created * 1000), 'yyyy-MM-dd'),
                     currency: invoice.currency.toUpperCase()
                 };
                 records.push(record);
@@ -121,3 +127,5 @@ export class StripeReconciliationService {
         }
     }
 }
+exports.StripeReconciliationService = StripeReconciliationService;
+//# sourceMappingURL=reconciliation.js.map

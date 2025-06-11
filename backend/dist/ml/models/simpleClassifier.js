@@ -1,7 +1,10 @@
-import { TextPreprocessor } from '../utils/textPreprocessor.js';
-export class SimpleClassifier {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SimpleClassifier = void 0;
+const textPreprocessor_1 = require("../utils/textPreprocessor");
+class SimpleClassifier {
     constructor() {
-        this.preprocessor = new TextPreprocessor();
+        this.preprocessor = new textPreprocessor_1.TextPreprocessor();
         this.wordScores = new Map();
         this.labelPriors = new Map();
     }
@@ -136,3 +139,5 @@ export class SimpleClassifier {
         return bestLabel;
     }
 }
+exports.SimpleClassifier = SimpleClassifier;
+//# sourceMappingURL=simpleClassifier.js.map

@@ -1,13 +1,18 @@
-import express from 'express';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-const router = express.Router();
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const url_1 = require("url");
+const router = express_1.default.Router();
 // Get __dirname equivalent in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = (0, url_1.fileURLToPath)(import.meta.url);
+const __dirname = path_1.default.dirname(__filename);
 // Email storage path (same as in emailSignup.js)
-const EMAIL_STORAGE_PATH = path.join(__dirname, '../../data/email_subscribers.json');
+const EMAIL_STORAGE_PATH = path_1.default.join(__dirname, '../../data/email_subscribers.json');
 // Simple admin authentication middleware (replace with proper auth in production)
 const adminAuth = (req, res, next) => {
     const adminKey = req.query.adminKey || '';
@@ -23,11 +28,11 @@ const adminAuth = (req, res, next) => {
 router.get('/csv', adminAuth, (req, res) => {
     try {
         // Check if the file exists
-        if (!fs.existsSync(EMAIL_STORAGE_PATH)) {
+        if (!fs_1.default.existsSync(EMAIL_STORAGE_PATH)) {
             return res.status(404).json({ success: false, message: 'No email data found' });
         }
         // Read email data
-        const emailData = fs.readFileSync(EMAIL_STORAGE_PATH, 'utf8');
+        const emailData = fs_1.default.readFileSync(EMAIL_STORAGE_PATH, 'utf8');
         const emails = JSON.parse(emailData);
         if (emails.length === 0) {
             return res.status(404).json({ success: false, message: 'No email subscribers found' });
@@ -58,11 +63,11 @@ router.get('/csv', adminAuth, (req, res) => {
 router.get('/json', adminAuth, (req, res) => {
     try {
         // Check if the file exists
-        if (!fs.existsSync(EMAIL_STORAGE_PATH)) {
+        if (!fs_1.default.existsSync(EMAIL_STORAGE_PATH)) {
             return res.status(404).json({ success: false, message: 'No email data found' });
         }
         // Read email data
-        const emailData = fs.readFileSync(EMAIL_STORAGE_PATH, 'utf8');
+        const emailData = fs_1.default.readFileSync(EMAIL_STORAGE_PATH, 'utf8');
         const emails = JSON.parse(emailData);
         // Set headers for JSON download
         res.setHeader('Content-Type', 'application/json');
@@ -75,4 +80,5 @@ router.get('/json', adminAuth, (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to export emails' });
     }
 });
-export default router;
+exports.default = router;
+//# sourceMappingURL=emailExport.js.map

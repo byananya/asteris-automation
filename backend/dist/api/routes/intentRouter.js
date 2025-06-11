@@ -1,11 +1,16 @@
-import express from 'express';
-import { SimpleClassifier } from '../../ml/models/simpleClassifier.js';
-import { trainingData } from '../../ml/data/trainingData.js';
-const router = express.Router();
-const classifier = new SimpleClassifier();
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const simpleClassifier_1 = require("../../ml/models/simpleClassifier");
+const trainingData_1 = require("../../ml/data/trainingData");
+const router = express_1.default.Router();
+const classifier = new simpleClassifier_1.SimpleClassifier();
 // Train the classifier when the server starts
 try {
-    classifier.train(trainingData);
+    classifier.train(trainingData_1.trainingData);
     console.log('Intent classifier trained successfully');
 }
 catch (error) {
@@ -25,4 +30,5 @@ router.post('/classify', (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-export default router;
+exports.default = router;
+//# sourceMappingURL=intentRouter.js.map

@@ -1,9 +1,12 @@
-import { SemanticSearch } from '../ml/models/semanticSearch.js';
-import { trainingData } from '../ml/data/trainingData.js';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.semanticSearchService = void 0;
+const semanticSearch_js_1 = require("../ml/models/semanticSearch.js");
+const trainingData_js_1 = require("../ml/data/trainingData.js");
 class SemanticSearchService {
     constructor() {
         this.isInitialized = false;
-        this.semanticSearch = new SemanticSearch();
+        this.semanticSearch = new semanticSearch_js_1.SemanticSearch();
     }
     /**
      * Initialize the semantic search service
@@ -16,7 +19,7 @@ class SemanticSearchService {
             // Load the model
             await this.semanticSearch.initialize();
             // Index the training data
-            await this.semanticSearch.indexData(trainingData);
+            await this.semanticSearch.indexData(trainingData_js_1.trainingData);
             this.isInitialized = true;
             console.log('Semantic search service initialized successfully');
         }
@@ -78,4 +81,5 @@ class SemanticSearchService {
     }
 }
 // Create a singleton instance
-export const semanticSearchService = new SemanticSearchService();
+exports.semanticSearchService = new SemanticSearchService();
+//# sourceMappingURL=semanticSearch.js.map

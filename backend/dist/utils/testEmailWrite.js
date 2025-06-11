@@ -1,25 +1,30 @@
 #!/usr/bin/env node
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const url_1 = require("url");
 // Get __dirname equivalent in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = (0, url_1.fileURLToPath)(import.meta.url);
+const __dirname = path_1.default.dirname(__filename);
 // Path to data directory
-const DATA_DIR = path.join(__dirname, '../../data');
-const EMAIL_STORAGE_PATH = path.join(DATA_DIR, 'email_subscribers.json');
+const DATA_DIR = path_1.default.join(__dirname, '../../data');
+const EMAIL_STORAGE_PATH = path_1.default.join(DATA_DIR, 'email_subscribers.json');
 console.log('Testing email write functionality');
 console.log(`Email storage path: ${EMAIL_STORAGE_PATH}`);
 // Ensure the data directory exists
-if (!fs.existsSync(DATA_DIR)) {
+if (!fs_1.default.existsSync(DATA_DIR)) {
     console.log(`Creating data directory: ${DATA_DIR}`);
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs_1.default.mkdirSync(DATA_DIR, { recursive: true });
 }
 // Read existing emails or create new array
 let emails = [];
 try {
-    if (fs.existsSync(EMAIL_STORAGE_PATH)) {
-        const fileContent = fs.readFileSync(EMAIL_STORAGE_PATH, 'utf8');
+    if (fs_1.default.existsSync(EMAIL_STORAGE_PATH)) {
+        const fileContent = fs_1.default.readFileSync(EMAIL_STORAGE_PATH, 'utf8');
         if (fileContent && fileContent.trim() !== '') {
             emails = JSON.parse(fileContent);
             console.log(`Found ${emails.length} existing emails in the file`);
@@ -50,7 +55,7 @@ emails.push(testEmail);
 // Write the updated emails back to the file
 try {
     // Ensure we have write permissions
-    fs.access(DATA_DIR, fs.constants.W_OK, (err) => {
+    fs_1.default.access(DATA_DIR, fs_1.default.constants.W_OK, (err) => {
         if (err) {
             console.error('No write permission to data directory:', err);
         }
@@ -59,17 +64,18 @@ try {
         }
     });
     // Write the file with pretty formatting
-    fs.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify(emails, null, 2));
+    fs_1.default.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify(emails, null, 2));
     console.log('Successfully wrote test email to file');
     console.log(`Email: ${testEmail.email}`);
     // Verify the file was written correctly
-    const verifyContent = fs.readFileSync(EMAIL_STORAGE_PATH, 'utf8');
+    const verifyContent = fs_1.default.readFileSync(EMAIL_STORAGE_PATH, 'utf8');
     const verifyEmails = JSON.parse(verifyContent);
     console.log(`Verification: File now contains ${verifyEmails.length} emails`);
     // Check file permissions
-    const stats = fs.statSync(EMAIL_STORAGE_PATH);
+    const stats = fs_1.default.statSync(EMAIL_STORAGE_PATH);
     console.log(`File permissions: ${stats.mode.toString(8)}`);
 }
 catch (error) {
     console.error('Error writing to email file:', error);
 }
+//# sourceMappingURL=testEmailWrite.js.map

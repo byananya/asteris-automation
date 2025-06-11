@@ -1,6 +1,8 @@
-import { Router } from 'express';
-import { StripeReconciliationService } from '../../services/stripe/reconciliation.js';
-const router = Router();
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const reconciliation_js_1 = require("../../services/stripe/reconciliation.js");
+const router = (0, express_1.Router)();
 // Get Stripe API key from request header
 const getStripeKey = (req) => {
     const key = req.headers['x-stripe-key'];
@@ -15,7 +17,7 @@ router.post('/reconcile', async (req, res) => {
         if (!stripeApiKey || typeof stripeApiKey !== 'string') {
             return res.status(400).json({ error: 'Valid Stripe API key is required in x-stripe-key header' });
         }
-        const service = new StripeReconciliationService(stripeApiKey);
+        const service = new reconciliation_js_1.StripeReconciliationService(stripeApiKey);
         const result = await service.runReconciliation(startDate ? new Date(startDate) : undefined, endDate ? new Date(endDate) : new Date());
         // Generate CSV
         const csv = await service.generateCSV(result.records);
@@ -36,7 +38,7 @@ router.get('/summary', async (req, res) => {
     try {
         const apiKey = getStripeKey(req);
         const { startDate, endDate } = req.query;
-        const service = new StripeReconciliationService(apiKey);
+        const service = new reconciliation_js_1.StripeReconciliationService(apiKey);
         const result = await service.runReconciliation(startDate ? new Date(startDate) : undefined, endDate ? new Date(endDate) : undefined);
         res.json(result.summary);
     }
@@ -50,4 +52,5 @@ router.get('/summary', async (req, res) => {
         }
     }
 });
-export default router;
+exports.default = router;
+//# sourceMappingURL=reconciliation.js.map
