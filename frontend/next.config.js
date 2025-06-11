@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable static export
-  output: 'export',
+  // Only enable static export in production
+  output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
   
   // Configure images for static export
   images: {
