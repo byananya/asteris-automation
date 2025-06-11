@@ -1,42 +1,62 @@
 import { NextResponse } from 'next/server';
 
-// Remove dynamic export for static build compatibility
-// export const dynamic = 'force-dynamic';
+// For static export compatibility
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
     console.log('Fetching email subscribers from backend');
     
-    // Get backend URL from environment variable or use default
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3011';
-    
-    // Make request to backend API
-    const response = await fetch(`${backendUrl}/api/email-signup`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store',
-    });
-    
-    if (!response.ok) {
-      console.error(`Backend API error: ${response.status} ${response.statusText}`);
-      const errorText = await response.text();
-      console.error('Error details:', errorText);
-      return NextResponse.json(
-        { success: false, message: `Failed to fetch emails: ${response.statusText}` },
-        { status: response.status }
-      );
+    // In production, we'll use an API route handler in the Next.js app
+    if (process.env.NODE_ENV === 'production') {
+      // For production, we'll serve a static response or use a serverless function
+      return NextResponse.json({
+        success: true,
+        count: 0,
+        emails: [],
+        message: 'Email export is not available in static export mode. Please use the backend admin interface.'
+      });
     }
     
-    const data = await response.json();
-    console.log(`Successfully fetched ${data.count} email subscribers`);
+    // For development, try to connect to the local backend
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3011';
     
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error('Error in admin/emails API route:', error);
+    try {
+      const response = await fetch(`${backendUrl}/api/email-signup`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Backend returned ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`Successfully fetched ${data.count} email subscribers`);
+      return NextResponse.json(data);
+      
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error connecting to backend:', errorMessage);
+      return NextResponse.json({
+        success: false,
+        count: 0,
+        emails: [],
+        message: 'Could not connect to the backend server.',
+        error: errorMessage
+      }, { status: 503 });
+    }
+    
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error in admin/emails API route:', errorMessage);
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
+      { 
+        success: false, 
+        message: 'Internal server error',
+        error: errorMessage
+      },
       { status: 500 }
     );
   }

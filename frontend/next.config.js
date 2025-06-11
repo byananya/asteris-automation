@@ -11,6 +11,9 @@ const nextConfig = {
   // Set the output directory to 'out' for static export
   distDir: 'out',
   
+  // Disable React StrictMode for static export
+  reactStrictMode: false,
+  
   // Only enable rewrites and redirects in development
   ...(process.env.NODE_ENV === 'development' && {
     async headers() {
