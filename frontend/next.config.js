@@ -14,6 +14,18 @@ const nextConfig = {
   // Disable React StrictMode for static export
   reactStrictMode: false,
   
+  // Skip API routes during export
+  exportPathMap: async function (defaultPathMap) {
+    const paths = { ...defaultPathMap };
+    // Remove API routes from static export
+    Object.keys(paths).forEach(path => {
+      if (path.startsWith('/api/')) {
+        delete paths[path];
+      }
+    });
+    return paths;
+  },
+  
   // Only enable rewrites and redirects in development
   ...(process.env.NODE_ENV === 'development' && {
     async headers() {

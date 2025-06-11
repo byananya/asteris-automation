@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 
 // For static export compatibility
-export const dynamic = 'force-dynamic';
+// Note: We can't use dynamic = 'force-dynamic' with output: 'export'
+// Instead, we'll handle the static case in the function body
 
 export async function GET() {
   try {
