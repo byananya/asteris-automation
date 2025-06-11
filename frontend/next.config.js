@@ -3,6 +3,9 @@ const nextConfig = {
   // Basic configuration
   reactStrictMode: false,
   
+  // Enable standalone output for production
+  output: 'standalone',
+  
   // Image optimization
   images: {
     unoptimized: true,
