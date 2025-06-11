@@ -1,36 +1,28 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Only enable static export in production
-  output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
+  // Basic configuration
+  reactStrictMode: false,
   
-  // Configure images for static export
+  // Image optimization
   images: {
     unoptimized: true,
   },
   
-  // Set the output directory to 'out' for static export
-  distDir: 'out',
-  
-  // Disable React StrictMode for static export
-  reactStrictMode: false,
-  
-  // Skip API routes during export (handled by generateStaticParams in App Router)
-  skipTrailingSlashRedirect: true,
-  
-  // Only enable rewrites and redirects in development
+  // Development-only settings
   ...(process.env.NODE_ENV === 'development' && {
+    // Development headers for CORS
     async headers() {
       return [
         {
-          source: '/api/:path*',
+          source: '/:path*',
           headers: [
             { key: 'Access-Control-Allow-Credentials', value: 'true' },
             { key: 'Access-Control-Allow-Origin', value: '*' },
             { key: 'Access-Control-Allow-Methods', value: 'GET,OPTIONS,PATCH,DELETE,POST,PUT' },
-            { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version' },
+            { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, x-stripe-key' },
           ],
         },
-      ]
+      ];
     },
   }),
 };
