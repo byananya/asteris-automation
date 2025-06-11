@@ -50,7 +50,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
 }
 
 .settingsButton:hover {
@@ -211,12 +210,10 @@
   border-radius: 8px;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .createTestButton:hover {
   background: rgba(245, 158, 11, 0.3);
-  transform: translateY(-1px);
 }
 
 .grid {
@@ -238,18 +235,9 @@
   border-radius: 16px;
   padding: 2rem;
   backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
   text-align: center;
   background: rgba(255, 255, 255, 0.02);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(99, 102, 241, 0.5);
-  box-shadow: 
-    0 0 0 1px rgba(99, 102, 241, 0.1),
-    0 8px 40px rgba(0, 0, 0, 0.2);
 }
 
 .card h2 {
@@ -279,14 +267,9 @@
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
   min-width: 200px;
 }
 
-.actionButton:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-}
 
 .list {
   display: flex;
@@ -300,7 +283,6 @@
   align-items: center;
   padding: 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.2s ease;
 }
 
 .listItem:hover {

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import { FiArrowLeft, FiDownload, FiCheckCircle, FiAlertCircle, FiHelpCircle, FiLoader } from 'react-icons/fi';
+import { getStripeApiKey } from '@/utils/stripe';
 
 // Define frontend interfaces to match backend's ReconciliationResult
 interface ReconciliationRecord {
@@ -33,13 +34,19 @@ interface ReconciliationResult {
 
 export default function InvoiceReconciliationResultsPage() {
   const router = useRouter();
-  const [stripeApiKey, setStripeApiKey] = useState<string>(''); // State for Stripe API Key
   const [results, setResults] = useState<ReconciliationResult | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Function to fetch reconciliation data
   const fetchReconciliationData = async () => {
+    const apiKey = getStripeApiKey();
+    if (!apiKey) {
+      setError('Stripe API key not found. Please configure it in the settings.');
+      setIsLoading(false);
+      return;
+    }
+
     setError(null);
     setIsLoading(true);
     setResults(null); // Clear previous results
@@ -49,7 +56,7 @@ export default function InvoiceReconciliationResultsPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-stripe-key': stripeApiKey, // Send API key in header
+          'x-stripe-key': apiKey,
         },
         body: JSON.stringify({
           // You can add startDate and endDate from UI elements here
@@ -73,12 +80,10 @@ export default function InvoiceReconciliationResultsPage() {
     }
   };
 
-  // Trigger fetch when API key is provided
-  // useEffect(() => {
-  //   // This useEffect is for initial load if API key is immediately available,
-  //   // or if you want to automatically refetch on key change.
-  //   // For manual trigger via button, you'd call fetchReconciliationData in an onClick handler.
-  // }, [stripeApiKey]);
+  // Fetch data when component mounts
+  useEffect(() => {
+    fetchReconciliationData();
+  }, []);
 
   const handleBackToDashboard = () => {
     router.push('/dashboard');
@@ -139,32 +144,27 @@ export default function InvoiceReconciliationResultsPage() {
           </button>
           <h1 className={styles.subtitle}>Stripe Reconciliation Results</h1>
           <p className={styles.description}>
-            Enter your Stripe Secret API Key and click 'Run Reconciliation' to view real data.
+            Viewing reconciliation results using your saved Stripe API key
           </p>
-        </div>
-
-        {/* Stripe API Key Input */}
-        <div className={styles.apiKeyInputContainer}>
-          <input
-            type="password"
-            placeholder="Enter Stripe Secret API Key (e.g., sk_test_...)"
-            value={stripeApiKey}
-            onChange={(e) => setStripeApiKey(e.target.value)}
-            className={styles.apiKeyInput}
-          />
-          <button
-            onClick={fetchReconciliationData}
-            className={styles.runButton}
-            disabled={isLoading || !stripeApiKey}
-          >
-            {isLoading ? <FiLoader className={styles.spinner} /> : 'Run Reconciliation'}
-          </button>
         </div>
 
         {error && (
           <div className={styles.errorMessage}>
             <FiAlertCircle size={20} />
             <p>Error: {error}</p>
+            <button 
+              onClick={() => router.push('/settings')}
+              className={styles.settingsButton}
+            >
+              Go to Settings
+            </button>
+          </div>
+        )}
+
+        {isLoading && !error && (
+          <div className={styles.loadingContainer}>
+            <FiLoader size={48} className={styles.spinner} />
+            <p>Fetching and reconciling data from Stripe...</p>
           </div>
         )}
 
@@ -217,11 +217,13 @@ export default function InvoiceReconciliationResultsPage() {
             </div>
 
             <div className={styles.tableSection}>
-              <h2>Reconciliation Records</h2>
-              <button className={styles.downloadButton} onClick={handleDownloadReport}>
-                <FiDownload size={16} />
-                <span>Download Full Report</span>
-              </button>
+              <h2>
+                Reconciliation Records
+                <button className={styles.downloadButton} onClick={handleDownloadReport}>
+                  <FiDownload size={16} />
+                  <span>Download Full Report</span>
+                </button>
+              </h2>
               <div className={styles.tableWrapper}>
                 <table className={styles.resultsTable}>
                   <thead>
