@@ -1,9 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Enable static export
+  output: 'export',
+  
   // Configure images for static export
   images: {
     unoptimized: true,
   },
+  
+  // Set the output directory to 'out' for static export
+  distDir: 'out',
   
   // Enable CORS headers for API routes
   async headers() {
