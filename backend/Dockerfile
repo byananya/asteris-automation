@@ -35,7 +35,10 @@ RUN echo '{\"extends\":\"./tsconfig.json\",\"compilerOptions\":{\"types\":[\"nod
 # Copy the rest of the application
 COPY . .
 
-# Build the backend with production config
+# Remove any existing tsconfig.build.json to prevent it from being used
+RUN rm -f tsconfig.build.json
+
+# Build using our production config
 RUN npx tsc -p tsconfig.prod.json
 
 # Install production dependencies only
