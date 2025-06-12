@@ -1,0 +1,15 @@
+{"level":"info","message":"Looking for frontend files at: /Users/ananya/CascadeProjects/asteris-automation/backend/frontend","timestamp":"2025-06-11T10:01:32.949Z"}
+{"level":"info","message":"Frontend directory exists: false","timestamp":"2025-06-11T10:01:32.950Z"}
+{"level":"warn","message":"Frontend files not found. Only API routes will be available.","timestamp":"2025-06-11T10:01:32.951Z"}
+{"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-11T10:01:32.952Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-06-11T10:01:32.952Z"}
+{"level":"info","message":"Looking for frontend files at: /Users/ananya/CascadeProjects/asteris-automation/backend/frontend","timestamp":"2025-06-11T10:01:47.828Z"}
+{"level":"info","message":"Frontend directory exists: false","timestamp":"2025-06-11T10:01:47.830Z"}
+{"level":"warn","message":"Frontend files not found. Only API routes will be available.","timestamp":"2025-06-11T10:01:47.830Z"}
+{"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-11T10:01:47.831Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-06-11T10:01:47.831Z"}
+{"level":"info","message":"Looking for frontend files at: /Users/ananya/CascadeProjects/asteris-automation/backend/frontend","timestamp":"2025-06-11T10:02:05.064Z"}
+{"level":"info","message":"Frontend directory exists: false","timestamp":"2025-06-11T10:02:05.066Z"}
+{"level":"warn","message":"Frontend files not found. Only API routes will be available.","timestamp":"2025-06-11T10:02:05.066Z"}
+{"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-11T10:02:05.067Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-06-11T10:02:05.067Z"}
