@@ -22,8 +22,11 @@ COPY package*.json ./
 # Create custom .npmrc file with stronger settings
 RUN echo "legacy-peer-deps=true\nstrict-peer-dependencies=false\nforce=true" > ./.npmrc
 
-# Install dependencies with specific flags to handle TensorFlow issues
+# Install all dependencies including devDependencies
 RUN npm install --no-package-lock --force --production=false
+
+# Explicitly install TypeScript globally to ensure it's available
+RUN npm install -g typescript@5.8.3
 
 # Copy the rest of the application
 COPY . .
