@@ -23,10 +23,14 @@ COPY package*.json ./
 RUN echo "legacy-peer-deps=true\nstrict-peer-dependencies=false\nforce=true" > ./.npmrc
 
 # Install all dependencies including devDependencies
-RUN npm install --no-package-lock --force --production=false
+RUN npm install --no-package-lock --force --production=false \
+    @types/jest@^29.5.14
 
 # Explicitly install TypeScript globally to ensure it's available
 RUN npm install -g typescript@5.8.3
+
+# Create a custom tsconfig.build.json that excludes test files
+RUN echo '{\"extends\":\"./tsconfig.json\",\"compilerOptions\":{\"skipLibCheck\":true,\"noEmit\":false,\"outDir\":\"dist\"},\"exclude\":[\"**/*.test.ts\",\"**/*.spec.ts\"]}' > tsconfig.build.json
 
 # Copy the rest of the application
 COPY . .
