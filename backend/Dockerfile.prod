@@ -26,8 +26,11 @@ COPY . .
 # Create a clean tsconfig.prod.json with properly escaped JSON
 RUN echo '{\"compilerOptions\":{\"target\":\"ES2020\",\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"esModuleInterop\":true,\"experimentalDecorators\":true,\"emitDecoratorMetadata\":true,\"forceConsistentCasingInFileNames\":true,\"strict\":true,\"strictPropertyInitialization\":false,\"skipLibCheck\":true,\"outDir\":\"dist\",\"allowJs\":true,\"resolveJsonModule\":true,\"sourceMap\":true,\"allowSyntheticDefaultImports\":true,\"noEmit\":false,\"types\":[\"node\"]},\"include\":[\"src/**/*\"],\"exclude\":[\"node_modules\",\"**/*.test.ts\",\"**/*.spec.ts\",\"**/__tests__/**\"]}' > tsconfig.prod.json
 
-# Build the application
-RUN npx tsc -p tsconfig.prod.json
+# Remove any existing build configs to prevent conflicts
+RUN rm -f tsconfig.build.json tsconfig.json
+
+# Build the application with explicit config
+RUN npx tsc -p tsconfig.prod.json --noEmit false
 
 # Production stage
 FROM node:18-slim
