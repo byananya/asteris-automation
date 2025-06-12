@@ -29,17 +29,14 @@ RUN npm install --no-package-lock --force --production=false \
 # Explicitly install TypeScript globally to ensure it's available
 RUN npm install -g typescript@5.8.3
 
-# Create a minimal tsconfig for production build
-RUN echo '{\"extends\":\"./tsconfig.json\",\"compilerOptions\":{\"types\":[\"node\"],\"skipLibCheck\":true,\"noEmit\":false,\"outDir\":\"dist\"},\"exclude\":[\"**/*.test.ts\",\"**/*.spec.ts\",\"**/__tests__/**\"]}' > tsconfig.prod.json
-
 # Copy the rest of the application
 COPY . .
 
-# Remove any existing tsconfig.build.json to prevent it from being used
-RUN rm -f tsconfig.build.json
+# Create a minimal tsconfig for production build
+RUN echo '{\"compilerOptions\":{\"target\":\"ES2020\",\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"esModuleInterop\":true,\"experimentalDecorators\":true,\"emitDecoratorMetadata\":true,\"forceConsistentCasingInFileNames\":true,\"strict\":true,\"strictPropertyInitialization\":false,\"skipLibCheck\":true,\"outDir\":\"dist\",\"allowJs\":true,\"resolveJsonModule\":true,\"sourceMap\":true,\"allowSyntheticDefaultImports\":true,\"noEmit\":false,\"types\":[\"node\"]},\"include\":[\"src/**/*\"],\"exclude\":[\"node_modules\",\"**/*.test.ts\",\"**/*.spec.ts\",\"**/__tests__/**\"]}' > /app/tsconfig.json
 
-# Build using our production config
-RUN npx tsc -p tsconfig.prod.json
+# Build the application
+RUN npx tsc
 
 # Install production dependencies only
 RUN npm prune --production
