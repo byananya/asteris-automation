@@ -35,8 +35,12 @@ COPY . .
 # Create a minimal tsconfig for production build
 RUN echo '{\"compilerOptions\":{\"target\":\"ES2020\",\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"esModuleInterop\":true,\"experimentalDecorators\":true,\"emitDecoratorMetadata\":true,\"forceConsistentCasingInFileNames\":true,\"strict\":true,\"strictPropertyInitialization\":false,\"skipLibCheck\":true,\"outDir\":\"dist\",\"allowJs\":true,\"resolveJsonModule\":true,\"sourceMap\":true,\"allowSyntheticDefaultImports\":true,\"noEmit\":false,\"types\":[\"node\"]},\"include\":[\"src/**/*\"],\"exclude\":[\"node_modules\",\"**/*.test.ts\",\"**/*.spec.ts\",\"**/__tests__/**\"]}' > /app/tsconfig.json
 
-# Build the application
-RUN npx tsc
+# Remove any existing build configs
+RUN rm -f tsconfig.build.json tsconfig.deploy.json
+
+# Verify the tsconfig exists and build
+RUN cat /app/tsconfig.json && \
+    npx tsc -p /app/tsconfig.json
 
 # Install production dependencies only
 RUN npm prune --production
