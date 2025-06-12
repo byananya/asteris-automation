@@ -29,16 +29,10 @@ RUN npm install --no-package-lock --force --production=false \
 # Explicitly install TypeScript globally to ensure it's available
 RUN npm install -g typescript@5.8.3
 
-# Create a custom tsconfig.build.json that excludes test files
-RUN echo '{\"extends\":\"./tsconfig.json\",\"compilerOptions\":{\"skipLibCheck\":true,\"noEmit\":false,\"outDir\":\"dist\"},\"exclude\":[\"**/*.test.ts\",\"**/*.spec.ts\"]}' > tsconfig.build.json
-
 # Copy the rest of the application
 COPY . .
 
-# Create a simplified tsconfig for build
-RUN echo '{"extends":"./tsconfig.json","compilerOptions":{"skipLibCheck":true,"noEmit":false,"outDir":"dist"}}' > tsconfig.build.json
-
-# Build the backend with skipLibCheck to avoid type errors
+# Build the backend using our production tsconfig
 RUN npx tsc -p tsconfig.build.json
 
 # Install production dependencies only
