@@ -29,11 +29,14 @@ RUN npm install --no-package-lock --force --production=false \
 # Explicitly install TypeScript globally to ensure it's available
 RUN npm install -g typescript@5.8.3
 
+# Create a minimal tsconfig for production build
+RUN echo '{\"extends\":\"./tsconfig.json\",\"compilerOptions\":{\"types\":[\"node\"],\"skipLibCheck\":true,\"noEmit\":false,\"outDir\":\"dist\"},\"exclude\":[\"**/*.test.ts\",\"**/*.spec.ts\",\"**/__tests__/**\"]}' > tsconfig.prod.json
+
 # Copy the rest of the application
 COPY . .
 
-# Build the backend using our production tsconfig
-RUN npx tsc -p tsconfig.build.json
+# Build the backend with production config
+RUN npx tsc -p tsconfig.prod.json
 
 # Install production dependencies only
 RUN npm prune --production
