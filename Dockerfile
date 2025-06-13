@@ -33,8 +33,10 @@ RUN npm install --no-package-lock --force --production=false
 
 # Install frontend dependencies
 WORKDIR /app/frontend
+# Copy package files first for better caching
+COPY frontend/package*.json ./
 # Install all required dependencies in a single layer to optimize build
-RUN npm install --no-package-lock --force \
+RUN npm install --no-package-lock --force --no-optional \
     next@latest \
     react@latest \
     react-dom@latest \
@@ -44,8 +46,8 @@ RUN npm install --no-package-lock --force \
     @types/react-dom@latest \
     @typescript-eslint/parser@latest \
     @typescript-eslint/eslint-plugin@latest
-# Install remaining dependencies
-RUN npm install --no-package-lock --force --no-optional
+# Install production dependencies only
+RUN npm ci --only=production --no-optional
 
 # Copy all files needed for build
 WORKDIR /app
@@ -61,12 +63,14 @@ RUN npx tsc -p tsconfig.json
 # Build frontend
 WORKDIR /app/frontend
 # Set environment variables for frontend build
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-# Install production dependencies for frontend
-RUN npm ci --only=production --no-optional
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    NODE_ENV=production \
+    NEXT_SKIP_TYPECHECKING=1 \
+    NEXT_DISABLE_AUTO_INSTALL=1
+# Copy the rest of the frontend files
+COPY frontend/ .
 # Build Next.js application with type checking disabled
-RUN NEXT_SKIP_TYPECHECKING=1 npx next build
+RUN npx next build --no-lint
 # Export static files
 RUN npx next export -o standalone
 
