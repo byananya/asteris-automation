@@ -1,4 +1,5 @@
-FROM node:18-slim as builder
+# First stage: Install system dependencies
+FROM node:18-slim as base
 
 WORKDIR /app
 
@@ -31,29 +32,50 @@ RUN npm install --no-package-lock --force --production=false
 WORKDIR /app/backend
 RUN npm install --no-package-lock --force --production=false
 
-# Install frontend dependencies
-WORKDIR /app/frontend
-# Copy package files
+# Second stage: Build frontend
+FROM base as frontend-builder
+WORKDIR /app
+# Copy only frontend files
 COPY frontend/package*.json ./
-# Create a simple package.json for installation
-RUN echo '{"dependencies":{"react":"18.2.0","react-dom":"18.2.0"}}' > /tmp/package.json
-# Install React first in a temporary directory
-WORKDIR /tmp
-RUN npm install --no-package-lock --force --no-package-lock
-# Move back to frontend directory
-WORKDIR /app/frontend
 # Install all dependencies
-RUN npm install --no-package-lock --force --no-package-lock --legacy-peer-deps
+RUN npm install --force --legacy-peer-deps
 # Verify React is installed
 RUN ls -la node_modules/react
 # Copy the rest of the frontend source
 COPY frontend/ .
+# Build the Next.js app
+RUN npm run build
+
+# Third stage: Main build
+FROM base as builder
+WORKDIR /app
+# Copy root package files
+COPY package.json package-lock.json* ./
+# Copy backend package files
+COPY backend/package.json ./backend/
+# Install root and backend dependencies
+RUN npm install --no-package-lock --force --production=false
+# Copy built frontend from the frontend-builder stage
+COPY --from=frontend-builder /app/.next ./frontend/.next
+COPY --from=frontend-builder /app/public ./frontend/public
+COPY --from=frontend-builder /app/package.json ./frontend/
+# Set working directory to frontend for the next commands
+WORKDIR /app/frontend
+
+# Copy built assets from frontend-builder
+COPY --from=frontend-builder /app/.next ./.next
+COPY --from=frontend-builder /app/public ./public
 
 # Set environment variables for frontend build
 ENV NEXT_TELEMETRY_DISABLED=1 \
     NODE_ENV=production \
     NEXT_SKIP_TYPECHECKING=1 \
     NODE_OPTIONS=--openssl-legacy-provider
+
+# Build Next.js application with type checking disabled
+RUN npx next build --no-lint
+# Export static files
+RUN npx next export -o standalone
 
 # Build Next.js application with type checking disabled
 RUN npx next build --no-lint
