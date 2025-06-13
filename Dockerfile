@@ -35,15 +35,19 @@ RUN npm install --no-package-lock --force --production=false
 WORKDIR /app/frontend
 RUN npm install --no-package-lock --force
 
-# Copy source files
+# Copy all files needed for build
 WORKDIR /app
 COPY . .
 
-# Build backend with production dependencies only
+# Ensure all configuration files are in place
 WORKDIR /app/backend
-RUN npm prune --production
+RUN ls -la
 
-# Compile TypeScript
+# Install production dependencies only
+RUN npm ci --only=production
+
+# Compile TypeScript using the production config
+RUN ls -la
 RUN npx tsc -p tsconfig.json
 
 # Build frontend
