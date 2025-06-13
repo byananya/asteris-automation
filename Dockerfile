@@ -33,23 +33,45 @@ WORKDIR /app/backend
 RUN npm install --no-package-lock --force --production=false
 
 # Second stage: Build frontend
-FROM base as frontend-builder
+FROM node:18-slim as frontend-builder
 WORKDIR /app
+
 # Copy package files and configs first
 COPY frontend/package*.json ./
-COPY frontend/tsconfig.json ./
 COPY frontend/next.config.js ./
+COPY frontend/tsconfig.json ./
+
 # Install all dependencies
-RUN npm install --force --legacy-peer-deps
-# Verify React is installed
-RUN ls -la node_modules/react
-# Copy source files with proper directory structure
+RUN npm install --legacy-peer-deps
+
+# Copy source files
 COPY frontend/public ./public
 COPY frontend/src ./src
-# Verify the directory structure
-RUN ls -la src/components/ && ls -la src/utils/
-# Build the Next.js app with production environment
+
+# Build the Next.js app with standalone output
 RUN npm run build
+
+# Create a production image
+FROM node:18-slim
+WORKDIR /app
+
+# Install only production dependencies
+RUN npm install -g serve
+
+# Copy the built app from the builder stage
+COPY --from=frontend-builder /app/.next/standalone ./
+COPY --from=frontend-builder /app/.next/static ./.next/static
+COPY --from=frontend-builder /app/public ./public
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Expose the port the app runs on
+EXPOSE 3000
+
+# Start the application
+CMD ["serve", "-p", "3000", "-s", "."]
 
 # Third stage: Main build
 FROM base as builder
