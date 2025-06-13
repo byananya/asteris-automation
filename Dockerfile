@@ -33,22 +33,14 @@ RUN npm install --no-package-lock --force --production=false
 
 # Install frontend dependencies
 WORKDIR /app/frontend
-# Copy root package files for workspace support
-COPY package.json package-lock.json* ./
-# Copy frontend package files
-COPY frontend/package*.json ./frontend/
-# Enable corepack and install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Copy package files
+COPY frontend/package*.json ./
 # Install all dependencies
-RUN cd frontend && \
-    npm install --no-package-lock --production=false --force && \
-    cd ..
+RUN npm install --no-package-lock --production=false --force
 # Verify React is installed
-RUN ls -la frontend/node_modules/react
+RUN ls -la node_modules/react
 # Copy the rest of the frontend source
-COPY frontend/ ./frontend/
-# Set working directory to frontend
-WORKDIR /app/frontend/frontend
+COPY frontend/ .
 
 # Set environment variables for frontend build
 ENV NEXT_TELEMETRY_DISABLED=1 \
