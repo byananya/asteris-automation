@@ -35,12 +35,23 @@ RUN npm install --no-package-lock --force --production=false
 WORKDIR /app/frontend
 # Copy package files first for better caching
 COPY frontend/package*.json ./
-# Install all required dependencies
+# Copy the rest of the frontend source
+COPY frontend/ .
+# Install all dependencies
 RUN npm install --no-package-lock --force --no-optional
-# Verify installation
-RUN ls -la node_modules/react
-# List all installed packages for debugging
-RUN npm list --depth=0
+# Verify React installed and list dependencies
+RUN ls -la node_modules/react && npm list --depth=0
+
+# Set environment variables for frontend build
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    NODE_ENV=production \
+    NEXT_SKIP_TYPECHECKING=1 \
+    NODE_OPTIONS=--openssl-legacy-provider
+
+# Build Next.js application with type checking disabled
+RUN npx next build --no-lint
+# Export static files
+RUN npx next export -o standalone
 
 # Copy all files needed for build
 WORKDIR /app
@@ -52,28 +63,6 @@ WORKDIR /app/backend
 RUN npm ci --only=production
 # Compile TypeScript
 RUN npx tsc -p tsconfig.json
-
-# Build frontend
-WORKDIR /app/frontend
-# Set environment variables for frontend build
-ENV NEXT_TELEMETRY_DISABLED=1 \
-    NODE_ENV=production \
-    NEXT_SKIP_TYPECHECKING=1 \
-    NODE_OPTIONS=--openssl-legacy-provider
-# Copy the rest of the frontend files
-COPY frontend/ .
-# Clean up and reinstall all dependencies
-RUN rm -rf node_modules .next .cache
-RUN npm install --no-package-lock --force --no-optional
-# Verify React is installed and list all dependencies
-RUN echo "Verifying React installation:" && \
-    ls -la node_modules/react && \
-    echo "\nInstalled packages:" && \
-    npm list --depth=0
-# Build Next.js application with type checking disabled
-RUN npx next build --no-lint
-# Export static files
-RUN npx next export -o standalone
 
 # Production stage
 FROM node:18-slim
