@@ -55,8 +55,8 @@ WORKDIR /app/frontend
 RUN echo "NEXT_SKIP_TYPECHECKING=true" > .env.local
 # Install production dependencies for frontend
 RUN npm ci --only=production
-# Build Next.js application (skip type checking)
-RUN npx next build --no-type-check
+# Build Next.js application with type checking disabled
+RUN NEXT_SKIP_TYPECHECKING=true npx next build
 # Export static files
 RUN npx next export -o standalone
 
