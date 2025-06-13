@@ -1,7 +1,7 @@
 import { AppDataSource } from '../config/data-source.js';
 import { Invoice } from '../entities/Invoice.js';
 import { Payout } from '../entities/Payout.js';
-import { faker } from '@faker-js/faker';
+const { faker } = require('@faker-js/faker');
 import { addDays, subDays, format } from 'date-fns';
 
 async function seedDatabase() {

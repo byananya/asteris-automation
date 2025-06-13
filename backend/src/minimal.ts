@@ -1,6 +1,5 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
 import cors from 'cors';
-import { ErrorRequestHandler } from 'express-serve-static-core';
 
 const app = express();
 const port = 3002;
