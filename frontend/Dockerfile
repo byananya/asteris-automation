@@ -11,35 +11,35 @@ COPY package*.json ./
 COPY next.config.js ./
 COPY tsconfig.json ./
 
-# Install only production dependencies first
-RUN npm install --omit=dev --legacy-peer-deps
+# Install dependencies
+RUN npm install --legacy-peer-deps
 
 # Copy source files
 COPY public ./public
 COPY src ./src
 
-# Install dev dependencies and build
-RUN npm install --legacy-peer-deps && \
-    npm run build
+# Build the application
+RUN npm run build
 
 # Stage 2: Production image
 FROM node:18-slim
 
 WORKDIR /app
 
-# Install production dependencies only
-COPY package*.json ./
-RUN npm install --omit=dev --legacy-peer-deps
-
 # Copy built files from builder
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.js ./
 
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# Install production dependencies
+COPY package*.json ./
+RUN npm install --omit=dev --legacy-peer-deps
 
 # Create non-root user and set permissions
 RUN useradd -m appuser && \
