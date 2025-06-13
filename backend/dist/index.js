@@ -6,11 +6,33 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
 const intentRouter_1 = __importDefault(require("./api/routes/intentRouter"));
 const stripeReconciliationRoutes_1 = __importDefault(require("./routes/stripeReconciliationRoutes"));
 const emailSignup_1 = __importDefault(require("./routes/emailSignup"));
+const winston_1 = require("winston");
+// Configure logger
+const logger = (0, winston_1.createLogger)({
+    level: 'info',
+    format: winston_1.format.combine(winston_1.format.timestamp(), winston_1.format.json()),
+    transports: [
+        new winston_1.transports.Console(),
+        new winston_1.transports.File({ filename: 'error.log', level: 'error' }),
+        new winston_1.transports.File({ filename: 'combined.log' })
+    ]
+});
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3002;
+// Log unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+    logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    process.exit(1);
+});
+// Log uncaught exceptions
+process.on('uncaughtException', (error) => {
+    logger.error('Uncaught Exception:', error);
+    process.exit(1);
+});
 // Get __dirname equivalent in ESM
 // In CommonJS, __dirname is available by default
 // CORS configuration
@@ -38,33 +60,95 @@ app.use('/api/reconcile', stripeReconciliationRoutes_1.default);
 app.use('/api/email-signup', emailSignup_1.default);
 // Serve static frontend files if they exist in the expected location
 const frontendPath = path_1.default.join(__dirname, '../frontend');
-console.log(`Looking for frontend files at: ${frontendPath}`);
-try {
-    // Serve static files
+const frontendExists = fs_1.default.existsSync(frontendPath);
+logger.info(`Looking for frontend files at: ${frontendPath}`);
+logger.info(`Frontend directory exists: ${frontendExists}`);
+// Serve static files if they exist
+if (frontendExists) {
+    logger.info('Serving static files from:', frontendPath);
     app.use(express_1.default.static(frontendPath));
-    // Handle root path and all frontend routes
-    app.get('*', (req, res) => {
+    // Handle SPA routing - serve index.html for all other routes
+    app.get('*', (req, res, next) => {
         // Skip API routes
         if (req.path.startsWith('/api/')) {
-            return res.status(404).json({ error: 'API endpoint not found' });
+            return next();
         }
-        // For all other routes, serve the index.html
-        res.sendFile(path_1.default.join(frontendPath, 'index.html'));
+        // For all other routes, serve the frontend's index.html
+        res.sendFile(path_1.default.join(frontendPath, 'index.html'), (err) => {
+            if (err) {
+                logger.error('Error sending file:', err);
+                res.status(500).json({
+                    status: 'error',
+                    message: 'Error loading the application',
+                    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+                });
+            }
+        });
     });
-    console.log('Frontend static files are being served');
 }
-catch (error) {
-    console.error('Error setting up frontend static files:', error);
-    // Fallback route handler for root path
+else {
+    logger.warn('Frontend files not found. Only API routes will be available.');
+    // Basic route for the root path
     app.get('/', (req, res) => {
-        res.send('Backend API is running. Frontend is not available.');
+        res.json({
+            status: 'backend-only',
+            message: 'Backend is running but no frontend files were found.',
+            timestamp: new Date().toISOString()
+        });
     });
 }
-// Start server
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+// Start the server
+const server = app.listen(port, () => {
+    logger.info(`Server is running on port ${port}`);
+    logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    // Log all environment variables (except sensitive ones) for debugging
+    const envVars = Object.keys(process.env)
+        .filter(key => !key.toLowerCase().includes('key') &&
+        !key.toLowerCase().includes('secret') &&
+        !key.toLowerCase().includes('password'))
+        .reduce((obj, key) => {
+        obj[key] = process.env[key];
+        return obj;
+    }, {});
+    logger.debug('Environment variables:', envVars);
+});
+// Handle server errors
+server.on('error', (error) => {
+    if (error.syscall !== 'listen') {
+        throw error;
+    }
+    const bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
+    // Handle specific listen errors with friendly messages
+    switch (error.code) {
+        case 'EACCES':
+            logger.error(bind + ' requires elevated privileges');
+            process.exit(1);
+            break;
+        case 'EADDRINUSE':
+            logger.error(bind + ' is already in use');
+            process.exit(1);
+            break;
+        default:
+            throw error;
+    }
+});
+// Handle process termination
+process.on('SIGTERM', () => {
+    logger.info('SIGTERM received. Shutting down gracefully...');
+    server.close(() => {
+        logger.info('Server closed');
+        process.exit(0);
+    });
 });
 // Global error handler for uncaught exceptions
+app.use((err, req, res, next) => {
+    logger.error('Unhandled error:', err);
+    res.status(500).json({
+        status: 'error',
+        message: 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+});
 process.on('uncaughtException', (error) => {
     console.error('UNCAUGHT EXCEPTION:', error.stack || error.message);
     // Don't exit the process in development to allow for debugging

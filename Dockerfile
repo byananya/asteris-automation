@@ -16,16 +16,22 @@ ENV PORT=3010
 # Create .npmrc file with settings to handle dependency issues
 RUN echo "legacy-peer-deps=true\nstrict-peer-dependencies=false\nforce=true" > /root/.npmrc
 
-# Copy package files
-COPY package.json ./
+# Copy root package files
+COPY package.json package-lock.json* ./
+
+# Copy backend package files
 COPY backend/package.json ./backend/
+# Copy frontend package files
 COPY frontend/package.json ./frontend/
 
-# Install dependencies for backend
+# Install root dependencies
+RUN npm install --no-package-lock --force --production=false
+
+# Install backend dependencies
 WORKDIR /app/backend
 RUN npm install --no-package-lock --force --production=false
 
-# Install dependencies for frontend
+# Install frontend dependencies
 WORKDIR /app/frontend
 RUN npm install --no-package-lock --force
 
@@ -33,14 +39,16 @@ RUN npm install --no-package-lock --force
 WORKDIR /app
 COPY . .
 
-# Build backend
+# Build backend with production dependencies only
 WORKDIR /app/backend
-RUN echo '{"extends":"./tsconfig.json","compilerOptions":{"skipLibCheck":true,"noEmit":false,"outDir":"dist"}}' > tsconfig.build.json
-RUN npx tsc -p tsconfig.build.json
+RUN npm prune --production
+
+# Compile TypeScript
+RUN npx tsc -p tsconfig.json
 
 # Build frontend
 WORKDIR /app/frontend
-RUN echo "NEXT_SKIP_TYPECHECKING=true\nTYPESCRIPT_IGNORE_FILE=true" > .env.local
+RUN echo "NEXT_SKIP_TYPECHECKING=true" > .env.local
 
 # Make build script executable
 RUN chmod +x build.sh
