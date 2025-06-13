@@ -25,31 +25,37 @@ COPY backend/package.json ./backend/
 # Copy frontend package files
 COPY frontend/package.json ./frontend/
 
-# Install root dependencies
-RUN npm install --no-package-lock --force --production=false
+# Install root dependencies with memory optimization
+RUN npm config set max_old_space_size 2048 && \
+    npm install --no-package-lock --omit=dev --legacy-peer-deps
 
 # Install backend dependencies
 WORKDIR /app/backend
-RUN npm install --no-package-lock --force --production=false
+RUN npm config set max_old_space_size 2048 && \
+    npm install --no-package-lock --omit=dev --legacy-peer-deps
 
-# Second stage: Build frontend
+# Second stage: Build frontend with memory optimizations
 FROM node:18-slim as frontend-builder
 WORKDIR /app
 
-# Copy package files and configs first
+# Set memory limits for Node.js
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+
+# Copy package files and lock file first for better caching
 COPY frontend/package*.json ./
 COPY frontend/next.config.js ./
 COPY frontend/tsconfig.json ./
 
-# Install all dependencies
-RUN npm install --legacy-peer-deps
+# Install only production dependencies first
+RUN npm install --omit=dev --legacy-peer-deps
 
 # Copy source files
 COPY frontend/public ./public
 COPY frontend/src ./src
 
-# Build the Next.js app with standalone output
-RUN npm run build
+# Install dev dependencies and build
+RUN npm install --legacy-peer-deps && \
+    npm run build
 
 # Create a production image
 FROM node:18-slim
