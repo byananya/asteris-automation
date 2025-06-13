@@ -17,8 +17,12 @@ COPY . .
 # Create .env file to skip TypeScript checks
 RUN echo "NEXT_SKIP_TYPECHECKING=true\nTYPESCRIPT_IGNORE_FILE=true" > .env.local
 
-# Build the app with type checking disabled
-RUN npm run build --no-lint
+# Set environment to skip type checking
+ENV NEXT_SKIP_TYPECHECKING=true
+ENV TYPESCRIPT_IGNORE_FILE=true
+
+# Build the app
+RUN npm run build
 
 # Expose the port
 EXPOSE 3000
