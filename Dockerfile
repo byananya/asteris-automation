@@ -13,13 +13,15 @@ COPY frontend/tsconfig.json ./
 # Install only production dependencies first
 RUN npm install --omit=dev --legacy-peer-deps
 
-# Copy source files
+# Copy source files and build scripts
 COPY frontend/public ./public
 COPY frontend/src ./src
+COPY frontend/copy-output.js ./
 
 # Install dev dependencies and build
 RUN npm install --only=dev --legacy-peer-deps && \
-    npm run build
+    npm run build && \
+    npm run postbuild
 
 # Stage 2: Build backend
 FROM node:18-slim AS backend-builder
