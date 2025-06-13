@@ -33,16 +33,24 @@ RUN npm install --no-package-lock --force --production=false
 
 # Install frontend dependencies
 WORKDIR /app/frontend
+# Debug: Show current directory and files
+RUN pwd && ls -la
 # Copy package files
 COPY frontend/package*.json ./
+# Debug: Show copied files
+RUN ls -la
+# Debug: Show npm version and config
+RUN npm --version && npm config list
 # Install specific versions of React and its dependencies
-RUN npm install --no-package-lock --force \
+RUN npm install --no-package-lock --force --verbose \
     react@18.2.0 \
     react-dom@18.2.0 \
     @types/react@18.2.56 \
     @types/react-dom@18.2.19
+# Debug: Show installed modules
+RUN ls -la node_modules/
 # Install remaining dependencies
-RUN npm install --no-package-lock --production=false --force
+RUN npm install --no-package-lock --production=false --force --verbose
 # Verify React is installed
 RUN ls -la node_modules/react
 # Copy the rest of the frontend source
