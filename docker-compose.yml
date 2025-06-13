@@ -1,26 +1,44 @@
 version: '3.8'
 
 services:
-  app:
+  backend:
     build:
       context: .
-      target: production
       dockerfile: Dockerfile
+      target: production
     ports:
-      - "3000:3000"  # Frontend
-      - "3001:3001"  # Backend
+      - "3001:3001"
     environment:
       - NODE_ENV=production
       - PORT=3001
-      - NEXT_PUBLIC_API_URL=http://localhost:3001
+    volumes:
+      - ./backend/data:/app/backend/data
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://backend:3001
+    depends_on:
+      - backend
     restart: unless-stopped
-    volumes:
-      - ./backend/data:/app/backend/data  # For persistent data storage
-    working_dir: /app/backend
-    user: "1000:1000"  # Run as non-root user with UID 1000 (adjust as needed)
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
