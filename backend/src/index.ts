@@ -80,7 +80,7 @@ if (frontendExists) {
   app.use(express.static(frontendPath));
   
   // Handle SPA routing - serve index.html for all other routes
-  app.get('*', (req, res, next) => {
+  app.get('*', (req: express.Request, res: express.Response, next: express.NextFunction) => {
     // Skip API routes
     if (req.path.startsWith('/api/')) {
       return next();
@@ -102,7 +102,7 @@ if (frontendExists) {
   logger.warn('Frontend files not found. Only API routes will be available.');
   
   // Basic route for the root path
-  app.get('/', (req, res) => {
+  app.get('/', (req: express.Request, res: express.Response) => {
     res.json({
       status: 'backend-only',
       message: 'Backend is running but no frontend files were found.',
