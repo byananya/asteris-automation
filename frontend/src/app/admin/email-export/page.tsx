@@ -9,7 +9,7 @@ export default function EmailExportPage() {
   const [success, setSuccess] = useState('');
   
   // Backend URL (should match the one in the API route)
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3002';
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002');
   
   const handleExport = (format: 'csv' | 'json') => {
     if (!adminKey) {

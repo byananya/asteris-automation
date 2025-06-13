@@ -52,7 +52,8 @@ export default function InvoiceReconciliationResultsPage() {
     setResults(null); // Clear previous results
 
     try {
-      const response = await fetch('http://localhost:3002/api/reconcile/invoices', {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002');
+    const response = await fetch(`${apiBaseUrl}/api/reconcile/invoices`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -218,7 +218,8 @@ const IntentSearch = forwardRef<any, IntentSearchProps>(({ onSearch, initialQuer
     
     try {
       // Call the semantic search API for suggestions
-      const response = await fetch(`http://localhost:3002/api/semantic-search/suggestions?query=${encodeURIComponent(value)}`);
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002');
+      const response = await fetch(`${apiBaseUrl}/api/semantic-search/suggestions?query=${encodeURIComponent(value)}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch suggestions');

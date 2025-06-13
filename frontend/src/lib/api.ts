@@ -1,5 +1,6 @@
-// Direct backend URL
-const API_BASE_URL = 'http://localhost:3002'
+// Dynamic API URL based on environment
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
+  (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002')
 
 export interface ReconciliationParams {
   startDate?: string;

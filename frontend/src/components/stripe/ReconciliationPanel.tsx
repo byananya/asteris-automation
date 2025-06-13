@@ -49,7 +49,8 @@ export default function ReconciliationPanel() {
       setSummary(summaryData);
 
       // Then download the CSV
-      const csvResponse = await fetch('http://localhost:3002/api/reconcile/invoices', {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002');
+      const csvResponse = await fetch(`${apiBaseUrl}/api/reconcile/invoices`, {
         method: 'POST',
         headers: getStripeHeaders(),
         body: JSON.stringify(dateRange),
