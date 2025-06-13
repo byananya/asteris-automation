@@ -35,12 +35,12 @@ RUN npm install --no-package-lock --force --production=false
 WORKDIR /app/frontend
 # Copy package files first for better caching
 COPY frontend/package*.json ./
-# Install all dependencies (including devDependencies for build)
-RUN npm ci --no-optional
-# Copy the rest of the frontend source
-COPY frontend/ .
+# Install all dependencies including devDependencies (needed for build)
+RUN npm install --no-package-lock --production=false --force
 # Verify React is installed
 RUN ls -la node_modules/react
+# Copy the rest of the frontend source
+COPY frontend/ .
 
 # Set environment variables for frontend build
 ENV NEXT_TELEMETRY_DISABLED=1 \
