@@ -1,105 +1,79 @@
-# First stage: Install system dependencies
-FROM node:18-slim as base
-
-WORKDIR /app
-
-# Install required system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    python3 \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-
-# Build frontend using the frontend Dockerfile
-FROM node:18-slim as frontend-builder
+# Stage 1: Build frontend
+FROM node:18-slim AS frontend-builder
 WORKDIR /app/frontend
-COPY frontend/ .
+
+# Copy frontend files
+COPY frontend/package*.json ./
+COPY frontend/next.config.js ./
+COPY frontend/tsconfig.json ./
+
+# Install dependencies and build
 RUN npm install --legacy-peer-deps && \
     npm run build
 
-# Build backend
-FROM base as backend-builder
+# Stage 2: Build backend
+FROM node:18-slim AS backend-builder
 WORKDIR /app/backend
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy backend files
 COPY backend/package*.json ./
 COPY backend/tsconfig*.json ./
+
+# Install dependencies and build
 RUN npm install --production=false --legacy-peer-deps
 COPY backend/ .
 RUN npm run build
 
 # Final production image
 FROM node:18-slim
-WORKDIR /app
 
-# Copy built backend
-COPY --from=backend-builder /app/backend/package*.json ./backend/
-COPY --from=backend-builder /app/backend/dist ./backend/dist
-
-# Copy frontend build
-COPY --from=frontend-builder /app/.next/standalone ./
-COPY --from=frontend-builder /app/.next/static ./.next/static
-COPY --from=frontend-builder /app/public ./public
+# Create app directory
+WORKDIR /app/backend
 
 # Install production dependencies
-RUN npx next export -o standalone
+COPY --from=backend-builder /app/backend/package*.json ./
+RUN npm install --production --legacy-peer-deps
 
-# Build Next.js application with type checking disabled
-RUN npx next build --no-lint
-# Export static files
-RUN npx next export -o standalone
+# Copy built backend
+COPY --from=backend-builder /app/backend/dist ./dist
 
-# Copy all files needed for build
-WORKDIR /app
-COPY . .
+# Copy frontend build
+COPY --from=frontend-builder /app/frontend/.next/standalone /app/frontend/
+COPY --from=frontend-builder /app/frontend/.next/static /app/frontend/.next/static
+COPY --from=frontend-builder /app/frontend/public /app/frontend/public
 
-# Build backend
-WORKDIR /app/backend
-# Install production dependencies only
-RUN npm ci --only=production
-# Compile TypeScript
-RUN npx tsc -p tsconfig.json
+# Install curl for health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-# Production stage
-FROM node:18-slim
-
-WORKDIR /app
-
-# Install required system dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Create non-root user
+RUN useradd -m appuser && \
+    chown -R appuser:appuser /app
+USER appuser
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV PORT=3010
+ENV PORT=3001
 
-# Create non-root user
-RUN useradd -m appuser
-
-# Copy built files from builder
-COPY --from=builder /app/backend/package*.json ./backend/
-COPY --from=builder /app/backend/dist ./backend/dist
-COPY --from=builder /app/backend/node_modules ./backend/node_modules
-
-# Copy Next.js standalone output
-COPY --from=builder /app/frontend/standalone ./frontend
-COPY --from=builder /app/frontend/.next/static ./frontend/.next/static
-COPY --from=builder /app/frontend/public ./frontend/public
+# Expose ports
+EXPOSE 3000 3001
 
 # Create necessary directories and set permissions
-RUN mkdir -p /app/logs /app/scripts && \
+RUN mkdir -p /app/backend/logs && \
     chown -R appuser:appuser /app
-
-# Copy healthcheck script
-COPY --chown=appuser:appuser scripts/healthcheck.sh /app/scripts/
-RUN chmod +x /app/scripts/healthcheck.sh
 
 WORKDIR /app/backend
 
-# Health check with retry logic
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD ["/bin/sh", "-c", "/app/scripts/healthcheck.sh"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3001/health || exit 1
 
 # Use non-root user
 USER appuser
