@@ -33,32 +33,31 @@ RUN npm install --no-package-lock --force --production=false
 
 # Install frontend dependencies
 WORKDIR /app/frontend
+# Install Next.js and other frontend dependencies
+RUN npm install next@latest react@latest react-dom@latest --no-package-lock --force
 RUN npm install --no-package-lock --force
 
 # Copy all files needed for build
 WORKDIR /app
 COPY . .
 
-# Ensure all configuration files are in place
+# Build backend
 WORKDIR /app/backend
-RUN ls -la
-
 # Install production dependencies only
 RUN npm ci --only=production
-
-# Compile TypeScript using the production config
-RUN ls -la
+# Compile TypeScript
 RUN npx tsc -p tsconfig.json
 
 # Build frontend
 WORKDIR /app/frontend
+# Set environment variables for frontend build
 RUN echo "NEXT_SKIP_TYPECHECKING=true" > .env.local
-
-# Make build script executable
-RUN chmod +x build.sh
-
-# Build frontend using our custom script
-RUN ./build.sh
+# Install production dependencies for frontend
+RUN npm ci --only=production
+# Build Next.js application
+RUN npx next build
+# Export static files
+RUN npx next export -o standalone
 
 # Production stage
 FROM node:18-slim
@@ -81,7 +80,9 @@ RUN useradd -m appuser
 COPY --from=builder /app/backend/package*.json ./backend/
 COPY --from=builder /app/backend/dist ./backend/dist
 COPY --from=builder /app/backend/node_modules ./backend/node_modules
-COPY --from=builder /app/frontend/.next/standalone ./frontend
+
+# Copy Next.js standalone output
+COPY --from=builder /app/frontend/standalone ./frontend
 COPY --from=builder /app/frontend/.next/static ./frontend/.next/static
 COPY --from=builder /app/frontend/public ./frontend/public
 
