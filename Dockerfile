@@ -55,70 +55,56 @@ RUN npm install --only=dev --legacy-peer-deps && \
 # Final production image
 FROM node:18-slim
 
-# Create app directory
-WORKDIR /app/backend
+# Create app directory structure
+RUN mkdir -p /app/backend /app/frontend
 
-# Install production dependencies
+# Install production dependencies for backend
+WORKDIR /app/backend
 COPY --from=backend-builder /app/backend/package*.json ./
 RUN npm install --production --legacy-peer-deps
 
 # Copy built backend
 COPY --from=backend-builder /app/backend/dist ./dist
 
-# Copy frontend build
-COPY --from=frontend-builder /app/frontend/.next/standalone /app/frontend/
-COPY --from=frontend-builder /app/frontend/.next/static /app/frontend/.next/static
+# Copy frontend build output
+COPY --from=frontend-builder /app/frontend/.next /app/frontend/.next
 COPY --from=frontend-builder /app/frontend/public /app/frontend/public
+COPY --from=frontend-builder /app/frontend/package.json /app/frontend/
+
+# Create necessary symlinks
+RUN cd /app/frontend && \
+    mkdir -p .next/standalone && \
+    ln -s ../.next/static .next/standalone/.next/static && \
+    ln -s ../../public .next/standalone/public
 
 # Install curl for health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
 
-# Create non-root user
+# Create non-root user and set permissions
 RUN useradd -m appuser && \
     chown -R appuser:appuser /app
-USER appuser
 
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3001
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Expose ports
 EXPOSE 3000 3001
 
 # Create necessary directories and set permissions
-RUN mkdir -p /app/backend/logs && \
+RUN mkdir -p /app/backend/logs /app/backend/data && \
     chown -R appuser:appuser /app
-
-WORKDIR /app/backend
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:3001/health || exit 1
 
-# Use non-root user
+# Set working directory and user
+WORKDIR /app/backend
 USER appuser
 
-# Expose the port the app runs on
-EXPOSE 3010
-
-# Verify the output directory structure
-RUN echo "Verifying backend/frontend directory structure:" && \
-    mkdir -p /app/backend/frontend && \
-    echo "Copied files:" && \
-    ls -la /app/backend/frontend/
-
-# The build.sh script already handles copying files to /app/backend/frontend
-# Verify the final directory structure
-RUN echo "Final backend/frontend directory structure:" && \
-    ls -la /app/backend/frontend/ && \
-    echo "\n.next directory:" && \
-    ls -la /app/backend/frontend/.next/ && \
-    echo "\npublic directory:" && \
-    ls -la /app/backend/frontend/public/
-
-# Create start script
-RUN echo '#!/bin/bash\ncd /app/backend && node dist/index.js' > /app/start.sh && \
-    chmod +x /app/start.sh
-
-# Start the application
-CMD ["/app/start.sh"]
+# Start the backend server
+CMD ["node", "dist/index.js"]
