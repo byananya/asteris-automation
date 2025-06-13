@@ -35,20 +35,19 @@ RUN npm install --no-package-lock --force --production=false
 # Second stage: Build frontend
 FROM base as frontend-builder
 WORKDIR /app
-# Copy package files first for better caching
+# Copy package files and configs first
 COPY frontend/package*.json ./
+COPY frontend/tsconfig.json ./
+COPY frontend/next.config.js ./
 # Install all dependencies
 RUN npm install --force --legacy-peer-deps
 # Verify React is installed
 RUN ls -la node_modules/react
-# Create necessary directories
-RUN mkdir -p src/utils src/components src/app
-# Copy tsconfig.json and next.config.js first
-COPY frontend/tsconfig*.json ./
-COPY frontend/next.config.js ./
-# Copy source files
-COPY frontend/src/ ./src/
-COPY frontend/public/ ./public/
+# Copy source files with proper directory structure
+COPY frontend/public ./public
+COPY frontend/src ./src
+# Verify the directory structure
+RUN ls -la src/components/ && ls -la src/utils/
 # Build the Next.js app with production environment
 RUN npm run build
 
