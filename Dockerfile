@@ -38,18 +38,18 @@ COPY frontend/package*.json ./
 # Install all required dependencies with exact versions
 RUN npm install --no-package-lock --force --no-optional \
     next@"15.3.3" \
-    react@"^18.2.0" \
-    react-dom@"^18.2.0" \
-    typescript@"^5.0.0" \
-    @types/react@"^18.2.0" \
-    @types/node@"^20.0.0" \
-    @types/react-dom@"^18.2.0" \
-    @typescript-eslint/parser@"^6.0.0" \
-    @typescript-eslint/eslint-plugin@"^6.0.0"
-# Ensure all dependencies are properly installed
+    react@"18.2.0" \
+    react-dom@"18.2.0" \
+    typescript@"5.3.3" \
+    @types/react@"18.2.64" \
+    @types/node@"20.11.19" \
+    @types/react-dom@"18.2.21" \
+    @typescript-eslint/parser@"7.3.1" \
+    @typescript-eslint/eslint-plugin@"7.3.1"
+# Verify installation
+RUN ls -la node_modules/react
+# Install remaining dependencies
 RUN npm install --no-package-lock --force --no-optional
-# Install production dependencies
-RUN npm ci --only=production --no-optional
 
 # Copy all files needed for build
 WORKDIR /app
@@ -68,14 +68,14 @@ WORKDIR /app/frontend
 ENV NEXT_TELEMETRY_DISABLED=1 \
     NODE_ENV=production \
     NEXT_SKIP_TYPECHECKING=1 \
-    NEXT_DISABLE_AUTO_INSTALL=1 \
     NODE_OPTIONS=--openssl-legacy-provider
-# Verify node_modules exists
-RUN ls -la node_modules/react
 # Copy the rest of the frontend files
 COPY frontend/ .
-# Reinstall dependencies to ensure they're available in the build context
+# Reinstall all dependencies to ensure they're available in the build context
+RUN rm -rf node_modules/.cache
 RUN npm install --no-package-lock --force --no-optional
+# Verify React is installed
+RUN ls -la node_modules/react
 # Build Next.js application with type checking disabled
 RUN npx next build --no-lint
 # Export static files
