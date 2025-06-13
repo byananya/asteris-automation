@@ -1,31 +1,43 @@
-FROM node:18
+# Build stage
+FROM node:18-slim AS builder
 
 WORKDIR /app
 
-# Create .npmrc file with settings to handle dependency issues
-RUN echo "legacy-peer-deps=true\nstrict-peer-dependencies=false" > ./.npmrc
+# Set memory limits
+ENV NODE_OPTIONS=--max_old_space_size=2048
 
 # Copy package files first for better caching
 COPY package*.json ./
+COPY next.config.js ./
+COPY tsconfig.json ./
 
-# Install dependencies
-RUN npm install --no-package-lock
+# Install only production dependencies first
+RUN npm install --omit=dev --legacy-peer-deps
 
-# Copy all files
-COPY . .
+# Copy source files
+COPY public ./public
+COPY src ./src
 
-# Create .env file to skip TypeScript checks
-RUN echo "NEXT_SKIP_TYPECHECKING=true\nTYPESCRIPT_IGNORE_FILE=true" > .env.local
+# Install dev dependencies and build
+RUN npm install --legacy-peer-deps && \
+    npm run build
 
-# Set environment to skip type checking
-ENV NEXT_SKIP_TYPECHECKING=true
-ENV TYPESCRIPT_IGNORE_FILE=true
+# Production stage
+FROM node:18-slim
 
-# Build the app
-RUN npm run build
+WORKDIR /app
 
-# Expose the port
+# Copy built files
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Expose port
 EXPOSE 3000
 
-# Start the app
-CMD ["npx", "next", "start"]
+# Start the application
+CMD ["node", "server.js"]

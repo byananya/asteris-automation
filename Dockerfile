@@ -10,104 +10,38 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Set environment variables
-ENV NODE_ENV=production
-ENV PORT=3010
-
-# Create .npmrc file with settings to handle dependency issues
-RUN echo "legacy-peer-deps=true\nstrict-peer-dependencies=false\nforce=true" > /root/.npmrc
-
-# Copy root package files
-COPY package.json package-lock.json* ./
-
-# Copy backend package files
-COPY backend/package.json ./backend/
-# Copy frontend package files
-COPY frontend/package.json ./frontend/
-
-# Install root dependencies with memory optimization
-RUN npm config set max_old_space_size 2048 && \
-    npm install --no-package-lock --omit=dev --legacy-peer-deps
-
-# Install backend dependencies
-WORKDIR /app/backend
-RUN npm config set max_old_space_size 2048 && \
-    npm install --no-package-lock --omit=dev --legacy-peer-deps
-
-# Second stage: Build frontend with memory optimizations
-FROM node:18-slim as frontend-builder
 WORKDIR /app
 
-# Set memory limits for Node.js
-ENV NODE_OPTIONS="--max-old-space-size=2048"
-
-# Copy package files and lock file first for better caching
-COPY frontend/package*.json ./
-COPY frontend/next.config.js ./
-COPY frontend/tsconfig.json ./
-
-# Install only production dependencies first
-RUN npm install --omit=dev --legacy-peer-deps
-
-# Copy source files
-COPY frontend/public ./public
-COPY frontend/src ./src
-
-# Install dev dependencies and build
+# Build frontend using the frontend Dockerfile
+FROM node:18-slim as frontend-builder
+WORKDIR /app/frontend
+COPY frontend/ .
 RUN npm install --legacy-peer-deps && \
     npm run build
 
-# Create a production image
+# Build backend
+FROM base as backend-builder
+WORKDIR /app/backend
+COPY backend/package*.json ./
+COPY backend/tsconfig*.json ./
+RUN npm install --production=false --legacy-peer-deps
+COPY backend/ .
+RUN npm run build
+
+# Final production image
 FROM node:18-slim
 WORKDIR /app
 
-# Install only production dependencies
-RUN npm install -g serve
+# Copy built backend
+COPY --from=backend-builder /app/backend/package*.json ./backend/
+COPY --from=backend-builder /app/backend/dist ./backend/dist
 
-# Copy the built app from the builder stage
+# Copy frontend build
 COPY --from=frontend-builder /app/.next/standalone ./
 COPY --from=frontend-builder /app/.next/static ./.next/static
 COPY --from=frontend-builder /app/public ./public
 
-# Set environment variables
-ENV NODE_ENV=production
-ENV PORT=3000
-
-# Expose the port the app runs on
-EXPOSE 3000
-
-# Start the application
-CMD ["serve", "-p", "3000", "-s", "."]
-
-# Third stage: Main build
-FROM base as builder
-WORKDIR /app
-# Copy root package files
-COPY package.json package-lock.json* ./
-# Copy backend package files
-COPY backend/package.json ./backend/
-# Install root and backend dependencies
-RUN npm install --no-package-lock --force --production=false
-# Copy built frontend from the frontend-builder stage
-COPY --from=frontend-builder /app/.next ./frontend/.next
-COPY --from=frontend-builder /app/public ./frontend/public
-COPY --from=frontend-builder /app/package.json ./frontend/
-# Set working directory to frontend for the next commands
-WORKDIR /app/frontend
-
-# Copy built assets from frontend-builder
-COPY --from=frontend-builder /app/.next ./.next
-COPY --from=frontend-builder /app/public ./public
-
-# Set environment variables for frontend build
-ENV NEXT_TELEMETRY_DISABLED=1 \
-    NODE_ENV=production \
-    NEXT_SKIP_TYPECHECKING=1 \
-    NODE_OPTIONS=--openssl-legacy-provider
-
-# Build Next.js application with type checking disabled
-RUN npx next build --no-lint
-# Export static files
+# Install production dependencies
 RUN npx next export -o standalone
 
 # Build Next.js application with type checking disabled
