@@ -2,35 +2,53 @@
 FROM node:18-slim AS frontend-builder
 WORKDIR /app/frontend
 
-# Copy frontend files
+# Set memory limits for Node.js
+ENV NODE_OPTIONS=--max_old_space_size=2048
+
+# Copy package files first for better caching
 COPY frontend/package*.json ./
 COPY frontend/next.config.js ./
 COPY frontend/tsconfig.json ./
 
-# Install dependencies and build
-RUN npm install --legacy-peer-deps && \
+# Install only production dependencies first
+RUN npm install --omit=dev --legacy-peer-deps
+
+# Copy source files
+COPY frontend/public ./public
+COPY frontend/src ./src
+
+# Install dev dependencies and build
+RUN npm install --only=dev --legacy-peer-deps && \
     npm run build
 
 # Stage 2: Build backend
 FROM node:18-slim AS backend-builder
 WORKDIR /app/backend
 
+# Set memory limits for Node.js
+ENV NODE_OPTIONS=--max_old_space_size=2048
+
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     python3 \
     make \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy backend files
+# Copy package files first for better caching
 COPY backend/package*.json ./
 COPY backend/tsconfig*.json ./
 
-# Install dependencies and build
-RUN npm install --production=false --legacy-peer-deps
+# Install production dependencies first
+RUN npm install --omit=dev --legacy-peer-deps
+
+# Copy source code
 COPY backend/ .
-RUN npm run build
+
+# Install dev dependencies and build
+RUN npm install --only=dev --legacy-peer-deps && \
+    npm run build
 
 # Final production image
 FROM node:18-slim
