@@ -10,12 +10,12 @@
     "dev": "concurrently \"npm run dev --workspace=frontend\" \"npm run dev --workspace=backend\"",
     "build": "npm run install:all && npm run build:frontend && npm run build:backend",
     "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install --build-from-source=@tensorflow/tfjs-node",
-    "build:frontend": "cd frontend && npm install && npm run build",
-    "build:static": "cd frontend && npm install && npm run build",
+    "build:frontend": "cd frontend && npm install && NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL npm run build",
+    "build:static": "cd frontend && npm install && NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL npm run build",
     "build:backend": "cd backend && npm run build",
-    "start:frontend": "cd frontend && npm start",
-    "start:backend": "cd backend && npm run start:prod",
-    "start": "concurrently --kill-others-on-fail \"npm run start:frontend\" \"npm run start:backend\"",
+    "start:frontend": "cd frontend && PORT=3000 next start",
+    "start:backend": "cd backend && PORT=3001 npm run start:prod",
+    "start": "concurrently --kill-others-on-fail --names 'frontend,backend' --prefix-colors 'cyan,green' \"npm run start:frontend\" \"npm run start:backend\"",
     "postinstall": "npm run build"
   },
   "devDependencies": {
