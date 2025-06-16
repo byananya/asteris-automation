@@ -1,21 +1,32 @@
 #!/bin/bash
 set -e
 
-echo "Building frontend..."
-cd frontend
-npm install
-NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL npm run build
-npm run export
-cd ..
+# Enable debug output if DEBUG is set
+[ "$DEBUG" = "true" ] && set -x
 
-echo "Copying frontend files to backend..."
-rm -rf backend/public
-mkdir -p backend/public
-cp -r frontend/out/* backend/public/
+echo "=== Starting build process ==="
 
-echo "Building backend..."
-cd backend
-npm install
-npm run build
+# Build frontend
+echo "[1/3] Building frontend..."
+(cd frontend && \
+ npm install && \
+ NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api} npm run build && \
+ npm run export)
 
-echo "Build complete!"
+# Copy frontend files to backend
+BUILD_DIR="$(pwd)/frontend/out"
+PUBLIC_DIR="$(pwd)/backend/public"
+
+echo "[2/3] Copying frontend files to backend..."
+rm -rf "$PUBLIC_DIR"
+mkdir -p "$PUBLIC_DIR"
+cp -r "$BUILD_DIR"/* "$PUBLIC_DIR/"
+
+# Build backend
+echo "[3/3] Building backend..."
+(cd backend && \
+ npm install && \
+ npm run build)
+
+echo "=== Build completed successfully ==="
+ls -la "$PUBLIC_DIR"
