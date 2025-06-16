@@ -21,9 +21,8 @@ RUN npm install
 # Copy source code
 COPY frontend/ .
 
-# Build frontend
-RUN npm run build && \
-    npm run export
+# Build frontend with static export
+RUN npm run build
 
 # Stage 2: Build backend
 FROM node:18-slim AS backend-builder
@@ -62,7 +61,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy built frontend
+# Copy built frontend (static export goes to 'out' directory)
 COPY --from=frontend-builder /app/frontend/out /app/backend/public
 
 # Copy built backend
