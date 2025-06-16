@@ -13,6 +13,7 @@ export default function ReconciliationPanel() {
   const [isLoading, setIsLoading] = useState(false);
   const [summary, setSummary] = useState<ReconciliationSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [responseData, setResponseData] = useState<any>(null);
   const [dateRange, setDateRange] = useState({
     startDate: '',
     endDate: '',
@@ -30,46 +31,51 @@ export default function ReconciliationPanel() {
       setIsLoading(true);
       setError(null);
 
-      // First get the summary
-      const queryParams = new URLSearchParams({
-        ...(dateRange.startDate && { startDate: dateRange.startDate }),
-        ...(dateRange.endDate && { endDate: dateRange.endDate })
-      });
-
-      const summaryResponse = await fetch(`/api/stripe/reconciliation/summary?${queryParams}`, {
-        method: 'GET',
-        headers: getStripeHeaders()
-      });
-
-      if (!summaryResponse.ok) {
-        throw new Error('Failed to fetch reconciliation summary');
-      }
-
-      const summaryData = await summaryResponse.json();
-      setSummary(summaryData);
-
-      // Then download the CSV
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002');
-      const csvResponse = await fetch(`${apiBaseUrl}/api/reconcile/invoices`, {
+      
+      // Make the reconciliation request
+      const response = await fetch(`${apiBaseUrl}/api/reconcile/invoices`, {
         method: 'POST',
-        headers: getStripeHeaders(),
-        body: JSON.stringify(dateRange),
+        headers: {
+          ...getStripeHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          startDate: dateRange.startDate || undefined,
+          endDate: dateRange.endDate || undefined
+        }),
       });
 
-      if (!csvResponse.ok) {
-        throw new Error('Failed to generate reconciliation report');
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('Error response:', errorData);
+        throw new Error('Failed to fetch reconciliation data');
       }
 
-      // Create a download link for the CSV
-      const blob = await csvResponse.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `reconciliation-${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      const responseData = await response.json();
+      console.log('Received data:', responseData); // Debug log
+      
+      // Handle the response format from the backend
+      if (responseData && responseData.summary) {
+        // If the backend provides a summary, use it directly
+        setSummary(responseData.summary);
+      } else if (responseData && Array.isArray(responseData.records)) {
+        // Otherwise calculate summary from records
+        const records = responseData.records;
+        const summary = {
+          totalGross: records.reduce((sum: number, record: any) => sum + (record.amount || 0), 0),
+          totalFees: records.reduce((sum: number, record: any) => sum + (record.fee || 0), 0),
+          totalNet: records.reduce((sum: number, record: any) => sum + ((record.amount || 0) - (record.fee || 0)), 0),
+          recordCount: records.length
+        };
+        setSummary(summary);
+      } else {
+        console.error('Unexpected response format:', responseData);
+        throw new Error('Unexpected response format from server');
+      }
+      
+      // Save the raw response data for debugging
+      setResponseData(responseData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       console.error('Reconciliation error:', err);
@@ -113,20 +119,22 @@ export default function ReconciliationPanel() {
         </div>
       </div>
 
-      <button
-        onClick={runReconciliation}
-        disabled={isLoading}
-        className={styles.reconcileButton}
-      >
-        {isLoading ? (
-          <>
-            <div className={styles.spinner} />
-            Running Reconciliation...
-          </>
-        ) : (
-          'Run Invoice Reconciliation'
-        )}
-      </button>
+      <div className={styles.actions}>
+        <button
+          onClick={runReconciliation}
+          disabled={isLoading}
+          className={styles.button}
+        >
+          {isLoading ? (
+            <>
+              <div className={styles.spinner} />
+              Processing...
+            </>
+          ) : (
+            'Run Reconciliation'
+          )}
+        </button>
+      </div>
 
       {error && <div className={styles.error}>{error}</div>}
 
