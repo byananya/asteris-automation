@@ -57,9 +57,38 @@ app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health check endpoint for Railway
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+// Enhanced health check endpoint
+app.get('/health', (req: express.Request, res: express.Response) => {
+  try {
+    // Check if frontend files exist in production
+    if (process.env.NODE_ENV === 'production' && frontendExists) {
+      const indexPath = path.join(frontendPath, 'index.html');
+      if (!fs.existsSync(indexPath)) {
+        return res.status(500).json({
+          status: 'error',
+          message: 'Frontend index.html not found',
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+    
+    // Add database health check if needed
+    // Example: await checkDatabaseConnection();
+    
+    // If all checks pass
+    res.status(200).json({
+      status: 'ok',
+      environment: process.env.NODE_ENV || 'development',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Health check failed:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // API Routes - THESE MUST BE DEFINED BEFORE ANY STATIC FILE SERVING OR CATCH-ALL ROUTES
