@@ -1,0 +1,14 @@
+# robots.txt for Asteris Automation Platform
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://asteris.ai/sitemap.xml
+
+# Disallow specific paths that shouldn't be indexed
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/
+
+# Crawl delay to prevent overloading the server
+Crawl-delay: 10

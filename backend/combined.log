@@ -13,3 +13,51 @@
 {"level":"warn","message":"Frontend files not found. Only API routes will be available.","timestamp":"2025-06-11T10:02:05.066Z"}
 {"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-11T10:02:05.067Z"}
 {"level":"info","message":"Environment: development","timestamp":"2025-06-11T10:02:05.067Z"}
+{"level":"info","message":"Looking for frontend files at: /Users/ananya/Documents/asteris-ai/asteris-automation/backend/frontend","timestamp":"2025-06-16T06:41:31.471Z"}
+{"level":"info","message":"Frontend directory exists: false","timestamp":"2025-06-16T06:41:31.473Z"}
+{"level":"warn","message":"Frontend files not found. Only API routes will be available.","timestamp":"2025-06-16T06:41:31.473Z"}
+{"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-16T06:41:31.475Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-06-16T06:41:31.475Z"}
+{"level":"info","message":"SIGTERM received. Shutting down gracefully...","timestamp":"2025-06-16T06:48:22.384Z"}
+{"level":"info","message":"Looking for frontend files at: /Users/ananya/Documents/asteris-ai/asteris-automation/backend/frontend","timestamp":"2025-06-16T06:49:12.197Z"}
+{"level":"info","message":"Frontend directory exists: false","timestamp":"2025-06-16T06:49:12.198Z"}
+{"level":"warn","message":"Frontend files not found. Only API routes will be available.","timestamp":"2025-06-16T06:49:12.198Z"}
+{"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-16T06:49:12.199Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-06-16T06:49:12.199Z"}
+{"level":"info","message":"Looking for frontend files at: /Users/ananya/Documents/asteris-ai/asteris-automation/backend/frontend","timestamp":"2025-06-16T06:51:11.498Z"}
+{"level":"info","message":"Frontend directory exists: false","timestamp":"2025-06-16T06:51:11.500Z"}
+{"level":"warn","message":"Frontend files not found. Only API routes will be available.","timestamp":"2025-06-16T06:51:11.500Z"}
+{"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-16T06:51:11.501Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-06-16T06:51:11.501Z"}
+{"level":"info","message":"SIGTERM received. Shutting down gracefully...","timestamp":"2025-06-16T06:52:51.841Z"}
+{"level":"info","message":"Looking for frontend files at: /Users/ananya/Documents/asteris-ai/asteris-automation/backend/frontend","timestamp":"2025-06-16T06:53:20.087Z"}
+{"level":"info","message":"Frontend directory exists: false","timestamp":"2025-06-16T06:53:20.088Z"}
+{"level":"warn","message":"Frontend files not found. Only API routes will be available.","timestamp":"2025-06-16T06:53:20.088Z"}
+{"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-16T06:53:20.089Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-06-16T06:53:20.089Z"}
+{"level":"info","message":"Looking for frontend files at: /Users/ananya/Documents/asteris-ai/asteris-automation/backend/frontend","timestamp":"2025-06-16T06:59:33.500Z"}
+{"level":"info","message":"Frontend directory exists: true","timestamp":"2025-06-16T06:59:33.501Z"}
+{"level":"info","message":"Serving static files from:","timestamp":"2025-06-16T06:59:33.501Z"}
+{"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-16T06:59:33.503Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-06-16T06:59:33.503Z"}
+{"level":"info","message":"Looking for frontend files at: /Users/ananya/Documents/asteris-ai/asteris-automation/backend/frontend","timestamp":"2025-06-16T07:01:35.143Z"}
+{"level":"info","message":"Frontend directory exists: true","timestamp":"2025-06-16T07:01:35.145Z"}
+{"level":"info","message":"Serving static files from:","timestamp":"2025-06-16T07:01:35.145Z"}
+{"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-16T07:01:35.146Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-06-16T07:01:35.146Z"}
+{"level":"info","message":"Looking for frontend files at: /Users/ananya/Documents/asteris-ai/asteris-automation/backend/frontend","timestamp":"2025-06-16T07:03:40.749Z"}
+{"level":"info","message":"Frontend directory exists: true","timestamp":"2025-06-16T07:03:40.750Z"}
+{"level":"info","message":"Serving static files from:","timestamp":"2025-06-16T07:03:40.750Z"}
+{"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-16T07:03:40.752Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-06-16T07:03:40.752Z"}
+{"level":"info","message":"Looking for frontend files at: /Users/ananya/Documents/asteris-ai/asteris-automation/backend/frontend","timestamp":"2025-06-16T07:05:28.086Z"}
+{"level":"info","message":"Frontend directory exists: true","timestamp":"2025-06-16T07:05:28.098Z"}
+{"level":"info","message":"Serving static files from:","timestamp":"2025-06-16T07:05:28.098Z"}
+{"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-16T07:05:28.100Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-06-16T07:05:28.100Z"}
+{"level":"info","message":"Looking for frontend files at: /Users/ananya/Documents/asteris-ai/asteris-automation/backend/frontend","timestamp":"2025-06-16T07:08:39.902Z"}
+{"level":"info","message":"Frontend directory exists: true","timestamp":"2025-06-16T07:08:39.906Z"}
+{"level":"info","message":"Serving static files from:","timestamp":"2025-06-16T07:08:39.906Z"}
+{"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-16T07:08:39.908Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-06-16T07:08:39.908Z"}
+{"level":"info","message":"SIGTERM received. Shutting down gracefully...","timestamp":"2025-06-16T07:09:12.803Z"}

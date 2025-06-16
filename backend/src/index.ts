@@ -68,8 +68,32 @@ app.use('/api/reconcile', stripeReconciliationRoutes);
 app.use('/api/email-signup', emailSignupRouter);
 
 // Serve static frontend files if they exist in the expected location
-const frontendPath = path.join(__dirname, '../frontend');
-const frontendExists = fs.existsSync(frontendPath);
+let frontendPath: string = '';
+let frontendExists: boolean = false;
+
+// In production, look for frontend files in the correct location
+if (process.env.NODE_ENV === 'production') {
+  // Check multiple possible locations for the frontend files
+  const possiblePaths = [
+    path.join(__dirname, '../public'),          // Backend public directory
+    path.join(__dirname, '../../frontend/out'), // Next.js export directory
+    path.join(__dirname, '../../frontend/.next/standalone'), // Standalone build
+    path.join(__dirname, '../frontend')         // Fallback
+  ];
+  
+  // Find the first path that exists
+  for (const possiblePath of possiblePaths) {
+    if (fs.existsSync(possiblePath)) {
+      frontendPath = possiblePath;
+      frontendExists = true;
+      break;
+    }
+  }
+} else {
+  // In development, use the standard path
+  frontendPath = path.join(__dirname, '../frontend');
+  frontendExists = fs.existsSync(frontendPath);
+}
 
 logger.info(`Looking for frontend files at: ${frontendPath}`);
 logger.info(`Frontend directory exists: ${frontendExists}`);
@@ -77,7 +101,15 @@ logger.info(`Frontend directory exists: ${frontendExists}`);
 // Serve static files if they exist
 if (frontendExists) {
   logger.info('Serving static files from:', frontendPath);
+  
+  // Serve static files from the frontend directory
   app.use(express.static(frontendPath));
+  
+  // Also serve _next directory for Next.js static files
+  const nextStaticPath = path.join(frontendPath, '_next');
+  if (fs.existsSync(nextStaticPath)) {
+    app.use('/_next', express.static(nextStaticPath));
+  }
   
   // Handle SPA routing - serve index.html for all other routes
   app.get('*', (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -87,27 +119,64 @@ if (frontendExists) {
     }
     
     // For all other routes, serve the frontend's index.html
-    res.sendFile(path.join(frontendPath, 'index.html'), (err) => {
+    const indexPath = path.join(frontendPath, 'index.html');
+    logger.info(`Serving index.html from: ${indexPath}`);
+    res.sendFile(indexPath, (err: Error | null) => {
       if (err) {
         logger.error('Error sending file:', err);
-        res.status(500).json({
+        return res.status(500).json({
           status: 'error',
-          message: 'Error loading the application',
-          error: process.env.NODE_ENV === 'development' ? err.message : undefined
+          message: err instanceof Error ? err.message : 'Failed to load frontend',
+          timestamp: new Date().toISOString()
         });
       }
     });
   });
-} else {
-  logger.warn('Frontend files not found. Only API routes will be available.');
+} else if (process.env.NODE_ENV === 'production') {
+  logger.warn('Frontend files not found in production. Only API routes will be available.');
   
-  // Basic route for the root path
-  app.get('/', (req: express.Request, res: express.Response) => {
-    res.json({
-      status: 'backend-only',
-      message: 'Backend is running but no frontend files were found.',
-      timestamp: new Date().toISOString()
-    });
+  // In production, serve a simple message if frontend files are missing
+  app.get('*', (req: express.Request, res: express.Response) => {
+    if (!req.path.startsWith('/api/')) {
+      return res.status(404).json({
+        status: 'backend-only',
+        message: 'Backend is running but no frontend files were found.',
+        timestamp: new Date().toISOString()
+      });
+    }
+    res.status(404).json({ error: 'Not Found' });
+  });
+} else {
+  // In development, provide a helpful message
+  app.get('*', (req: express.Request, res: express.Response) => {
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({ error: 'API endpoint not found' });
+    }
+    
+    res.status(200).send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Development Mode - Frontend Not Served</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+            h1 { color: #333; }
+            .info { background: #f0f7ff; padding: 15px; border-radius: 4px; margin: 20px 0; }
+            code { background: #f5f5f5; padding: 2px 5px; border-radius: 3px; }
+          </style>
+        </head>
+        <body>
+          <h1>Development Mode Active</h1>
+          <div class="info">
+            <p>This is the backend server running in development mode. The frontend is served from a separate development server.</p>
+            <p>To access the frontend, please ensure the frontend development server is running and visit: <a href="http://localhost:3000">http://localhost:3000</a></p>
+          </div>
+          <h2>Backend API</h2>
+          <p>The backend API is available at <code>http://localhost:3002/api/</code></p>
+          <p>Current time: ${new Date().toISOString()}</p>
+        </body>
+      </html>
+    `);
   });
 }
 
