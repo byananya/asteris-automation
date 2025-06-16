@@ -75,17 +75,29 @@ let frontendExists: boolean = false;
 if (process.env.NODE_ENV === 'production') {
   // Check multiple possible locations for the frontend files
   const possiblePaths = [
-    path.join(__dirname, '../public'),          // Backend public directory
-    path.join(__dirname, '../../frontend/out'), // Next.js export directory
-    path.join(__dirname, '../../frontend/.next/standalone'), // Standalone build
-    path.join(__dirname, '../frontend')         // Fallback
+    { path: path.join(__dirname, '../public'), desc: 'backend/public' },          // Backend public directory
+    { path: path.join(__dirname, '../../frontend/out'), desc: 'frontend/out' }, // Next.js export directory
+    { path: path.join(__dirname, '../../frontend/.next/standalone'), desc: 'frontend/.next/standalone' }, // Standalone build
+    { path: path.join(__dirname, '../frontend'), desc: 'backend/frontend' }         // Fallback
   ];
   
-  // Find the first path that exists
-  for (const possiblePath of possiblePaths) {
-    if (fs.existsSync(possiblePath)) {
+  logger.info('Checking for frontend files in the following locations:');
+  for (const { path: possiblePath, desc } of possiblePaths) {
+    const exists = fs.existsSync(possiblePath);
+    logger.info(`- ${desc}: ${exists ? 'FOUND' : 'not found'} (${possiblePath})`);
+    
+    if (exists) {
       frontendPath = possiblePath;
       frontendExists = true;
+      
+      // Log contents of the directory for debugging
+      try {
+        const files = fs.readdirSync(possiblePath);
+        logger.info(`  Contents (${files.length} items):`, files.slice(0, 10).join(', ') + (files.length > 10 ? ', ...' : ''));
+      } catch (err) {
+        logger.error(`  Error reading directory: ${err}`);
+      }
+      
       break;
     }
   }
