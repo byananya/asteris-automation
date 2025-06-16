@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "nodemon src/index.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/index.js",
+    "start": "NODE_ENV=production node dist/index.js",
+    "start:prod": "NODE_ENV=production node dist/index.js",
     "train": "ts-node src/ml/training/train.ts",
     "postinstall": "npm rebuild @tensorflow/tfjs-node --build-from-source=false"
   },
