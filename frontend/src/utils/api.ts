@@ -1,4 +1,4 @@
-import { config } from '../config';
+import { config, getApiUrl } from '../config';
 
 type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
@@ -13,7 +13,7 @@ export async function api<T = any>(
   data: any = undefined,
   options: RequestOptions = {}
 ): Promise<T> {
-  const url = `${config.apiUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+  const url = getApiUrl(endpoint.startsWith('/') ? endpoint : `/${endpoint}`);
   
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
