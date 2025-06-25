@@ -52,8 +52,11 @@ export default function InvoiceReconciliationResultsPage() {
     setResults(null); // Clear previous results
 
     try {
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002');
-    const response = await fetch(`${apiBaseUrl}/api/reconcile/invoices`, {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+      const requestUrl = `${apiBaseUrl}/api/reconcile/invoices`;
+      console.log('Making request to:', requestUrl);
+      
+      const requestOptions = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,15 +67,43 @@ export default function InvoiceReconciliationResultsPage() {
           // startDate: '2023-01-01',
           // endDate: '2023-12-31',
         }),
+      };
+      
+      console.log('Request options:', JSON.stringify(requestOptions, null, 2));
+      
+      const response = await fetch(requestUrl, requestOptions);
+      console.log('Response status:', response.status);
+      // Convert headers to a plain object for logging
+      const headers: Record<string, string> = {};
+      response.headers.forEach((value, key) => {
+        headers[key] = value;
       });
+      console.log('Response headers:', JSON.stringify(headers, null, 2));
 
+      const responseText = await response.text();
+      console.log('Response body:', responseText);
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch reconciliation results');
+        console.error('API Error Response:', responseText);
+        let errorMessage = `Server returned ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          console.error('Failed to parse error response as JSON:', e);
+        }
+        throw new Error(errorMessage);
       }
 
-      const data: ReconciliationResult = await response.json();
-      setResults(data);
+      let data: ReconciliationResult;
+      try {
+        data = JSON.parse(responseText);
+        console.log('Parsed response data:', data);
+        setResults(data);
+      } catch (e) {
+        console.error('Failed to parse response as JSON:', e);
+        throw new Error(`Failed to parse response: ${responseText.substring(0, 200)}...`);
+      }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred');
       console.error('Frontend fetch error:', err);
