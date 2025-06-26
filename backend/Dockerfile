@@ -9,15 +9,21 @@ ENV NODE_ENV=production \
     PORT=3000 \
     NODE_OPTIONS=--max-old-space-size=1024
 
-# Copy package files first to leverage Docker cache
+# Copy package files and source code
 COPY package*.json ./
 COPY tsconfig*.json ./
 
 # Install only production dependencies first
 RUN npm ci --only=production
 
+# Create src directory if it doesn't exist
+RUN mkdir -p src
+
 # Copy source files
-COPY src ./src
+COPY src/ ./src/
+
+# Verify src directory contents (for debugging)
+RUN ls -la src/
 
 # Build the application with memory limit
 RUN NODE_OPTIONS=--max-old-space-size=1024 npm run build
