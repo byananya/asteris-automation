@@ -16,7 +16,7 @@ COPY backend/src/ ./src/
 RUN npm run build
 
 # Install only production dependencies
-RUN npm prune --production
+RUN npm install --omit=dev --legacy-peer-deps
 
 # Stage 2: Production image
 FROM node:18-slim
