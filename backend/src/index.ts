@@ -262,8 +262,10 @@ if (frontendExists) {
 }
 
 // Start the server
-const server = app.listen(port, () => {
-  logger.info(`Server is running on port ${port}`);
+const host = process.env.HOST || '0.0.0.0'; // Listen on all network interfaces
+const portNumber = typeof port === 'string' ? parseInt(port, 10) : port;
+const server = app.listen(portNumber, host, () => {
+  logger.info(`Server is running on http://${host}:${portNumber}`);
   logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
   
   // Log all environment variables (except sensitive ones) for debugging
@@ -290,11 +292,11 @@ server.on('error', (error: NodeJS.ErrnoException) => {
   // Handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
-      logger.error(bind + ' requires elevated privileges');
+      logger.error(`${bind} (${portNumber}) requires elevated privileges`);
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      logger.error(bind + ' is already in use');
+      logger.error(`${bind} (${portNumber}) is already in use`);
       process.exit(1);
       break;
     default:
