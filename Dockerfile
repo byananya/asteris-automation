@@ -3,14 +3,14 @@ FROM node:18-slim AS builder
 WORKDIR /app
 
 # Copy package files first for better caching
-COPY package*.json ./
-COPY tsconfig*.json ./
+COPY backend/package*.json ./
+COPY backend/tsconfig*.json ./
 
 # Install all dependencies including devDependencies
 RUN npm install --legacy-peer-deps
 
 # Copy source code
-COPY src/ ./src/
+COPY backend/src/ ./src/
 
 # Build the project
 RUN npm run build
