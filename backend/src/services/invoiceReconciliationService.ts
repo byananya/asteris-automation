@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import 'uuid'; // Ensure types are loaded
 import { DataSource } from 'typeorm';
 import { AppDataSource } from '../config/data-source.js';
-import { format, parseISO, subDays } from 'date-fns';
+import { format, parse, subDays } from 'date-fns';
 import { logger } from '../utils/consoleLogger.js'; // Using console-based logger for ES modules
 
 // Initialize database connection

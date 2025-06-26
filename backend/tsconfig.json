@@ -1,36 +1,35 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "CommonJS",
+    "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "strictPropertyInitialization": false,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "noImplicitThis": true,
-    "noImplicitAny": false,
-    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
     "outDir": "dist",
     "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
-      "*": ["node_modules/*", "../node_modules/*"]
+      "*": ["node_modules/*"]
     },
     "allowJs": true,
     "resolveJsonModule": true,
     "sourceMap": true,
-    "allowSyntheticDefaultImports": true,
     "noEmit": false,
-    "types": ["node"],
-    "typeRoots": [
-      "./node_modules/@types",
-      "../node_modules/@types"
-    ]
+    "strict": true,
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "forceConsistentCasingInFileNames": true,
+    "strictPropertyInitialization": false,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "noImplicitThis": true,
+    "noImplicitAny": false
+  },
+  "ts-node": {
+    "esm": false,
+    "experimentalSpecifierResolution": "node"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts"]
+  "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts", "dist"]
 }

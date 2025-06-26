@@ -1,6 +1,15 @@
-// Dynamic API URL based on environment
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
-  (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002')
+// API URL configuration
+const getApiBaseUrl = () => {
+  // In browser, use relative URL or the full URL from env
+  if (typeof window !== 'undefined') {
+    return process.env.NEXT_PUBLIC_API_URL || window.location.origin;
+  }
+  
+  // On server during SSR, use the environment variable or default to localhost
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export interface ReconciliationParams {
   startDate?: string;

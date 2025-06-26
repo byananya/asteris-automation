@@ -1,11 +1,32 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 import intentRouter from './api/routes/intentRouter';
 import stripeReconciliationRoutes from './routes/stripeReconciliationRoutes';
 import emailSignupRouter from './routes/emailSignup';
 import { createLogger, format, transports } from 'winston';
+
+// Validate required environment variables
+const requiredEnvVars = [
+  'PORT',
+  'NODE_ENV',
+  'API_KEY'
+];
+
+const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+if (missingVars.length > 0) {
+  console.error(`Missing required environment variables: ${missingVars.join(', ')}`);
+  process.exit(1);
+}
+
+// Check if we're in development mode and log a warning for missing Stripe key
+if (!process.env.STRIPE_SECRET_KEY && process.env.NODE_ENV !== 'production') {
+  console.warn('Warning: STRIPE_SECRET_KEY is not set. Stripe functionality will be disabled.');
+}
 
 // Configure logger
 const logger = createLogger({
@@ -24,6 +45,43 @@ const logger = createLogger({
 const app = express();
 const port = process.env.PORT || 3002;
 
+// Configure CORS
+const allowedOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+  : ['http://localhost:3000'];
+
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-stripe-key'],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+};
+
+// Apply CORS with the configured options
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Enable pre-flight for all routes
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Log all requests
+app.use((req, res, next) => {
+  logger.info(`${req.method} ${req.originalUrl}`);
+  next();
+});
+
 // Log unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
   logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
@@ -36,26 +94,8 @@ process.on('uncaughtException', (error) => {
   process.exit(1);
 });
 
-// Get __dirname equivalent in ESM
-// In CommonJS, __dirname is available by default
-
-// CORS configuration
-const corsOptions = {
-  origin: 'http://localhost:3000', // Frontend URL
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-stripe-key'],
-  credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204
-};
-
-// Middleware
-app.use(cors(corsOptions));
-
-// Handle preflight requests
-app.options('*', cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Use built-in __dirname and __filename in CommonJS
+const rootDir = path.resolve(__dirname, '..');
 
 // Enhanced health check endpoint
 app.get('/health', (req: express.Request, res: express.Response) => {

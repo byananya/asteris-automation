@@ -52,7 +52,9 @@ export default function InvoiceReconciliationResultsPage() {
     setResults(null); // Clear previous results
 
     try {
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+      // Use the same API base URL configuration as in api.ts
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 
+        (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002');
       const requestUrl = `${apiBaseUrl}/api/reconcile/invoices`;
       console.log('Making request to:', requestUrl);
       
