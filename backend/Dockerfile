@@ -1,43 +1,32 @@
-# This is a development Dockerfile that uses the production multi-stage build
-# For production, use Dockerfile.prod directly
-
+# Use Node.js LTS
 FROM node:18-slim as builder
 
+# Set working directory
 WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     python3 \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV PORT=3010
+ENV PORT=3000
 
 # Copy package files
 COPY package*.json ./
-COPY .npmrc ./
+COPY tsconfig*.json ./
 
-# Install all dependencies
-RUN npm install --no-package-lock --force --production=false \
-    @types/jest@^29.5.14
 
-# Explicitly install TypeScript globally to ensure it's available
-RUN npm install -g typescript@5.8.3
+# Install dependencies
+RUN npm ci --only=production
 
 # Copy source files
-COPY . .
+COPY src ./src
 
-# Create a clean tsconfig.prod.json with properly escaped JSON
-RUN echo '{\"compilerOptions\":{\"target\":\"ES2020\",\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"esModuleInterop\":true,\"experimentalDecorators\":true,\"emitDecoratorMetadata\":true,\"forceConsistentCasingInFileNames\":true,\"strict\":true,\"strictPropertyInitialization\":false,\"skipLibCheck\":true,\"outDir\":\"dist\",\"allowJs\":true,\"resolveJsonModule\":true,\"sourceMap\":true,\"allowSyntheticDefaultImports\":true,\"noEmit\":false,\"types\":[\"node\"]},\"include\":[\"src/**/*\"],\"exclude\":[\"node_modules\",\"**/*.test.ts\",\"**/*.spec.ts\",\"**/__tests__/**\"]}' > tsconfig.prod.json
-
-# Remove any existing build configs to prevent conflicts
-RUN rm -f tsconfig.build.json tsconfig.json
-
-# Build the application with explicit config
-RUN npx tsc -p tsconfig.prod.json --noEmit false
+# Build the application
+RUN npm run build
 
 # Production stage
 FROM node:18-slim
@@ -46,8 +35,16 @@ WORKDIR /app
 
 # Install production dependencies only
 COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/.npmrc ./
-RUN npm install --production
+COPY --from=builder /app/dist ./dist
+
+# Install only production dependencies
+RUN npm ci --only=production
+
+# Expose the port the app runs on
+EXPOSE 3000
+
+# Set the command to run the app
+CMD ["node", "dist/index.js"]
 
 # Copy built files
 COPY --from=builder /app/dist ./dist
@@ -59,8 +56,6 @@ RUN mkdir -p /app/logs && \
 # Set non-root user
 USER node
 
-# Expose the port the app runs on
-EXPOSE 3010
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
