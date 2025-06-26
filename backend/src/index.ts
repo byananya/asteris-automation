@@ -43,7 +43,10 @@ const logger = createLogger({
 });
 
 const app = express();
-const port = process.env.PORT || 3002;
+const port = process.env.PORT || 3000;
+app.listen(Number(port), '0.0.0.0', () => {
+  logger.info(`Server running on port ${port}`);
+});
 
 // Configure CORS
 const allowedOrigins = process.env.CORS_ORIGIN 
