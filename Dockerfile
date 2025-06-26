@@ -1,24 +1,16 @@
-# Stage 1: Build frontend
-FROM node:18-slim AS frontend-builder
-WORKDIR /app/frontend
-COPY frontend/package*.json ./
-RUN npm install --legacy-peer-deps
-COPY frontend/ ./
-RUN npm run build
-
-# Stage 2: Build backend
-FROM node:18-slim AS backend-builder
-WORKDIR /app/backend
+# Stage 1: Build backend
+FROM node:18-slim AS builder
+WORKDIR /app
 
 # Copy package files first for better caching
-COPY backend/package*.json ./
-COPY backend/tsconfig*.json ./
+COPY package*.json ./
+COPY tsconfig*.json ./
 
 # Install all dependencies including devDependencies
 RUN npm install --legacy-peer-deps
 
 # Copy source code
-COPY backend/ ./
+COPY src/ ./src/
 
 # Build the project
 RUN npm run build
@@ -26,37 +18,35 @@ RUN npm run build
 # Install only production dependencies
 RUN npm prune --production
 
-# Stage 3: Production image
+# Stage 2: Production image
 FROM node:18-slim
-WORKDIR /app/backend
+WORKDIR /app
+
+# Set environment variables
+ENV NODE_ENV=production \
+    PORT=3000 \
+    NODE_OPTIONS=--max-old-space-size=1024
 
 # Install production dependencies only
-COPY --from=backend-builder /app/backend/package*.json ./
+COPY --from=builder /app/package*.json ./
 RUN npm install --omit=dev --legacy-peer-deps
 
 # Copy built files
-COPY --from=backend-builder /app/backend/dist ./dist
+COPY --from=builder /app/dist ./dist
 
-# Copy frontend build output into backend's public directory
-COPY --from=frontend-builder /app/frontend/out ./public
+# Create necessary directories for logs
+RUN mkdir -p /app/logs && \
+    chown -R node:node /app
 
-# Set environment variables
-ENV NODE_ENV=production
-ENV PORT=3001
+# Set non-root user
+USER node
 
 # Expose port
-EXPOSE 3001
+EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3001/health || exit 1
+  CMD curl -f http://localhost:3000/health || exit 1
 
-# Create non-root user and set permissions
-RUN useradd -m appuser && \
-    chown -R appuser:appuser /app/backend
-
-# Switch to non-root user
-USER appuser
-
-# Start the backend server
+# Run the application
 CMD ["node", "dist/index.js"]
