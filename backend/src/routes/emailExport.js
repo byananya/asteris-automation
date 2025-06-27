@@ -9,8 +9,16 @@ const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Email storage path (same as in emailSignup.js)
-const EMAIL_STORAGE_PATH = path.join(__dirname, '../../data/email_subscribers.json');
+// Use the same storage path logic as in emailSignup
+const getStoragePath = () => {
+  // In Railway, use the PERSISTENT_STORAGE_DIR environment variable if set
+  // Fall back to a local data directory in development
+  const storageDir = process.env.PERSISTENT_STORAGE_DIR || path.join(__dirname, '../../data');
+  const storagePath = path.join(storageDir, 'email_subscribers.json');
+  return { storageDir, storagePath };
+};
+
+const { storagePath: EMAIL_STORAGE_PATH } = getStoragePath();
 
 // Simple admin authentication middleware (replace with proper auth in production)
 const adminAuth = (req, res, next) => {

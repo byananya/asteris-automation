@@ -5,20 +5,32 @@ import path from 'path';
 
 const router = express.Router();
 
-// In CommonJS, __dirname is available by default
+// Use a persistent storage directory that works in both development and production
+const getStoragePath = () => {
+  // In Railway, use the PERSISTENT_STORAGE_DIR environment variable if set
+  // Fall back to a local data directory in development
+  const storageDir = process.env.PERSISTENT_STORAGE_DIR || path.join(__dirname, '../../data');
+  const storagePath = path.join(storageDir, 'email_subscribers.json');
+  return { storageDir, storagePath };
+};
 
-// Simple in-file storage for emails (in production, you'd use a database)
-const EMAIL_STORAGE_PATH = path.join(__dirname, '../../data/email_subscribers.json');
+const { storageDir, storagePath: EMAIL_STORAGE_PATH } = getStoragePath();
 
 // Ensure the data directory exists
 const ensureDataDirExists = () => {
-  const dataDir = path.join(__dirname, '../../data');
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-  
-  if (!fs.existsSync(EMAIL_STORAGE_PATH)) {
-    fs.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify([], null, 2));
+  try {
+    if (!fs.existsSync(storageDir)) {
+      console.log(`Creating storage directory: ${storageDir}`);
+      fs.mkdirSync(storageDir, { recursive: true });
+    }
+    
+    if (!fs.existsSync(EMAIL_STORAGE_PATH)) {
+      console.log(`Creating new email storage file: ${EMAIL_STORAGE_PATH}`);
+      fs.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify([], null, 2));
+    }
+  } catch (error) {
+    console.error('Error ensuring data directory exists:', error);
+    throw error;
   }
 };
 
