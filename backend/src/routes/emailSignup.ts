@@ -65,18 +65,42 @@ router.post(
     }
 
     try {
+      console.log('Ensuring data directory exists...');
       ensureDataDirExists();
       
       const { email, name, source } = req.body;
       const timestamp = new Date().toISOString();
       
+      console.log(`Processing subscription for email: ${email}`);
+      
+      // Check if file exists and is readable
+      try {
+        fs.accessSync(EMAIL_STORAGE_PATH, fs.constants.R_OK | fs.constants.W_OK);
+      } catch (err: unknown) {
+        const error = err as NodeJS.ErrnoException;
+        console.error(`File access error for ${EMAIL_STORAGE_PATH}:`, error);
+        // Try to create the file if it doesn't exist
+        if (error.code === 'ENOENT') {
+          console.log('Email storage file not found, creating a new one...');
+          fs.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify([], null, 2));
+        } else {
+          throw error; // Re-throw other errors
+        }
+      }
+      
       // Read existing emails
+      console.log('Reading existing emails...');
       const emailData = fs.readFileSync(EMAIL_STORAGE_PATH, 'utf8');
       const emails = JSON.parse(emailData);
+      
+      if (!Array.isArray(emails)) {
+        throw new Error('Email data is not an array');
+      }
       
       // Check if email already exists
       const existingEmail = emails.find((entry: any) => entry.email === email);
       if (existingEmail) {
+        console.log(`Email ${email} already exists in the list`);
         return res.status(409).json({ 
           success: false, 
           message: 'This email is already subscribed' 
@@ -84,34 +108,53 @@ router.post(
       }
       
       // Add new email
-      emails.push({
+      const newSubscriber = {
         email,
         name: name || '',
         source: source || 'popup',
         timestamp,
-        ip: req.ip || 'unknown', // For analytics purposes
+        ip: req.ip || 'unknown',
         userAgent: req.get('User-Agent') || 'unknown'
-      });
+      };
+      
+      console.log('Adding new subscriber:', newSubscriber);
+      emails.push(newSubscriber);
       
       // Save updated emails
+      console.log('Saving updated email list...');
       fs.writeFileSync(EMAIL_STORAGE_PATH, JSON.stringify(emails, null, 2));
       
-      // In a real implementation, you might want to:
-      // 1. Add the email to a newsletter service like Mailchimp
-      // 2. Send a welcome email
-      // 3. Store in a proper database
+      // Log success
+      console.log('Successfully saved email:', email);
       
       res.status(201).json({ 
         success: true, 
         message: 'Email successfully added to subscribers list' 
       });
-    } catch (error) {
-      console.error('Error adding email subscriber:', error);
+    } catch (error: any) {
+      console.error('Error in email subscription handler:', {
+        message: error.message,
+        stack: error.stack,
+        code: error.code,
+        path: EMAIL_STORAGE_PATH,
+        dirExists: fs.existsSync(path.dirname(EMAIL_STORAGE_PATH)),
+        fileExists: fs.existsSync(EMAIL_STORAGE_PATH),
+        canWrite: (() => {
+          try {
+            fs.accessSync(path.dirname(EMAIL_STORAGE_PATH), fs.constants.W_OK);
+            return true;
+          } catch {
+            return false;
+          }
+        })()
+      });
+      
       res.status(500).json({ 
         success: false, 
-        message: 'Failed to add email to subscribers list' 
+        message: `Failed to add email to subscribers list: ${error.message}`,
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
-    }
+    }  
   }
 );
 
