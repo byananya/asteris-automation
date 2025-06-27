@@ -55,9 +55,11 @@ export default function InvoiceReconciliationResultsPage() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/reconcile/invoices`, {
         method: 'POST',
+        credentials: 'include', // Important for sending cookies if needed
         headers: {
           'Content-Type': 'application/json',
           'x-stripe-key': apiKey,
+          'x-requested-with': 'XMLHttpRequest' // Helps with CORS
         },
         body: JSON.stringify({
           // You can add startDate and endDate from UI elements here

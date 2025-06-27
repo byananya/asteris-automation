@@ -44,8 +44,10 @@ const allowedOrigins = [
   'http://localhost:3001', // Alternative local port
   'https://app.asterisai.org', // Production domain
   'https://asteris-automation-production.up.railway.app', // Railway preview URL
+  'https://asteris-automation.vercel.app', // Vercel deployment
   /https?:\/\/.*\.asterisai\.org$/, // All subdomains of asterisai.org
   /https?:\/\/.*\.railway\.app$/, // All railway.app subdomains
+  /https?:\/\/.*\.vercel\.app$/, // All vercel.app subdomains
   /http:\/\/localhost:\d+$/, // Any localhost with any port
 ];
 
@@ -58,7 +60,7 @@ console.log('- Allowed origins:', allowedOrigins);
 const customCors = (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const origin = req.headers.origin || '';
   
-  // Log request details
+  // Log request details for debugging
   console.log('\n=== CORS Request ===');
   console.log('Origin:', origin);
   console.log('Method:', req.method);
@@ -81,21 +83,28 @@ const customCors = (req: express.Request, res: express.Response, next: express.N
     });
     
     if (isAllowed) {
+      // Set CORS headers for all responses
       res.header('Access-Control-Allow-Origin', origin);
+      res.header('Access-Control-Allow-Credentials', 'true');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-stripe-key');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      
+      // Handle preflight requests
+      if (req.method === 'OPTIONS') {
+        console.log('Handling OPTIONS preflight request');
+        return res.status(204).send();
+      }
+      
       console.log('CORS: Allowing request from origin:', origin);
     } else {
       console.warn('CORS: Blocked request from origin:', origin);
       console.log('Allowed origins:', allowedOrigins);
-      return res.status(403).json({ error: 'Not allowed by CORS' });
+      return res.status(403).json({ 
+        error: 'Not allowed by CORS',
+        requestedOrigin: origin,
+        allowedOrigins: allowedOrigins
+      });
     }
-  }
-  
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-stripe-key');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    return res.status(204).send();
   }
   
   next();
