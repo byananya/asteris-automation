@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { getStripeHeaders } from '../../utils/stripe';
+import { API_BASE_URL } from '../../lib/api';
 import styles from './ReconciliationPanel.module.css';
 
 interface ReconciliationSummary {
@@ -31,13 +32,8 @@ export default function ReconciliationPanel() {
       setIsLoading(true);
       setError(null);
 
-      const isProduction = process.env.NODE_ENV === 'production';
-      const apiBaseUrl = isProduction 
-        ? process.env.NEXT_PUBLIC_API_URL || 'https://api-production-ef16.up.railway.app'
-        : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
-      
       // Make the reconciliation request
-      const response = await fetch(`${apiBaseUrl}/api/reconcile/invoices`, {
+      const response = await fetch(`${API_BASE_URL}/api/reconcile/invoices`, {
         method: 'POST',
         headers: {
           ...getStripeHeaders(),

@@ -1,6 +1,6 @@
 // Dynamic API URL based on environment
 const isProduction = process.env.NODE_ENV === 'production';
-const API_BASE_URL = isProduction 
+export const API_BASE_URL = isProduction 
   ? process.env.NEXT_PUBLIC_API_URL || 'https://api-production-ef16.up.railway.app'
   : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 
