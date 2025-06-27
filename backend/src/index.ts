@@ -38,18 +38,11 @@ process.on('uncaughtException', (error) => {
 // Get __dirname equivalent in ESM
 // In CommonJS, __dirname is available by default
 
-// CORS configuration
-const allowedOrigins = [
-  'http://localhost:3000', // Local development
-  'http://localhost:3001', // Alternative local port
-  'https://app.asterisai.org', // Production domain
-  'https://asteris-automation-production.up.railway.app', // Railway preview URL
-  'https://asteris-automation.vercel.app', // Vercel deployment
-  /https?:\/\/.*\.asterisai\.org$/, // All subdomains of asterisai.org
-  /https?:\/\/.*\.railway\.app$/, // All railway.app subdomains
-  /https?:\/\/.*\.vercel\.app$/, // All vercel.app subdomains
-  /http:\/\/localhost:\d+$/, // Any localhost with any port
-];
+// Import fileURLToPath for ESM compatibility
+import { fileURLToPath } from 'url';
+
+// CORS configuration - temporarily permissive for testing
+const allowedOrigins = ['*']; // Allow all origins for testing
 
 // Enable CORS logging for debugging
 console.log('CORS Configuration:');
@@ -70,28 +63,20 @@ const customCors = (req: express.Request, res: express.Response, next: express.N
   // Set CORS headers
   if (origin) {
     // Check if the origin is in the allowed list or matches the regex
-    const isAllowed = allowedOrigins.some(allowedOrigin => {
-      const matches = typeof allowedOrigin === 'string' 
-        ? origin === allowedOrigin 
-        : allowedOrigin.test(origin);
-      
-      if (matches) {
-        console.log(`Origin ${origin} matches allowed origin:`, allowedOrigin);
-      }
-      
-      return matches;
-    });
+    // Temporarily allow all origins
+    const isAllowed = true;
     
-    if (isAllowed) {
+    if (true) { // Temporarily allow all origins
       // Set CORS headers for all responses
-      res.header('Access-Control-Allow-Origin', origin);
+      res.header('Access-Control-Allow-Origin', '*');
       res.header('Access-Control-Allow-Credentials', 'true');
-      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-stripe-key');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-stripe-key, x-requested-with');
       res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
       
       // Handle preflight requests
       if (req.method === 'OPTIONS') {
         console.log('Handling OPTIONS preflight request');
+        console.log('Request Headers:', req.headers);
         return res.status(204).send();
       }
       
@@ -190,8 +175,12 @@ if (process.env.NODE_ENV === 'production') {
   }
 } else {
   // In development, use the standard path
-  frontendPath = path.join(__dirname, '../frontend');
+  frontendPath = path.join(process.cwd(), '..', 'frontend');
   frontendExists = fs.existsSync(frontendPath);
+
+  logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`Frontend exists: ${frontendExists}`);
+  logger.info(`Frontend path: ${frontendPath}`);
 }
 
 logger.info(`Looking for frontend files at: ${frontendPath}`);
