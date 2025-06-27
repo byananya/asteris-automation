@@ -42,8 +42,10 @@ process.on('uncaughtException', (error) => {
 // CORS configuration
 const allowedOrigins = [
   'http://localhost:3000', // Local development
-  'https://asteris-automation-production.up.railway.app', // Production frontend URL
-  /https:\/\/.*\.railway\.app$/ // Allow all railway.app subdomains
+  'https://app.asterisai.org', // Production domain
+  'https://asteris-automation-production.up.railway.app', // Railway preview URL
+  /https:\/\/.*\.asterisai\.org$/, // All subdomains of asterisai.org
+  /https:\/\/.*\.railway\.app$/ // All railway.app subdomains
 ];
 
 const corsOptions = {
