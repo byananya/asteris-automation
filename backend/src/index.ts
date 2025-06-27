@@ -1,5 +1,4 @@
 import express from 'express';
-import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import intentRouter from './api/routes/intentRouter';
@@ -42,42 +41,68 @@ process.on('uncaughtException', (error) => {
 // CORS configuration
 const allowedOrigins = [
   'http://localhost:3000', // Local development
+  'http://localhost:3001', // Alternative local port
   'https://app.asterisai.org', // Production domain
   'https://asteris-automation-production.up.railway.app', // Railway preview URL
-  /https:\/\/.*\.asterisai\.org$/, // All subdomains of asterisai.org
-  /https:\/\/.*\.railway\.app$/ // All railway.app subdomains
+  /https?:\/\/.*\.asterisai\.org$/, // All subdomains of asterisai.org
+  /https?:\/\/.*\.railway\.app$/, // All railway.app subdomains
+  /http:\/\/localhost:\d+$/, // Any localhost with any port
 ];
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
+// Enable CORS logging for debugging
+console.log('CORS Configuration:');
+console.log('- NODE_ENV:', process.env.NODE_ENV);
+console.log('- Allowed origins:', allowedOrigins);
+
+// Custom CORS middleware
+const customCors = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const origin = req.headers.origin || '';
+  
+  // Log request details
+  console.log('\n=== CORS Request ===');
+  console.log('Origin:', origin);
+  console.log('Method:', req.method);
+  console.log('Path:', req.path);
+  console.log('Headers:', req.headers);
+  
+  // Set CORS headers
+  if (origin) {
     // Check if the origin is in the allowed list or matches the regex
-    if (allowedOrigins.some(allowedOrigin => 
-      typeof allowedOrigin === 'string' 
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      const matches = typeof allowedOrigin === 'string' 
         ? origin === allowedOrigin 
-        : allowedOrigin.test(origin)
-    )) {
-      return callback(null, true);
-    }
+        : allowedOrigin.test(origin);
+      
+      if (matches) {
+        console.log(`Origin ${origin} matches allowed origin:`, allowedOrigin);
+      }
+      
+      return matches;
+    });
     
-    // If not allowed
-    console.warn(`CORS: Blocked request from origin: ${origin}`);
-    return callback(new Error('Not allowed by CORS'));
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-stripe-key'],
-  credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+    if (isAllowed) {
+      res.header('Access-Control-Allow-Origin', origin);
+      console.log('CORS: Allowing request from origin:', origin);
+    } else {
+      console.warn('CORS: Blocked request from origin:', origin);
+      console.log('Allowed origins:', allowedOrigins);
+      return res.status(403).json({ error: 'Not allowed by CORS' });
+    }
+  }
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-stripe-key');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    return res.status(204).send();
+  }
+  
+  next();
 };
 
-// Middleware
-app.use(cors(corsOptions));
-
-// Handle preflight requests
-app.options('*', cors(corsOptions));
+// Apply CORS middleware
+app.use(customCors);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
