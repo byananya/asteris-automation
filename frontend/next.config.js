@@ -39,9 +39,10 @@ const nextConfig = {
 
   // Environment variables are inlined at build time
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002',
+    NEXT_PUBLIC_API_URL: process.env.NODE_ENV === 'production' 
+      ? process.env.NEXT_PUBLIC_API_URL 
+      : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002',
   },
-  
 
 
   // Enable static HTML export
