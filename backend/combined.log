@@ -61,3 +61,29 @@
 {"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-16T07:08:39.908Z"}
 {"level":"info","message":"Environment: development","timestamp":"2025-06-16T07:08:39.908Z"}
 {"level":"info","message":"SIGTERM received. Shutting down gracefully...","timestamp":"2025-06-16T07:09:12.803Z"}
+{"level":"info","message":"Looking for frontend files at: /Users/ananya/Documents/GitHub/asterisAI/asteris-automation/backend/frontend","timestamp":"2025-06-27T06:31:00.638Z"}
+{"level":"info","message":"Frontend directory exists: true","timestamp":"2025-06-27T06:31:00.640Z"}
+{"level":"info","message":"Serving static files from:","timestamp":"2025-06-27T06:31:00.640Z"}
+{"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-27T06:31:00.641Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-06-27T06:31:00.641Z"}
+{"level":"info","message":"Looking for frontend files at: /Users/ananya/Documents/GitHub/asterisAI/asteris-automation/backend/frontend","timestamp":"2025-06-27T06:31:42.943Z"}
+{"level":"info","message":"Frontend directory exists: true","timestamp":"2025-06-27T06:31:42.944Z"}
+{"level":"info","message":"Serving static files from:","timestamp":"2025-06-27T06:31:42.945Z"}
+{"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-27T06:31:42.946Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-06-27T06:31:42.946Z"}
+{"level":"info","message":"Looking for frontend files at: /Users/ananya/Documents/GitHub/asterisAI/asteris-automation/backend/frontend","timestamp":"2025-06-27T06:35:49.673Z"}
+{"level":"info","message":"Frontend directory exists: true","timestamp":"2025-06-27T06:35:49.675Z"}
+{"level":"info","message":"Serving static files from:","timestamp":"2025-06-27T06:35:49.675Z"}
+{"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-27T06:35:49.676Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-06-27T06:35:49.676Z"}
+{"level":"info","message":"Looking for frontend files at: /Users/ananya/Documents/GitHub/asterisAI/asteris-automation/backend/frontend","timestamp":"2025-06-27T06:36:39.069Z"}
+{"level":"info","message":"Frontend directory exists: true","timestamp":"2025-06-27T06:36:39.071Z"}
+{"level":"info","message":"Serving static files from:","timestamp":"2025-06-27T06:36:39.071Z"}
+{"level":"info","message":"Server is running on port 3001","timestamp":"2025-06-27T06:36:39.072Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-06-27T06:36:39.072Z"}
+{"level":"info","message":"SIGTERM received. Shutting down gracefully...","timestamp":"2025-06-27T06:39:57.475Z"}
+{"level":"info","message":"Looking for frontend files at: /Users/ananya/Documents/GitHub/asterisAI/asteris-automation/backend/frontend","timestamp":"2025-06-27T06:40:06.253Z"}
+{"level":"info","message":"Frontend directory exists: true","timestamp":"2025-06-27T06:40:06.254Z"}
+{"level":"info","message":"Serving static files from:","timestamp":"2025-06-27T06:40:06.255Z"}
+{"level":"info","message":"Server is running on port 3002","timestamp":"2025-06-27T06:40:06.256Z"}
+{"level":"info","message":"Environment: development","timestamp":"2025-06-27T06:40:06.256Z"}
