@@ -51,25 +51,45 @@ app.listen(Number(port), '0.0.0.0', () => {
 // Configure CORS
 const allowedOrigins = process.env.CORS_ORIGIN 
   ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
-  : ['http://localhost:3000'];
+  : ['http://localhost:3000', 'https://app.asterisai.org'];
 
 const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     // Allow requests with no origin (like mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+    // Check if the origin matches any of the allowed origins or is a subdomain of asterisai.org
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (allowedOrigin === '*') return true;
+      if (origin === allowedOrigin) return true;
+      if (allowedOrigin === 'https://app.asterisai.org' && 
+          origin.endsWith('.asterisai.org')) {
+        return true;
+      }
+      return false;
+    });
+    
+    if (isAllowed) {
       callback(null, true);
     } else {
+      console.warn('CORS request from not allowed origin:', origin);
+      console.log('Allowed origins:', allowedOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-stripe-key'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-stripe-key', 'x-requested-with'],
   credentials: true,
   preflightContinue: false,
   optionsSuccessStatus: 204
 };
+
+// Log CORS configuration for debugging
+console.log('CORS Configuration:', {
+  allowedOrigins,
+  nodeEnv: process.env.NODE_ENV,
+  corsOrigin: process.env.CORS_ORIGIN
+});
 
 // Apply CORS with the configured options
 app.use(cors(corsOptions));
