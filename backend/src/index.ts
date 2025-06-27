@@ -40,8 +40,30 @@ process.on('uncaughtException', (error) => {
 // In CommonJS, __dirname is available by default
 
 // CORS configuration
+const allowedOrigins = [
+  'http://localhost:3000', // Local development
+  'https://asteris-automation-production.up.railway.app', // Production frontend URL
+  /https:\/\/.*\.railway\.app$/ // Allow all railway.app subdomains
+];
+
 const corsOptions = {
-  origin: 'http://localhost:3000', // Frontend URL
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if the origin is in the allowed list or matches the regex
+    if (allowedOrigins.some(allowedOrigin => 
+      typeof allowedOrigin === 'string' 
+        ? origin === allowedOrigin 
+        : allowedOrigin.test(origin)
+    )) {
+      return callback(null, true);
+    }
+    
+    // If not allowed
+    console.warn(`CORS: Blocked request from origin: ${origin}`);
+    return callback(new Error('Not allowed by CORS'));
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-stripe-key'],
   credentials: true,
