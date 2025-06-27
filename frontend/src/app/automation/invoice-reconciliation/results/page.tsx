@@ -67,14 +67,34 @@ export default function InvoiceReconciliationResultsPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch reconciliation results');
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          console.error('Error parsing error response:', e);
+        }
+        console.error('API Request failed:', {
+          url: `${API_BASE_URL}/api/reconcile/invoices`,
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          error: errorMessage
+        });
+        throw new Error(`Failed to fetch reconciliation results: ${errorMessage}`);
       }
 
       const data: ReconciliationResult = await response.json();
       setResults(data);
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      console.error('Error in fetchReconciliationResults:', {
+        error: err,
+        errorMessage,
+        timestamp: new Date().toISOString(),
+        apiUrl: `${API_BASE_URL}/api/reconcile/invoices`
+      });
+      setError(errorMessage);
       console.error('Frontend fetch error:', err);
     } finally {
       setIsLoading(false);
