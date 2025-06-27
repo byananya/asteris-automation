@@ -31,7 +31,10 @@ export default function ReconciliationPanel() {
       setIsLoading(true);
       setError(null);
 
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002');
+      const isProduction = process.env.NODE_ENV === 'production';
+      const apiBaseUrl = isProduction 
+        ? process.env.NEXT_PUBLIC_API_URL || 'https://api-production-ef16.up.railway.app'
+        : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
       
       // Make the reconciliation request
       const response = await fetch(`${apiBaseUrl}/api/reconcile/invoices`, {

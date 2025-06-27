@@ -52,8 +52,11 @@ export default function InvoiceReconciliationResultsPage() {
     setResults(null); // Clear previous results
 
     try {
-      // Use the environment variable directly - it will be inlined during build
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      // Set API base URL based on environment
+      const isProduction = process.env.NODE_ENV === 'production';
+      const apiBaseUrl = isProduction 
+        ? process.env.NEXT_PUBLIC_API_URL || 'https://api-production-ef16.up.railway.app'
+        : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
       const response = await fetch(`${apiBaseUrl}/api/reconcile/invoices`, {
         method: 'POST',
         headers: {
