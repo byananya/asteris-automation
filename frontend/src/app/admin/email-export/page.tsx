@@ -2,14 +2,15 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { API_BASE_URL } from '@/lib/api';
 
 export default function EmailExportPage() {
   const [adminKey, setAdminKey] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
-  // Backend URL (should match the one in the API route)
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002');
+  // Backend URL from centralized configuration
+  const backendUrl = API_BASE_URL;
   
   const handleExport = (format: 'csv' | 'json') => {
     if (!adminKey) {

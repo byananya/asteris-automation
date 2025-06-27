@@ -3,6 +3,7 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import styles from './page.module.css';
+import { API_BASE_URL } from '@/lib/api';
 
 export default function ConfigurePage() {
   const searchParams = useSearchParams();
@@ -14,8 +15,7 @@ export default function ConfigurePage() {
     const classifyIntent = async () => {
       if (intent) {
         try {
-          const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002');
-          const response = await fetch(`${apiBaseUrl}/api/intent/classify`, {
+          const response = await fetch(`${API_BASE_URL}/api/intent/classify`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

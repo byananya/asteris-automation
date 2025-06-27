@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import styles from './IntentSearch.module.css';
 // Using react-icons instead of lucide-react to avoid dependency issues
 import { FiSearch, FiArrowRight, FiSettings, FiZap, FiCommand, FiMic, FiClock, FiX } from 'react-icons/fi';
+import { API_BASE_URL } from '@/lib/api';
 
 // Define SpeechRecognition types for TypeScript
 interface SpeechRecognitionEvent extends Event {
@@ -218,8 +219,7 @@ const IntentSearch = forwardRef<any, IntentSearchProps>(({ onSearch, initialQuer
     
     try {
       // Call the semantic search API for suggestions
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002');
-      const response = await fetch(`${apiBaseUrl}/api/semantic-search/suggestions?query=${encodeURIComponent(value)}`);
+      const response = await fetch(`${API_BASE_URL}/api/semantic-search/suggestions?query=${encodeURIComponent(value)}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch suggestions');
