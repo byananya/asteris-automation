@@ -17,10 +17,13 @@ export const config = {
 
 // Helper function to get full API URL
 const getApiUrl = (endpoint: string) => {
-  // If apiBaseUrl is empty, it means we're using relative URLs
-  if (!config.apiBaseUrl) return endpoint;
-  // Otherwise, combine base URL with endpoint
-  return `${config.apiBaseUrl}${endpoint}`;
+  const baseUrl = 'https://api-production-ef16.up.railway.app';
+  // Remove leading slash from endpoint if present to prevent double slashes
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
+  // Combine base URL with endpoint
+  const url = `${baseUrl}/${cleanEndpoint}`;
+  console.log('Generated API URL:', url); // Debug log
+  return url;
 };
 
 // Log the API URL in development for debugging

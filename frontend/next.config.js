@@ -12,9 +12,12 @@ const nextConfig = {
   // Enable compression
   compress: true,
   
-  // Disable image optimization for static export
+  // Image optimization
   images: {
-    unoptimized: true,
+    domains: ['api-production-ef16.up.railway.app'],
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24 * 7, // 1 week
+    unoptimized: true, // Required for static export
   },
   
   // Configure base path if needed (e.g., when deploying to a subdirectory)
@@ -25,27 +28,23 @@ const nextConfig = {
   
   // Add trailing slash for static export
   trailingSlash: true,
-  
-  // Note: Headers are removed for static export compatibility
-  // Security headers should be configured at the web server level (Nginx, Apache, etc.)
-
-  // Image optimization
-  images: {
-    domains: [],
-    formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 60 * 60 * 24 * 7, // 1 week
-    unoptimized: true, // Required for static export
-  },
 
   // Environment variables are inlined at build time
-  env: {
-    NEXT_PUBLIC_API_URL: 'https://api-production-ef16.up.railway.app',
+  publicRuntimeConfig: {
+    // Will be available on both server and client
+    NEXT_PUBLIC_API_URL: process.env.NODE_ENV === 'production' 
+      ? 'https://api-production-ef16.up.railway.app' 
+      : 'https://api-production-ef16.up.railway.app',
   },
-  // Required for static export
-  output: 'export',
-  // Disable image optimization for static export
-  images: {
-    unoptimized: true,
+  
+  // API route rewrites
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'https://api-production-ef16.up.railway.app/api/:path*',
+      },
+    ];
   },
   // Disable server-side rendering for static export
   trailingSlash: true,

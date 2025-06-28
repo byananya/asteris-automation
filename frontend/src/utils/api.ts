@@ -55,7 +55,12 @@ export async function api<T = any>(
   data: any = undefined,
   options: RequestOptions = {}
 ): Promise<T> {
-  const url = getApiUrl(endpoint.startsWith('/') ? endpoint : `/${endpoint}`);
+  // Remove leading slash if present to prevent double slashes
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
+  const baseUrl = 'https://api-production-ef16.up.railway.app';
+  const url = `${baseUrl}/${cleanEndpoint}`;
+  
+  console.log('API Request URL:', url); // Debug log
   
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
