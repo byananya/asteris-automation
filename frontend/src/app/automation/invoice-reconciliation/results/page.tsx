@@ -53,7 +53,7 @@ export default function InvoiceReconciliationResultsPage() {
     setResults(null); // Clear previous results
 
     try {
-      const responseData = await api('/api/reconcile/invoices', 'POST', {
+      const responseData = await api('/reconcile/invoices', 'POST', {
         // You can add startDate and endDate from UI elements here
         // startDate: '2023-01-01',
         // endDate: '2023-12-31',

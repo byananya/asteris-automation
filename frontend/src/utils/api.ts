@@ -49,15 +49,8 @@ interface RequestOptions extends RequestInit {
   responseType?: 'json' | 'blob' | 'text';
 }
 
-// Base URL configuration
-const getBaseUrl = () => {
-  // In development, use the proxy (if available) or the production URL directly
-  if (process.env.NODE_ENV === 'development') {
-    return ''; // Proxy will handle the base URL in development
-  }
-  // In production, use the full production URL
-  return 'https://api-production-ef16.up.railway.app';
-};
+// Always use production URL directly
+const PRODUCTION_URL = 'https://api-production-ef16.up.railway.app';
 
 export async function api<T = any>(
   endpoint: string,
@@ -68,20 +61,14 @@ export async function api<T = any>(
   // Remove leading slash from endpoint if present
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
   
-  // Get the appropriate base URL
-  const baseUrl = getBaseUrl();
-  
-  // Construct the full URL
-  const url = baseUrl 
-    ? `${baseUrl}${cleanEndpoint.startsWith('/') ? '' : '/'}${cleanEndpoint}`
-    : `/${cleanEndpoint}`; // Use relative URL in development with proxy
+  // Construct the full URL with production URL
+  const url = `${PRODUCTION_URL}/${cleanEndpoint}`;
   
   console.log('API Request:', {
     url,
     method,
     endpoint,
-    baseUrl,
-    environment: process.env.NODE_ENV
+    environment: process.env.NODE_ENV || 'production'
   });
   
   const headers: HeadersInit = {
