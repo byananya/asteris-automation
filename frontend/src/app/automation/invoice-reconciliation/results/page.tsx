@@ -53,16 +53,25 @@ export default function InvoiceReconciliationResultsPage() {
     setResults(null); // Clear previous results
 
     try {
-      const responseData = await api('/reconcile/invoices', 'POST', {
-        // You can add startDate and endDate from UI elements here
-        // startDate: '2023-01-01',
-        // endDate: '2023-12-31',
-      }, {
+      // Use direct fetch with production URL
+      const response = await fetch('https://api-production-ef16.up.railway.app/reconcile/invoices', {
+        method: 'POST',
         headers: {
-          ...getStripeHeaders(),
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+          'x-stripe-key': apiKey
+        },
+        body: JSON.stringify({
+          // You can add startDate and endDate from UI elements here
+          // startDate: '2023-01-01',
+          // endDate: '2023-12-31',
+        })
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const responseData = await response.json();
       
       // Process the response data
       if (responseData) {
