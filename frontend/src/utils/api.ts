@@ -49,6 +49,16 @@ interface RequestOptions extends RequestInit {
   responseType?: 'json' | 'blob' | 'text';
 }
 
+// Base URL configuration
+const getBaseUrl = () => {
+  // In development, use the proxy (if available) or the production URL directly
+  if (process.env.NODE_ENV === 'development') {
+    return ''; // Proxy will handle the base URL in development
+  }
+  // In production, use the full production URL
+  return 'https://api-production-ef16.up.railway.app';
+};
+
 export async function api<T = any>(
   endpoint: string,
   method: RequestMethod = 'GET',
@@ -57,17 +67,26 @@ export async function api<T = any>(
 ): Promise<T> {
   // Remove leading slash from endpoint if present
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
-  // Always use production URL explicitly
-  const baseUrl = 'https://api-production-ef16.up.railway.app';
-  // Construct URL ensuring no double slashes
-  const url = `${baseUrl}${cleanEndpoint.startsWith('/') ? '' : '/'}${cleanEndpoint}`;
   
-  console.log('API Request URL:', url); // Debug log
+  // Get the appropriate base URL
+  const baseUrl = getBaseUrl();
+  
+  // Construct the full URL
+  const url = baseUrl 
+    ? `${baseUrl}${cleanEndpoint.startsWith('/') ? '' : '/'}${cleanEndpoint}`
+    : `/${cleanEndpoint}`; // Use relative URL in development with proxy
+  
+  console.log('API Request:', {
+    url,
+    method,
+    endpoint,
+    baseUrl,
+    environment: process.env.NODE_ENV
+  });
   
   const headers: HeadersInit = {
-    ...(options.headers || {}),
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers || {}),
   };
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
