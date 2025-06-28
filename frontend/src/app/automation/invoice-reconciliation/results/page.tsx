@@ -53,8 +53,15 @@ export default function InvoiceReconciliationResultsPage() {
     setResults(null); // Clear previous results
 
     try {
+      const requestUrl = 'https://api-production-ef16.up.railway.app/reconcile/invoices';
+      console.log('Making request to:', requestUrl);
+      console.log('Request headers:', {
+        'Content-Type': 'application/json',
+        'x-stripe-key': '***' + apiKey.slice(-4)
+      });
+
       // Use direct fetch with production URL
-      const response = await fetch('https://api-production-ef16.up.railway.app/reconcile/invoices', {
+      const response = await fetch(requestUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -66,6 +73,14 @@ export default function InvoiceReconciliationResultsPage() {
           // endDate: '2023-12-31',
         })
       });
+      
+      console.log('Response status:', response.status);
+      // Convert headers to a plain object for logging
+      const headersObj: Record<string, string> = {};
+      response.headers.forEach((value, key) => {
+        headersObj[key] = value;
+      });
+      console.log('Response headers:', headersObj);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
