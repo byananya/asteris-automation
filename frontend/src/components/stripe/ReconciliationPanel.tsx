@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { getStripeHeaders } from '../../utils/stripe';
-import { API_BASE_URL } from '../../lib/api';
+import { api } from '../../utils/api';
 import styles from './ReconciliationPanel.module.css';
 
 interface ReconciliationSummary {
@@ -32,26 +32,14 @@ export default function ReconciliationPanel() {
       setIsLoading(true);
       setError(null);
 
-      // Make the reconciliation request
-      const response = await fetch(`${API_BASE_URL}/api/reconcile/invoices`, {
-        method: 'POST',
-        headers: {
-          ...getStripeHeaders(),
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          startDate: dateRange.startDate || undefined,
-          endDate: dateRange.endDate || undefined
-        }),
+      // Make the reconciliation request using the api utility
+      const responseData = await api('/reconcile/invoices', 'POST', {
+        startDate: dateRange.startDate || undefined,
+        endDate: dateRange.endDate || undefined
+      }, {
+        headers: getStripeHeaders()
       });
 
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error('Error response:', errorData);
-        throw new Error('Failed to fetch reconciliation data');
-      }
-
-      const responseData = await response.json();
       console.log('Received data:', responseData); // Debug log
       
       // Handle the response format from the backend

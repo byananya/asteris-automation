@@ -1,14 +1,16 @@
 // API Configuration
 export const config = {
-  // Use relative URL in production, or localhost in development
+  // Use environment variable or default to production URL
   apiBaseUrl: 
     process.env.NEXT_PUBLIC_API_BASE_URL || 
-    (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:4000'),
+    (process.env.NODE_ENV === 'production' 
+      ? 'https://api-production-ef16.up.railway.app' 
+      : 'http://localhost:3002'),
   
   // API endpoints
   apiEndpoints: {
     reconciliation: '/api/reconciliation',
-    // Add other API endpoints here
+    reconcile: '/api/reconcile',
   },
   
   // App info

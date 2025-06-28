@@ -3,7 +3,7 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import styles from './page.module.css';
-import { API_BASE_URL } from '@/lib/api';
+import { api } from '@/utils/api';
 
 export default function ConfigurePage() {
   const searchParams = useSearchParams();
@@ -15,15 +15,7 @@ export default function ConfigurePage() {
     const classifyIntent = async () => {
       if (intent) {
         try {
-          const response = await fetch(`${API_BASE_URL}/api/intent/classify`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ text: intent })
-          });
-
-          const data = await response.json();
+          const data = await api('/intent/classify', 'POST', { text: intent });
           
           if (data.intent === 'settings') {
             router.push('/settings');

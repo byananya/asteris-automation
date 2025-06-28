@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import { FiArrowLeft, FiDownload, FiCheckCircle, FiAlertCircle, FiHelpCircle, FiLoader } from 'react-icons/fi';
-import { getStripeApiKey } from '@/utils/stripe';
-import { API_BASE_URL } from '@/lib/api';
+import { getStripeApiKey, getStripeHeaders } from '@/utils/stripe';
+import { api } from '@/utils/api';
 
 // Define frontend interfaces to match backend's ReconciliationResult
 interface ReconciliationRecord {
@@ -53,51 +53,55 @@ export default function InvoiceReconciliationResultsPage() {
     setResults(null); // Clear previous results
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/reconcile/invoices`, {
-        method: 'POST',
-        credentials: 'include', // Important for sending cookies if needed
-        headers: {
-          'Content-Type': 'application/json',
-          'x-stripe-key': apiKey,
-          'x-requested-with': 'XMLHttpRequest' // Helps with CORS
-        },
-        body: JSON.stringify({
-          // You can add startDate and endDate from UI elements here
-          // startDate: '2023-01-01',
-          // endDate: '2023-12-31',
-        }),
+      const responseData = await api('/reconcile/invoices', 'POST', {
+        // You can add startDate and endDate from UI elements here
+        // startDate: '2023-01-01',
+        // endDate: '2023-12-31',
+      }, {
+        headers: getStripeHeaders()
       });
-
-      if (!response.ok) {
-        let errorMessage = `HTTP error! status: ${response.status}`;
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch (e) {
-          console.error('Error parsing error response:', e);
+      
+      // Process the response data
+      if (responseData) {
+        // Transform the data to match our frontend interfaces
+        if (responseData.records) {
+          const transformedData = {
+            records: responseData.records.map((record: any) => ({
+              invoiceId: record.invoiceId || '',
+              customerId: record.customerId || '',
+              customerEmail: record.customerEmail || '',
+              invoiceAmount: record.invoiceAmount || 0,
+              chargeId: record.chargeId || '',
+              grossAmount: record.grossAmount || 0,
+              fee: record.fee || 0,
+              netAmount: record.netAmount || 0,
+              date: record.date || new Date().toISOString(),
+              currency: record.currency || 'usd',
+            })),
+            summary: responseData.summary || {
+              totalGross: 0,
+              totalFees: 0,
+              totalNet: 0,
+              recordCount: 0,
+            },
+          };
+          setResults(transformedData);
+        } else {
+          throw new Error('Invalid response format from server');
         }
-        console.error('API Request failed:', {
-          url: `${API_BASE_URL}/api/reconcile/invoices`,
-          status: response.status,
-          statusText: response.statusText,
-          headers: Object.fromEntries(response.headers.entries()),
-          error: errorMessage
-        });
-        throw new Error(`Failed to fetch reconciliation results: ${errorMessage}`);
+      } else {
+        throw new Error('No data received from server');
       }
-
-      const data: ReconciliationResult = await response.json();
-      setResults(data);
     } catch (err: any) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
       console.error('Error in fetchReconciliationResults:', {
         error: err,
         errorMessage,
         timestamp: new Date().toISOString(),
-        apiUrl: `${API_BASE_URL}/api/reconcile/invoices`
+        endpoint: '/api/reconcile/invoices'
       });
       setError(errorMessage);
-      console.error('Frontend fetch error:', err);
+      console.error('Frontend fetch error details:', err);
     } finally {
       setIsLoading(false);
     }

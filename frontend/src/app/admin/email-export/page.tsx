@@ -2,28 +2,43 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { API_BASE_URL } from '@/lib/api';
+import { api } from '@/utils/api';
 
 export default function EmailExportPage() {
   const [adminKey, setAdminKey] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
-  // Backend URL from centralized configuration
-  const backendUrl = API_BASE_URL;
-  
-  const handleExport = (format: 'csv' | 'json') => {
+  const handleExport = async (format: 'csv' | 'json') => {
     if (!adminKey) {
       setError('Please enter the admin key');
       return;
     }
     
-    // Direct the browser to download the file
-    const exportUrl = `${backendUrl}/email-export/${format}?adminKey=${encodeURIComponent(adminKey)}`;
-    window.open(exportUrl, '_blank');
-    
-    setSuccess(`Downloading email data in ${format.toUpperCase()} format...`);
-    setTimeout(() => setSuccess(''), 3000);
+    try {
+      // Download the file using the api utility
+      const response = await api(`/email-export/${format}?adminKey=${encodeURIComponent(adminKey)}`, 'GET', undefined, {
+        responseType: 'blob' // Important for file downloads
+      });
+      
+      // Create a blob URL for the downloaded file
+      const url = window.URL.createObjectURL(new Blob([response]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `email-export.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      setSuccess(`Downloading email data in ${format.toUpperCase()} format...`);
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error) {
+      console.error('Export failed:', error);
+      setError('Failed to export email data. Please check the admin key and try again.');
+    }
   };
   
   return (

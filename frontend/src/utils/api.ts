@@ -2,9 +2,51 @@ import { config, getApiUrl } from '../config';
 
 type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
+export interface ReconciliationParams {
+  startDate?: string;
+  endDate?: string;
+  matchThreshold?: number;
+  includeDisputes?: boolean;
+  includeRefunds?: boolean;
+  notifyOnCompletion?: boolean;
+  notifyEmail?: string;
+  saveToDatabase?: boolean;
+  generateReport?: boolean;
+}
+
+export interface ReconciliationResult {
+  id: string;
+  timestamp: string;
+  summary: {
+    totalInvoices: number;
+    matchedInvoices: number;
+    unmatchedInvoices: number;
+    totalAmount: number;
+    matchedAmount: number;
+    unmatchedAmount: number;
+    processingTime: string;
+  };
+  matches: Array<{
+    invoiceId: string;
+    payoutId: string;
+    invoiceAmount: number;
+    payoutAmount: number;
+    fee: number;
+    status: 'matched' | 'partial' | 'unmatched';
+    confidence: number;
+  }>;
+  issues: Array<{
+    type: string;
+    count: number;
+    totalAmount: number;
+    message: string;
+  }>;
+}
+
 interface RequestOptions extends RequestInit {
   body?: any;
   headers?: Record<string, string>;
+  responseType?: 'json' | 'blob' | 'text';
 }
 
 export async function api<T = any>(
@@ -44,10 +86,23 @@ export async function api<T = any>(
     return undefined as unknown as T;
   }
 
-  return response.json();
+  
+  // Handle different response types
+  const responseType = options.responseType || 'json';
+  
+  switch (responseType) {
+    case 'blob':
+      return response.blob() as unknown as T;
+    case 'text':
+      return response.text() as unknown as T;
+    case 'json':
+    default:
+      return response.json();
+  }
 }
 
 // Helper methods for common HTTP methods
+// Export the main api function and other utilities
 export const apiClient = {
   get: <T = any>(endpoint: string, options?: RequestOptions) =>
     api<T>(endpoint, 'GET', undefined, options),
@@ -60,4 +115,14 @@ export const apiClient = {
   
   delete: <T = any>(endpoint: string, options?: RequestOptions) =>
     api<T>(endpoint, 'DELETE', undefined, options),
+};
+
+/**
+ * Reconcile invoices using the Stripe API
+ * @param params Reconciliation parameters
+ * @returns Promise with reconciliation results
+ */
+// Reconcile invoices using the Stripe API
+export const reconcileInvoices = (params: ReconciliationParams): Promise<ReconciliationResult> => {
+  return api<ReconciliationResult>('/reconcile/invoices', 'POST', params);
 };

@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import styles from './IntentSearch.module.css';
 // Using react-icons instead of lucide-react to avoid dependency issues
 import { FiSearch, FiArrowRight, FiSettings, FiZap, FiCommand, FiMic, FiClock, FiX } from 'react-icons/fi';
-import { API_BASE_URL } from '@/lib/api';
+import { api } from '@/utils/api';
 
 // Define SpeechRecognition types for TypeScript
 interface SpeechRecognitionEvent extends Event {
@@ -213,28 +213,12 @@ const IntentSearch = forwardRef<any, IntentSearchProps>(({ onSearch, initialQuer
     
     // Only fetch suggestions if query is at least 2 characters
     if (value.length < 2) {
-      setAutocompleteResults([]);
       return;
     }
     
     try {
-      // Call the semantic search API for suggestions
-      const response = await fetch(`${API_BASE_URL}/api/semantic-search/suggestions?query=${encodeURIComponent(value)}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch suggestions');
-      }
-      
-      const data = await response.json();
-      
-      if (data.suggestions && Array.isArray(data.suggestions)) {
-        // Only update if selection is not complete
-        if (!selectionComplete) {
-          setAutocompleteResults(data.suggestions);
-          // Clear regular suggestions when showing semantic results
-          setSuggestions([]);
-        }
-      }
+      const data = await api(`/semantic-search/suggestions?query=${encodeURIComponent(value)}`, 'GET');
+      setAutocompleteResults(data.suggestions || []);
     } catch (error) {
       console.error('Error fetching semantic suggestions:', error);
       
