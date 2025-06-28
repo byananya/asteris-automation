@@ -4,8 +4,15 @@ module.exports = function(app) {
   app.use(
     '/api',
     createProxyMiddleware({
-      target: 'http://localhost:3001',
+      target: 'https://api-production-ef16.up.railway.app',
       changeOrigin: true,
+      secure: true, 
+      pathRewrite: {
+        '^/api': '', 
+      },
+      onProxyReq: (proxyReq) => {
+        proxyReq.setHeader('x-forwarded-proto', 'https');
+      },
     })
   );
 };

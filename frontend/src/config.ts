@@ -1,13 +1,8 @@
 // API Configuration
 export const config = {
-  // Use environment variable or default to empty string for relative URLs
-  // In development, this will use relative URLs to match the current domain
-  // In production, it will use the production API URL if NEXT_PUBLIC_API_BASE_URL is not set
-  apiBaseUrl: 
-    process.env.NEXT_PUBLIC_API_BASE_URL || 
-    (process.env.NODE_ENV === 'production' 
-      ? 'https://api-production-ef16.up.railway.app' 
-      : ''),
+  // Use environment variable or default to production URL
+  // This ensures we always use the production API in all environments
+  apiBaseUrl: 'https://api-production-ef16.up.railway.app',
   
   // API endpoints
   apiEndpoints: {
