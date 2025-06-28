@@ -120,7 +120,9 @@ app.get('/health', (req, res) => {
 
 // Log all incoming requests for debugging
 app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.path}`);
+  const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+  logger.info(`[${new Date().toISOString()}] Incoming request: ${req.method} ${fullUrl}`);
+  console.log(`[${new Date().toISOString()}] Incoming request: ${req.method} ${fullUrl}`);
   next();
 });
 
@@ -134,7 +136,11 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/reconcile', reconciliationRouter);
+console.log('Mounting reconciliation router at /api/reconcile');
+app.use('/api/reconcile', (req, res, next) => {
+  console.log(`[${new Date().toISOString()}] Incoming request to: ${req.method} ${req.originalUrl}`);
+  reconciliationRouter(req, res, next);
+});
 
 // Health check endpoints
 app.get('/api/health', (req, res) => {
