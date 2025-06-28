@@ -1,10 +1,15 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { createLogger, format, transports } from 'winston';
+import Stripe from 'stripe';
+
+// Import routers
 import intentRouter from './api/routes/intentRouter';
 import stripeReconciliationRoutes from './routes/stripeReconciliationRoutes';
 import emailSignupRouter from './routes/emailSignup';
-import { createLogger, format, transports } from 'winston';
+import reconciliationRouter from './routes/reconciliation.routes';
 
 // Configure logger
 const logger = createLogger({
@@ -38,11 +43,12 @@ process.on('uncaughtException', (error) => {
 // Get __dirname equivalent in ESM
 // In CommonJS, __dirname is available by default
 
-// Import fileURLToPath for ESM compatibility
-import { fileURLToPath } from 'url';
-
-// CORS configuration - temporarily permissive for testing
-const allowedOrigins = ['*']; // Allow all origins for testing
+// CORS configuration
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://asteris-ai.vercel.app',
+  'https://asteris-automation.vercel.app'
+];
 
 // Enable CORS logging for debugging
 console.log('CORS Configuration:');
@@ -95,10 +101,47 @@ const customCors = (req: express.Request, res: express.Response, next: express.N
   next();
 };
 
-// Apply CORS middleware
+// Initialize Stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2025-05-28.basil',
+});
+
+// Apply CORS and JSON middleware
 app.use(customCors);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Simple health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Log all incoming requests for debugging
+app.use((req, res, next) => {
+  logger.info(`${req.method} ${req.path}`);
+  next();
+});
+
+// Apply CORS and JSON middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Simple health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// API Routes
+app.use('/api/reconcile', reconciliationRouter);
+
+// Health check endpoints
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'api',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Enhanced health check endpoint
 app.get('/health', (req: express.Request, res: express.Response) => {
@@ -268,22 +311,46 @@ if (frontendExists) {
   });
 }
 
+// Add a test endpoint for basic Stripe connectivity
+app.get('/api/test-stripe', async (req, res) => {
+  try {
+    const balance = await stripe.balance.retrieve();
+    res.json({
+      status: 'success',
+      available: balance.available[0].amount,
+      pending: balance.pending[0].amount,
+      currency: balance.available[0].currency
+    });
+  } catch (error) {
+    console.error('Stripe error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // Start the server
 const server = app.listen(port, () => {
-  logger.info(`Server is running on port ${port}`);
-  logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Server is running on port ${port}`);
+  logger.info(`Server started on port ${port}`);
   
-  // Log all environment variables (except sensitive ones) for debugging
+  // Log environment info
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('CORS Allowed Origins:', allowedOrigins);
+  
+  // Log non-sensitive environment variables
   const envVars = Object.keys(process.env)
     .filter(key => !key.toLowerCase().includes('key') && 
                   !key.toLowerCase().includes('secret') && 
-                  !key.toLowerCase().includes('password'))
+                  !key.toLowerCase().includes('password') &&
+                  !key.toLowerCase().includes('token'))
     .reduce((obj, key) => {
       obj[key] = process.env[key];
       return obj;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, string | undefined>);
   
-  logger.debug('Environment variables:', envVars);
+  console.log('Environment variables:', JSON.stringify(envVars, null, 2));
 });
 
 // Handle server errors

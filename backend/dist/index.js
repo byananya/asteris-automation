@@ -4,13 +4,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const cors_1 = __importDefault(require("cors"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
+const winston_1 = require("winston");
+const stripe_1 = __importDefault(require("stripe"));
+// Import routers
 const intentRouter_1 = __importDefault(require("./api/routes/intentRouter"));
 const stripeReconciliationRoutes_1 = __importDefault(require("./routes/stripeReconciliationRoutes"));
 const emailSignup_1 = __importDefault(require("./routes/emailSignup"));
-const winston_1 = require("winston");
+const reconciliation_routes_1 = __importDefault(require("./routes/reconciliation.routes"));
 // Configure logger
 const logger = (0, winston_1.createLogger)({
     level: 'info',
@@ -36,37 +38,176 @@ process.on('uncaughtException', (error) => {
 // Get __dirname equivalent in ESM
 // In CommonJS, __dirname is available by default
 // CORS configuration
-const corsOptions = {
-    origin: 'http://localhost:3000', // Frontend URL
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-stripe-key'],
-    credentials: true,
-    preflightContinue: false,
-    optionsSuccessStatus: 204
+const allowedOrigins = [
+    'http://localhost:3000',
+    'https://asteris-ai.vercel.app',
+    'https://asteris-automation.vercel.app'
+];
+// Enable CORS logging for debugging
+console.log('CORS Configuration:');
+console.log('- NODE_ENV:', process.env.NODE_ENV);
+console.log('- Allowed origins:', allowedOrigins);
+// Custom CORS middleware
+const customCors = (req, res, next) => {
+    const origin = req.headers.origin || '';
+    // Log request details for debugging
+    console.log('\n=== CORS Request ===');
+    console.log('Origin:', origin);
+    console.log('Method:', req.method);
+    console.log('Path:', req.path);
+    console.log('Headers:', req.headers);
+    // Set CORS headers
+    if (origin) {
+        // Check if the origin is in the allowed list or matches the regex
+        // Temporarily allow all origins
+        const isAllowed = true;
+        if (true) { // Temporarily allow all origins
+            // Set CORS headers for all responses
+            res.header('Access-Control-Allow-Origin', '*');
+            res.header('Access-Control-Allow-Credentials', 'true');
+            res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-stripe-key, x-requested-with');
+            res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            // Handle preflight requests
+            if (req.method === 'OPTIONS') {
+                console.log('Handling OPTIONS preflight request');
+                console.log('Request Headers:', req.headers);
+                return res.status(204).send();
+            }
+            console.log('CORS: Allowing request from origin:', origin);
+        }
+        else {
+            console.warn('CORS: Blocked request from origin:', origin);
+            console.log('Allowed origins:', allowedOrigins);
+            return res.status(403).json({
+                error: 'Not allowed by CORS',
+                requestedOrigin: origin,
+                allowedOrigins: allowedOrigins
+            });
+        }
+    }
+    next();
 };
-// Middleware
-app.use((0, cors_1.default)(corsOptions));
-// Handle preflight requests
-app.options('*', (0, cors_1.default)(corsOptions));
+// Initialize Stripe
+const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY || '', {
+    apiVersion: '2025-05-28.basil',
+});
+// Apply CORS and JSON middleware
+app.use(customCors);
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
-// Health check endpoint for Railway
-app.get('/api/health', (req, res) => {
+// Simple health check endpoint
+app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+// Log all incoming requests for debugging
+app.use((req, res, next) => {
+    logger.info(`${req.method} ${req.path}`);
+    next();
+});
+// Apply CORS and JSON middleware
+app.use(express_1.default.json());
+app.use(express_1.default.urlencoded({ extended: true }));
+// Simple health check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+// API Routes
+app.use('/api/reconcile', reconciliation_routes_1.default);
+// Health check endpoints
+app.get('/api/health', (req, res) => {
+    res.status(200).json({
+        status: 'ok',
+        service: 'api',
+        timestamp: new Date().toISOString()
+    });
+});
+// Enhanced health check endpoint
+app.get('/health', (req, res) => {
+    try {
+        // Check if frontend files exist in production
+        if (process.env.NODE_ENV === 'production' && frontendExists) {
+            const indexPath = path_1.default.join(frontendPath, 'index.html');
+            if (!fs_1.default.existsSync(indexPath)) {
+                return res.status(500).json({
+                    status: 'error',
+                    message: 'Frontend index.html not found',
+                    timestamp: new Date().toISOString()
+                });
+            }
+        }
+        // Add database health check if needed
+        // Example: await checkDatabaseConnection();
+        // If all checks pass
+        res.status(200).json({
+            status: 'ok',
+            environment: process.env.NODE_ENV || 'development',
+            timestamp: new Date().toISOString()
+        });
+    }
+    catch (error) {
+        logger.error('Health check failed:', error);
+        res.status(500).json({
+            status: 'error',
+            message: error instanceof Error ? error.message : 'Unknown error',
+            timestamp: new Date().toISOString()
+        });
+    }
 });
 // API Routes - THESE MUST BE DEFINED BEFORE ANY STATIC FILE SERVING OR CATCH-ALL ROUTES
 app.use('/api/intent', intentRouter_1.default);
 app.use('/api/reconcile', stripeReconciliationRoutes_1.default);
 app.use('/api/email-signup', emailSignup_1.default);
 // Serve static frontend files if they exist in the expected location
-const frontendPath = path_1.default.join(__dirname, '../frontend');
-const frontendExists = fs_1.default.existsSync(frontendPath);
+let frontendPath = '';
+let frontendExists = false;
+// In production, look for frontend files in the correct location
+if (process.env.NODE_ENV === 'production') {
+    // Check multiple possible locations for the frontend files
+    const possiblePaths = [
+        { path: path_1.default.join(__dirname, '../public'), desc: 'backend/public' }, // Backend public directory
+        { path: path_1.default.join(__dirname, '../../frontend/out'), desc: 'frontend/out' }, // Next.js export directory
+        { path: path_1.default.join(__dirname, '../../frontend/.next/standalone'), desc: 'frontend/.next/standalone' }, // Standalone build
+        { path: path_1.default.join(__dirname, '../frontend'), desc: 'backend/frontend' } // Fallback
+    ];
+    logger.info('Checking for frontend files in the following locations:');
+    for (const { path: possiblePath, desc } of possiblePaths) {
+        const exists = fs_1.default.existsSync(possiblePath);
+        logger.info(`- ${desc}: ${exists ? 'FOUND' : 'not found'} (${possiblePath})`);
+        if (exists) {
+            frontendPath = possiblePath;
+            frontendExists = true;
+            // Log contents of the directory for debugging
+            try {
+                const files = fs_1.default.readdirSync(possiblePath);
+                logger.info(`  Contents (${files.length} items):`, files.slice(0, 10).join(', ') + (files.length > 10 ? ', ...' : ''));
+            }
+            catch (err) {
+                logger.error(`  Error reading directory: ${err}`);
+            }
+            break;
+        }
+    }
+}
+else {
+    // In development, use the standard path
+    frontendPath = path_1.default.join(process.cwd(), '..', 'frontend');
+    frontendExists = fs_1.default.existsSync(frontendPath);
+    logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    logger.info(`Frontend exists: ${frontendExists}`);
+    logger.info(`Frontend path: ${frontendPath}`);
+}
 logger.info(`Looking for frontend files at: ${frontendPath}`);
 logger.info(`Frontend directory exists: ${frontendExists}`);
 // Serve static files if they exist
 if (frontendExists) {
     logger.info('Serving static files from:', frontendPath);
+    // Serve static files from the frontend directory
     app.use(express_1.default.static(frontendPath));
+    // Also serve _next directory for Next.js static files
+    const nextStaticPath = path_1.default.join(frontendPath, '_next');
+    if (fs_1.default.existsSync(nextStaticPath)) {
+        app.use('/_next', express_1.default.static(nextStaticPath));
+    }
     // Handle SPA routing - serve index.html for all other routes
     app.get('*', (req, res, next) => {
         // Skip API routes
@@ -74,43 +215,103 @@ if (frontendExists) {
             return next();
         }
         // For all other routes, serve the frontend's index.html
-        res.sendFile(path_1.default.join(frontendPath, 'index.html'), (err) => {
+        const indexPath = path_1.default.join(frontendPath, 'index.html');
+        logger.info(`Serving index.html from: ${indexPath}`);
+        res.sendFile(indexPath, (err) => {
             if (err) {
                 logger.error('Error sending file:', err);
-                res.status(500).json({
+                return res.status(500).json({
                     status: 'error',
-                    message: 'Error loading the application',
-                    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+                    message: err instanceof Error ? err.message : 'Failed to load frontend',
+                    timestamp: new Date().toISOString()
                 });
             }
         });
     });
 }
-else {
-    logger.warn('Frontend files not found. Only API routes will be available.');
-    // Basic route for the root path
-    app.get('/', (req, res) => {
-        res.json({
-            status: 'backend-only',
-            message: 'Backend is running but no frontend files were found.',
-            timestamp: new Date().toISOString()
-        });
+else if (process.env.NODE_ENV === 'production') {
+    logger.warn('Frontend files not found in production. Only API routes will be available.');
+    // In production, serve a simple message if frontend files are missing
+    app.get('*', (req, res) => {
+        if (!req.path.startsWith('/api/')) {
+            return res.status(404).json({
+                status: 'backend-only',
+                message: 'Backend is running but no frontend files were found.',
+                timestamp: new Date().toISOString()
+            });
+        }
+        res.status(404).json({ error: 'Not Found' });
     });
 }
+else {
+    // In development, provide a helpful message
+    app.get('*', (req, res) => {
+        if (req.path.startsWith('/api/')) {
+            return res.status(404).json({ error: 'API endpoint not found' });
+        }
+        res.status(200).send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Development Mode - Frontend Not Served</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+            h1 { color: #333; }
+            .info { background: #f0f7ff; padding: 15px; border-radius: 4px; margin: 20px 0; }
+            code { background: #f5f5f5; padding: 2px 5px; border-radius: 3px; }
+          </style>
+        </head>
+        <body>
+          <h1>Development Mode Active</h1>
+          <div class="info">
+            <p>This is the backend server running in development mode. The frontend is served from a separate development server.</p>
+            <p>To access the frontend, please ensure the frontend development server is running and visit: <a href="http://localhost:3000">http://localhost:3000</a></p>
+          </div>
+          <h2>Backend API</h2>
+          <p>The backend API is available at <code>http://localhost:3002/api/</code></p>
+          <p>Current time: ${new Date().toISOString()}</p>
+        </body>
+      </html>
+    `);
+    });
+}
+// Add a test endpoint for basic Stripe connectivity
+app.get('/api/test-stripe', async (req, res) => {
+    try {
+        const balance = await stripe.balance.retrieve();
+        res.json({
+            status: 'success',
+            available: balance.available[0].amount,
+            pending: balance.pending[0].amount,
+            currency: balance.available[0].currency
+        });
+    }
+    catch (error) {
+        console.error('Stripe error:', error);
+        res.status(500).json({
+            status: 'error',
+            message: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+});
 // Start the server
 const server = app.listen(port, () => {
-    logger.info(`Server is running on port ${port}`);
-    logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    // Log all environment variables (except sensitive ones) for debugging
+    console.log(`Server is running on port ${port}`);
+    logger.info(`Server started on port ${port}`);
+    // Log environment info
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('CORS Allowed Origins:', allowedOrigins);
+    // Log non-sensitive environment variables
     const envVars = Object.keys(process.env)
         .filter(key => !key.toLowerCase().includes('key') &&
         !key.toLowerCase().includes('secret') &&
-        !key.toLowerCase().includes('password'))
+        !key.toLowerCase().includes('password') &&
+        !key.toLowerCase().includes('token'))
         .reduce((obj, key) => {
         obj[key] = process.env[key];
         return obj;
     }, {});
-    logger.debug('Environment variables:', envVars);
+    console.log('Environment variables:', JSON.stringify(envVars, null, 2));
 });
 // Handle server errors
 server.on('error', (error) => {
