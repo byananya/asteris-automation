@@ -54,11 +54,50 @@ export default function InvoiceReconciliationPage() {
   const handleSubmit = async () => {
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const apiKey = localStorage.getItem('stripeApiKey');
+      if (!apiKey) {
+        alert('Stripe API key not found. Please configure it in the settings.');
+        setIsLoading(false);
+        return;
+      }
+
+      const requestUrl = 'https://api-production-ef16.up.railway.app/reconcile/invoices';
+      console.log('Starting reconciliation with URL:', requestUrl);
+      
+      const response = await fetch(requestUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-stripe-key': apiKey
+        },
+        body: JSON.stringify({
+          dateRange: formData.dateRange,
+          customStartDate: formData.customStartDate || undefined,
+          customEndDate: formData.customEndDate || undefined,
+          includeDisputes: formData.includeDisputes,
+          includeRefunds: formData.includeRefunds,
+          matchThreshold: formData.matchThreshold,
+          notifyOnCompletion: formData.notifyOnCompletion,
+          notifyEmail: formData.notifyEmail || undefined,
+          saveToDatabase: formData.saveToDatabase,
+          generateReport: formData.generateReport
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      // If we get here, the reconciliation started successfully
       router.push('/automation/invoice-reconciliation/results');
-    }, 3000);
+    } catch (error: unknown) {
+      console.error('Error starting reconciliation:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      alert(`Failed to start reconciliation: ${errorMessage}`);
+      setIsLoading(false);
+    }
   };
 
   return (
