@@ -39,7 +39,11 @@ export class StripeService {
     return this.stripe;
   }
 
-  async getInvoices(limit = 100, startingAfter?: string): Promise<Stripe.Invoice[]> {
+  async getInvoices(
+    limit = 100, 
+    startingAfter?: string,
+    filters?: Stripe.InvoiceListParams
+  ): Promise<Stripe.Invoice[]> {
     if (!this.isActive || !this.stripe) {
       logger.warn('Stripe is not configured. Returning empty invoice list.');
       return [];
@@ -49,13 +53,17 @@ export class StripeService {
       const params: Stripe.InvoiceListParams = {
         limit,
         expand: ['data.payment_intent', 'data.charge'] as any[],
+        ...filters, // Spread any additional filters
       };
       
       if (startingAfter) {
         params.starting_after = startingAfter;
       }
 
+      logger.debug('Fetching invoices with params:', params);
       const invoices = await this.stripe.invoices.list(params);
+      logger.debug(`Fetched ${invoices.data.length} invoices`);
+      
       return invoices.data;
     } catch (error) {
       logger.error('Error fetching Stripe invoices:', error);
@@ -102,12 +110,16 @@ export class StripeService {
     }
   }
 
-  async getAllInvoices(params: { limit?: number } = {}): Promise<Stripe.Invoice[]> {
+  async getAllInvoices(params: { 
+    limit?: number;
+    filters?: Stripe.InvoiceListParams;
+  } = {}): Promise<Stripe.Invoice[]> {
     let allInvoices: Stripe.Invoice[] = [];
     let hasMore = true;
     let startingAfter: string | undefined;
     let fetchedCount = 0;
     const limit = params.limit || Infinity;
+    const { filters = {} } = params;
 
     if (!this.isActive || !this.stripe) {
       logger.warn('Stripe is not active. Cannot fetch invoices.');
@@ -115,31 +127,37 @@ export class StripeService {
     }
 
     try {
-      logger.info('Fetching invoices from Stripe...');
+      logger.info('Fetching invoices from Stripe...', { 
+        limit,
+        hasFilters: !!Object.keys(filters).length
+      });
       
       while (hasMore && fetchedCount < limit) {
         const fetchLimit = Math.min(100, limit - fetchedCount);
         const listParams: Stripe.InvoiceListParams = {
           limit: fetchLimit,
           expand: ['data.payment_intent', 'data.charge'],
+          ...filters, // Apply any additional filters
           ...(startingAfter ? { starting_after: startingAfter } : {})
         };
         
         logger.debug('Making request to Stripe API for invoices', { 
           fetchLimit,
           startingAfter: startingAfter ? '...' + startingAfter.slice(-8) : 'none',
-          fetchedSoFar: fetchedCount
+          fetchedSoFar: fetchedCount,
+          hasDateFilter: !!(filters as any)?.created
         });
 
         const invoices = await this.stripe.invoices.list(listParams);
-        logger.debug(`Fetched ${invoices.data.length} invoices in this batch`);
+        const batchCount = invoices.data.length;
+        logger.debug(`Fetched ${batchCount} invoices in this batch`);
         
         allInvoices = [...allInvoices, ...invoices.data];
-        fetchedCount += invoices.data.length;
+        fetchedCount += batchCount;
 
-        hasMore = !!invoices.has_more && invoices.data.length > 0 && fetchedCount < limit;
-        if (hasMore && invoices.data.length > 0) {
-          startingAfter = invoices.data[invoices.data.length - 1].id;
+        hasMore = !!invoices.has_more && batchCount > 0 && fetchedCount < limit;
+        if (hasMore && batchCount > 0) {
+          startingAfter = invoices.data[batchCount - 1].id;
         }
       }
       

@@ -137,32 +137,44 @@ router.get('/invoices', async (req: Request, res: Response) => {
       }
     }
     
-    // Get invoices using the Stripe service from the request
-    const invoices = await stripeService.getInvoices(100);
+    // Prepare filters for Stripe API
+    const filters: any = {
+      limit: 100,
+      created: {}
+    };
     
-    // Apply filters
-    let filteredInvoices = [...invoices];
-    
+    // Add date range to filters if provided
     if (startDate) {
       const startTimestamp = Math.floor(new Date(startDate as string).getTime() / 1000);
-      filteredInvoices = filteredInvoices.filter(
-        inv => inv.created && inv.created >= startTimestamp
-      );
+      filters.created['gte'] = startTimestamp;
     }
     
     if (endDate) {
       const endTimestamp = Math.floor(new Date(endDate as string).getTime() / 1000);
-      filteredInvoices = filteredInvoices.filter(
-        inv => inv.created && inv.created <= endTimestamp
-      );
+      filters.created['lte'] = endTimestamp;
     }
+    
+    // If no date range is provided, default to last 30 days
+    if (!startDate && !endDate) {
+      const thirtyDaysAgo = Math.floor(Date.now() / 1000 - 30 * 24 * 60 * 60);
+      filters.created['gte'] = thirtyDaysAgo;
+    }
+    
+    // Fetch invoices with filters
+    logger.info('Fetching invoices with filters:', { filters });
+    const invoices = await stripeService.getInvoices(100, undefined, filters);
+    
+    // Apply additional filters that can't be done at the API level
+    let filteredInvoices = [...invoices];
     
     if (customerName) {
       const searchTerm = (customerName as string).toLowerCase();
-      filteredInvoices = filteredInvoices.filter(
-        inv => inv.customer_name && 
-               inv.customer_name.toLowerCase().includes(searchTerm)
-      );
+      filteredInvoices = filteredInvoices.filter(inv => {
+        const customerName = (inv as any).customer_name || 
+                           (inv as any).customer_email || 
+                           (inv as any).customer || '';
+        return customerName.toString().toLowerCase().includes(searchTerm);
+      });
     }
     
     res.json({
