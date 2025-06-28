@@ -55,9 +55,11 @@ export async function api<T = any>(
   data: any = undefined,
   options: RequestOptions = {}
 ): Promise<T> {
-  // Remove leading slash if present to prevent double slashes
+  // Remove leading slash from endpoint if present
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-production-ef16.up.railway.app';
+  // Always use production URL explicitly
+  const baseUrl = 'https://api-production-ef16.up.railway.app';
+  // Construct URL ensuring no double slashes
   const url = `${baseUrl}${cleanEndpoint.startsWith('/') ? '' : '/'}${cleanEndpoint}`;
   
   console.log('API Request URL:', url); // Debug log

@@ -1,7 +1,7 @@
 // API Configuration
 export const config = {
-  // Use environment variable or default to production URL
-  apiBaseUrl: process.env.NEXT_PUBLIC_API_URL || 'https://api-production-ef16.up.railway.app',
+  // Hardcoded production URL
+  apiBaseUrl: 'https://api-production-ef16.up.railway.app',
   
   // API endpoints
   apiEndpoints: {
