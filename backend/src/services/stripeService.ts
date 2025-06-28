@@ -11,6 +11,7 @@ export class StripeService {
     if (stripeKey) {
       try {
         this.stripe = new Stripe(stripeKey, {
+          // Using the correct API version for the Stripe SDK
           // @ts-ignore - The type definition is incorrect for the API version
           apiVersion: '2025-05-28.basil' as const,
           typescript: true
@@ -114,14 +115,25 @@ export class StripeService {
     }
 
     try {
+      logger.info('Fetching invoices from Stripe...');
+      
       while (hasMore && fetchedCount < limit) {
         const fetchLimit = Math.min(100, limit - fetchedCount);
         const listParams: Stripe.InvoiceListParams = {
           limit: fetchLimit,
+          expand: ['data.payment_intent', 'data.charge'],
           ...(startingAfter ? { starting_after: startingAfter } : {})
         };
+        
+        logger.debug('Making request to Stripe API for invoices', { 
+          fetchLimit,
+          startingAfter: startingAfter ? '...' + startingAfter.slice(-8) : 'none',
+          fetchedSoFar: fetchedCount
+        });
 
         const invoices = await this.stripe.invoices.list(listParams);
+        logger.debug(`Fetched ${invoices.data.length} invoices in this batch`);
+        
         allInvoices = [...allInvoices, ...invoices.data];
         fetchedCount += invoices.data.length;
 
@@ -130,7 +142,18 @@ export class StripeService {
           startingAfter = invoices.data[invoices.data.length - 1].id;
         }
       }
-
+      
+      logger.info(`Successfully fetched ${allInvoices.length} invoices from Stripe`);
+      if (allInvoices.length > 0) {
+        logger.debug('Sample invoice data:', {
+          id: allInvoices[0].id,
+          status: allInvoices[0].status,
+          amount_paid: allInvoices[0].amount_paid,
+          customer_email: (allInvoices[0] as any)?.customer_email,
+          payment_intent: allInvoices[0].payment_intent
+        });
+      }
+      
       return allInvoices;
     } catch (error) {
       logger.error('Error fetching invoices from Stripe:', error);

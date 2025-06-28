@@ -237,15 +237,37 @@ router.get('/invoices', async (req: Request, res: Response) => {
  *         description: Server error
  */
 router.post('/invoices', async (req: Request, res: Response) => {
+  const requestId = Math.random().toString(36).substring(2, 9);
+  const logContext = { requestId };
+  
+  logger.info('Starting invoice reconciliation request', { 
+    ...logContext,
+    hasStartDate: !!req.body.startDate,
+    hasEndDate: !!req.body.endDate,
+    hasStripeKey: !!req.headers['x-stripe-key']
+  });
+  
   try {
     const { startDate, endDate, matchThreshold, customerName, status } = req.body;
     const { stripeService } = req;
     
+    // Log the incoming request details
+    logger.debug('Request details', { 
+      ...logContext,
+      startDate,
+      endDate,
+      matchThreshold,
+      customerNameLength: customerName ? customerName.length : 0,
+      status
+    });
+    
     // Validate required fields
     if (!startDate || !endDate) {
+      const errorMsg = 'startDate and endDate are required';
+      logger.warn('Validation failed', { ...logContext, error: errorMsg });
       return res.status(400).json({
         success: false,
-        error: 'startDate and endDate are required'
+        error: errorMsg
       });
     }
     
@@ -287,13 +309,32 @@ router.post('/invoices', async (req: Request, res: Response) => {
       stripeService
     });
     
+    // Log successful reconciliation
+    logger.info('Successfully completed reconciliation', { 
+      ...logContext,
+      matchedInvoices: result?.summary?.matchedInvoices,
+      totalInvoices: result?.summary?.totalInvoices
+    });
+    
     res.json(result);
   } catch (error) {
-    logger.error('Error during reconciliation:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
+    logger.error('Error during reconciliation', { 
+      ...logContext,
+      error: errorMessage,
+      stack: errorStack,
+      errorDetails: error
+    });
+    
     res.status(500).json({
       success: false,
       error: 'Failed to reconcile invoices',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: process.env.NODE_ENV === 'production' 
+        ? 'Internal server error' 
+        : errorMessage,
+      requestId
     });
   }
 });
