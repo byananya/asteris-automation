@@ -4,34 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import { FiArrowLeft, FiDownload, FiCheckCircle, FiAlertCircle, FiHelpCircle, FiLoader } from 'react-icons/fi';
-import { getStripeApiKey, getStripeHeaders } from '@/utils/stripe';
-import { api } from '@/utils/api';
-
-// Define frontend interfaces to match backend's ReconciliationResult
-interface ReconciliationRecord {
-  invoiceId: string;
-  customerId: string;
-  customerEmail: string;
-  invoiceAmount: number;
-  chargeId: string;
-  grossAmount: number;
-  fee: number;
-  netAmount: number;
-  date: string;
-  currency: string;
-}
-
-interface ReconciliationSummary {
-  totalGross: number;
-  totalFees: number;
-  totalNet: number;
-  recordCount: number;
-}
-
-interface ReconciliationResult {
-  records: ReconciliationRecord[];
-  summary: ReconciliationSummary;
-}
+import { getStripeApiKey } from '@/utils/stripe';
+import { reconcileInvoices } from '@/utils/api';
+import type { ReconciliationResult } from '@/utils/api';
 
 export default function InvoiceReconciliationResultsPage() {
   const router = useRouter();
@@ -39,103 +14,31 @@ export default function InvoiceReconciliationResultsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Function to fetch reconciliation data
-  const fetchReconciliationData = async () => {
-    const apiKey = getStripeApiKey();
-    if (!apiKey) {
-      setError('Stripe API key not found. Please configure it in the settings.');
-      setIsLoading(false);
-      return;
-    }
-
-    setError(null);
-    setIsLoading(true);
-    setResults(null); // Clear previous results
-
-    try {
-      const requestUrl = 'https://api-production-ef16.up.railway.app/reconcile/invoices';
-      console.log('Making request to:', requestUrl);
-      console.log('Request headers:', {
-        'Content-Type': 'application/json',
-        'x-stripe-key': '***' + apiKey.slice(-4)
-      });
-
-      // Use direct fetch with production URL
-      const response = await fetch(requestUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-stripe-key': apiKey
-        },
-        body: JSON.stringify({
-          // You can add startDate and endDate from UI elements here
-          // startDate: '2023-01-01',
-          // endDate: '2023-12-31',
-        })
-      });
-      
-      console.log('Response status:', response.status);
-      // Convert headers to a plain object for logging
-      const headersObj: Record<string, string> = {};
-      response.headers.forEach((value, key) => {
-        headersObj[key] = value;
-      });
-      console.log('Response headers:', headersObj);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+  useEffect(() => {
+    const fetchReconciliationData = async () => {
+      const apiKey = getStripeApiKey();
+      if (!apiKey) {
+        setError('Stripe API key not found. Please configure it in the settings.');
+        setIsLoading(false);
+        return;
       }
-
-      const responseData = await response.json();
-      
-      // Process the response data
-      if (responseData) {
-        // Transform the data to match our frontend interfaces
-        if (responseData.records) {
-          const transformedData = {
-            records: responseData.records.map((record: any) => ({
-              invoiceId: record.invoiceId || '',
-              customerId: record.customerId || '',
-              customerEmail: record.customerEmail || '',
-              invoiceAmount: record.invoiceAmount || 0,
-              chargeId: record.chargeId || '',
-              grossAmount: record.grossAmount || 0,
-              fee: record.fee || 0,
-              netAmount: record.netAmount || 0,
-              date: record.date || new Date().toISOString(),
-              currency: record.currency || 'usd',
-            })),
-            summary: responseData.summary || {
-              totalGross: 0,
-              totalFees: 0,
-              totalNet: 0,
-              recordCount: 0,
-            },
-          };
-          setResults(transformedData);
+      setError(null);
+      setIsLoading(true);
+      setResults(null);
+      try {
+        const apiParams = {};
+        const responseData = await reconcileInvoices(apiParams);
+        if (responseData && responseData.matches) {
+          setResults(responseData);
         } else {
           throw new Error('Invalid response format from server');
         }
-      } else {
-        throw new Error('No data received from server');
+      } catch (err: any) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err: any) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-      console.error('Error in fetchReconciliationResults:', {
-        error: err,
-        errorMessage,
-        timestamp: new Date().toISOString(),
-        endpoint: '/api/reconcile/invoices'
-      });
-      setError(errorMessage);
-      console.error('Frontend fetch error details:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Fetch data when component mounts
-  useEffect(() => {
+    };
     fetchReconciliationData();
   }, []);
 
@@ -145,31 +48,22 @@ export default function InvoiceReconciliationResultsPage() {
 
   const handleDownloadReport = (): void => {
     if (!results) return;
-
-    // Create CSV content based on ReconciliationRecord interface
     const headers = [
-      'Invoice ID', 'Customer ID', 'Customer Email', 'Invoice Amount',
-      'Charge ID', 'Gross Amount', 'Fee', 'Net Amount', 'Date', 'Currency'
+      'Invoice ID', 'Payout ID', 'Invoice Amount', 'Payout Amount', 'Fee', 'Status', 'Confidence'
     ];
-
-    const rows = results.records.map(record => [
-      record.invoiceId,
-      record.customerId,
-      record.customerEmail,
-      record.invoiceAmount.toFixed(2),
-      record.chargeId,
-      record.grossAmount.toFixed(2),
-      record.fee.toFixed(2),
-      record.netAmount.toFixed(2),
-      record.date,
-      record.currency
-    ]);
-
+    const rows = results && Array.isArray(results.matches) ? results.matches.map((match: any) => [
+      match.invoiceId,
+      match.payoutId,
+      match.invoiceAmount?.toFixed(2),
+      match.payoutAmount?.toFixed(2),
+      match.fee?.toFixed(2),
+      match.status,
+      match.confidence
+    ]) : [];
     const csvContent = [
       headers.join(','),
       ...rows.map(row => row.join(','))
     ].join('\n');
-
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -189,7 +83,6 @@ export default function InvoiceReconciliationResultsPage() {
           Back to Dashboard
         </button>
       </div>
-
       <div className={styles.content}>
         <div className={styles.header}>
           <button className={styles.backButton} onClick={() => router.push('/automation/invoice-reconciliation')}>
@@ -201,34 +94,21 @@ export default function InvoiceReconciliationResultsPage() {
             Viewing reconciliation results using your saved Stripe API key
           </p>
         </div>
-
         {error && (
           <div className={styles.errorMessage}>
             <FiAlertCircle size={20} />
             <p>Error: {error}</p>
-            <button 
-              onClick={() => router.push('/settings')}
-              className={styles.settingsButton}
-            >
+            <button onClick={() => router.push('/settings')} className={styles.settingsButton}>
               Go to Settings
             </button>
           </div>
         )}
-
         {isLoading && !error && (
           <div className={styles.loadingContainer}>
             <FiLoader size={48} className={styles.spinner} />
             <p>Fetching and reconciling data from Stripe...</p>
           </div>
         )}
-
-        {isLoading && !error && (
-          <div className={styles.loadingContainer}>
-            <FiLoader size={48} className={styles.spinner} />
-            <p>Fetching and reconciling data from Stripe...</p>
-          </div>
-        )}
-
         {!isLoading && !error && results && (
           <div className={styles.resultsContainer}>
             <div className={styles.summaryCards}>
@@ -237,8 +117,8 @@ export default function InvoiceReconciliationResultsPage() {
                   <FiCheckCircle size={24} />
                 </div>
                 <div className={styles.summaryContent}>
-                  <h3>Total Records</h3>
-                  <div className={styles.summaryValue}>{results.summary.recordCount}</div>
+                  <h3>Total Invoices</h3>
+                  <div className={styles.summaryValue}>{results.summary.totalInvoices}</div>
                 </div>
               </div>
               <div className={styles.summaryCard}>
@@ -246,8 +126,8 @@ export default function InvoiceReconciliationResultsPage() {
                   <FiCheckCircle size={24} />
                 </div>
                 <div className={styles.summaryContent}>
-                  <h3>Total Gross Amount</h3>
-                  <div className={styles.summaryValue}>${results.summary.totalGross.toFixed(2)}</div>
+                  <h3>Matched Invoices</h3>
+                  <div className={styles.summaryValue}>{results.summary.matchedInvoices}</div>
                 </div>
               </div>
               <div className={styles.summaryCard}>
@@ -255,8 +135,8 @@ export default function InvoiceReconciliationResultsPage() {
                   <FiAlertCircle size={24} />
                 </div>
                 <div className={styles.summaryContent}>
-                  <h3>Total Fees</h3>
-                  <div className={styles.summaryValue}>${results.summary.totalFees.toFixed(2)}</div>
+                  <h3>Unmatched Invoices</h3>
+                  <div className={styles.summaryValue}>{results.summary.unmatchedInvoices}</div>
                 </div>
               </div>
               <div className={styles.summaryCard}>
@@ -264,12 +144,38 @@ export default function InvoiceReconciliationResultsPage() {
                   <FiHelpCircle size={24} />
                 </div>
                 <div className={styles.summaryContent}>
-                  <h3>Total Net Amount</h3>
-                  <div className={styles.summaryValue}>${results.summary.totalNet.toFixed(2)}</div>
+                  <h3>Total Amount</h3>
+                  <div className={styles.summaryValue}>${results.summary.totalAmount.toFixed(2)}</div>
+                </div>
+              </div>
+              <div className={styles.summaryCard}>
+                <div className={`${styles.summaryIcon} ${styles.success}`}>
+                  <FiCheckCircle size={24} />
+                </div>
+                <div className={styles.summaryContent}>
+                  <h3>Matched Amount</h3>
+                  <div className={styles.summaryValue}>${results.summary.matchedAmount.toFixed(2)}</div>
+                </div>
+              </div>
+              <div className={styles.summaryCard}>
+                <div className={`${styles.summaryIcon} ${styles.warning}`}>
+                  <FiAlertCircle size={24} />
+                </div>
+                <div className={styles.summaryContent}>
+                  <h3>Unmatched Amount</h3>
+                  <div className={styles.summaryValue}>${results.summary.unmatchedAmount.toFixed(2)}</div>
+                </div>
+              </div>
+              <div className={styles.summaryCard}>
+                <div className={`${styles.summaryIcon} ${styles.info}`}>
+                  <FiHelpCircle size={24} />
+                </div>
+                <div className={styles.summaryContent}>
+                  <h3>Processing Time</h3>
+                  <div className={styles.summaryValue}>{results.summary.processingTime}</div>
                 </div>
               </div>
             </div>
-
             <div className={styles.tableSection}>
               <h2>
                 Reconciliation Records
@@ -283,77 +189,41 @@ export default function InvoiceReconciliationResultsPage() {
                   <thead>
                     <tr>
                       <th>Invoice ID</th>
-                      <th>Customer Email</th>
+                      <th>Payout ID</th>
                       <th>Invoice Amount</th>
-                      <th>Gross Amount</th>
+                      <th>Payout Amount</th>
                       <th>Fee</th>
-                      <th>Net Amount</th>
-                      <th>Date</th>
-                      <th>Currency</th>
+                      <th>Status</th>
+                      <th>Confidence</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {results.records.length > 0 ? (
-                      results.records.map((record, index) => (
-                        <tr key={record.invoiceId || index}>
-                          <td>{record.invoiceId}</td>
-                          <td>{record.customerEmail}</td>
-                          <td>${record.invoiceAmount.toFixed(2)}</td>
-                          <td>${record.grossAmount.toFixed(2)}</td>
-                          <td>${record.fee.toFixed(2)}</td>
-                          <td>${record.netAmount.toFixed(2)}</td>
-                          <td>{record.date}</td>
-                          <td>{record.currency}</td>
-                          <td>
-                            <button className={styles.viewDetailsButton} onClick={() => console.log('View details for', record.invoiceId)}>
-                              View Details
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
+                    {results && results.matches && results.matches.length > 0 && results.matches.map((match, index) => (
+                      <tr key={match.invoiceId || index}>
+                        <td>{match.invoiceId}</td>
+                        <td>{match.payoutId}</td>
+                        <td>${match.invoiceAmount?.toFixed(2)}</td>
+                        <td>${match.payoutAmount?.toFixed(2)}</td>
+                        <td>${match.fee?.toFixed(2)}</td>
+                        <td>{match.status}</td>
+                        <td>{match.confidence}</td>
+                        <td>
+                          <button className={styles.viewDetailsButton} onClick={() => console.log('View details for', match.invoiceId)}>
+                            View Details
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {(!results || !results.matches || results.matches.length === 0) && (
                       <tr>
-                        <td colSpan={9} className={styles.noData}>No reconciliation records found for the given period.</td>
+                        <td colSpan={8} className={styles.noData}>No reconciliation matches found for the given period.</td>
                       </tr>
                     )}
                   </tbody>
                 </table>
               </div>
             </div>
-            {/* Issues Detected section (can be simplified if needed, based on backend issues) */}
-            {results.records.length > 0 && (
-              <div className={styles.issuesDetected}>
-                <h2>Issues Detected</h2>
-                <div className={styles.issueCards}>
-                  {results.summary.recordCount === 0 && (
-                     <div className={styles.issueCard}>
-                       <FiAlertCircle size={20} />
-                       <p>No records found. Adjust your date range or check API key.</p>
-                     </div>
-                  )}
-                  {results.summary.totalFees > 0 && (
-                     <div className={styles.issueCard}>
-                       <FiAlertCircle size={20} />
-                       <p>Fees detected: ${results.summary.totalFees.toFixed(2)} in total.</p>
-                     </div>
-                  )}
-                  {/* You can add more specific issue detection based on your data */}
-                  {results.records.filter(r => r.invoiceAmount !== r.grossAmount).length > 0 && (
-                     <div className={styles.issueCard}>
-                       <FiAlertCircle size={20} />
-                       <p>{results.records.filter(r => r.invoiceAmount !== r.grossAmount).length} records with invoice amount mismatch with gross amount.</p>
-                     </div>
-                  )}
-                  {results.records.filter(r => r.fee > 0 && r.grossAmount === 0).length > 0 && (
-                     <div className={styles.issueCard}>
-                       <FiAlertCircle size={20} />
-                       <p>{results.records.filter(r => r.fee > 0 && r.grossAmount === 0).length} records with fees but zero gross amount.</p>
-                     </div>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { reconcileInvoices } from '@/utils/api';
 import styles from './page.module.css';
 import { FiArrowLeft, FiUpload, FiCalendar, FiSettings, FiCheckCircle } from 'react-icons/fi';
 
@@ -52,6 +53,7 @@ export default function InvoiceReconciliationPage() {
   };
 
   const handleSubmit = async () => {
+    console.log('RUN AUTOMATION BUTTON CLICKED - UNIQUE LOG');
     setIsLoading(true);
     
     try {
@@ -62,33 +64,17 @@ export default function InvoiceReconciliationPage() {
         return;
       }
 
-      const requestUrl = 'https://api-production-ef16.up.railway.app/reconcile/invoices';
-      console.log('Starting reconciliation with URL:', requestUrl);
-      
-      const response = await fetch(requestUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-stripe-key': apiKey
-        },
-        body: JSON.stringify({
-          dateRange: formData.dateRange,
-          customStartDate: formData.customStartDate || undefined,
-          customEndDate: formData.customEndDate || undefined,
-          includeDisputes: formData.includeDisputes,
-          includeRefunds: formData.includeRefunds,
-          matchThreshold: formData.matchThreshold,
-          notifyOnCompletion: formData.notifyOnCompletion,
-          notifyEmail: formData.notifyEmail || undefined,
-          saveToDatabase: formData.saveToDatabase,
-          generateReport: formData.generateReport
-        })
+      // Use centralized API utility
+      await reconcileInvoices({
+        startDate: formData.customStartDate || undefined,
+        endDate: formData.customEndDate || undefined,
+        includeDisputes: formData.includeDisputes,
+        includeRefunds: formData.includeRefunds,
+        matchThreshold: formData.matchThreshold,
+        notifyOnCompletion: formData.notifyOnCompletion,
+        notifyEmail: formData.notifyEmail || undefined,
+        saveToDatabase: formData.saveToDatabase,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
 
       // If we get here, the reconciliation started successfully
       router.push('/automation/invoice-reconciliation/results');
