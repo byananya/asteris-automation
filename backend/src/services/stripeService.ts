@@ -2,24 +2,44 @@ import Stripe from 'stripe';
 import logger from '../utils/logger.js';
 
 export class StripeService {
-  private stripe: Stripe;
+  private stripe: Stripe | null = null;
+  private isEnabled: boolean = false;
 
-  constructor() {
-    if (!process.env.STRIPE_SECRET_KEY) {
-      throw new Error('STRIPE_SECRET_KEY is not defined in environment variables');
+  constructor(apiKey?: string) {
+    const stripeKey = apiKey || process.env.STRIPE_SECRET_KEY;
+    
+    if (stripeKey) {
+      try {
+        this.stripe = new Stripe(stripeKey, {
+          // @ts-ignore - The type definition is incorrect for the API version
+          apiVersion: '2025-05-28.basil' as const,
+          typescript: true
+        });
+        this.isEnabled = true;
+        logger.info('Stripe service initialized successfully');
+      } catch (error) {
+        logger.error('Failed to initialize Stripe service:', error);
+        throw new Error('Invalid Stripe API key');
+      }
+    } else {
+      logger.warn('No Stripe API key provided. Stripe functionality will be disabled.');
     }
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      // @ts-ignore - The type definition is incorrect for the API version
-      apiVersion: '2025-05-28.basil' as const, // Latest API version for Stripe v18.2.1
-      typescript: true
-    });
+  }
+
+  get isActive(): boolean {
+    return this.isEnabled && this.stripe !== null;
   }
 
   async getInvoices(limit = 100, startingAfter?: string): Promise<Stripe.Invoice[]> {
+    if (!this.isActive || !this.stripe) {
+      logger.warn('Stripe is not configured. Returning empty invoice list.');
+      return [];
+    }
+
     try {
       const params: Stripe.InvoiceListParams = {
         limit,
-        expand: ['data.payment_intent', 'data.charge'],
+        expand: ['data.payment_intent', 'data.charge'] as any[],
       };
       
       if (startingAfter) {
@@ -34,13 +54,33 @@ export class StripeService {
     }
   }
 
+  async getInvoice(id: string): Promise<Stripe.Invoice | null> {
+    if (!this.isActive || !this.stripe) {
+      logger.warn('Stripe is not configured. Cannot retrieve invoice.');
+      return null;
+    }
+    
+    try {
+      return await this.stripe.invoices.retrieve(id, {
+        expand: ['payment_intent', 'charge']
+      });
+    } catch (error) {
+      logger.error('Error fetching Stripe invoice:', error);
+      throw error;
+    }
+  }
+
   async getPayouts(limit = 100, startingAfter?: string): Promise<Stripe.Payout[]> {
+    if (!this.isActive || !this.stripe) {
+      logger.warn('Stripe is not configured. Returning empty payout list.');
+      return [];
+    }
+
     try {
       const params: Stripe.PayoutListParams = {
         limit,
-        expand: ['data.destination'],
       };
-
+      
       if (startingAfter) {
         params.starting_after = startingAfter;
       }
@@ -60,19 +100,24 @@ export class StripeService {
     let fetchedCount = 0;
     const limit = params.limit || Infinity;
 
+    if (!this.isActive || !this.stripe) {
+      logger.warn('Stripe is not active. Cannot fetch invoices.');
+      return [];
+    }
+
     try {
       while (hasMore && fetchedCount < limit) {
         const fetchLimit = Math.min(100, limit - fetchedCount);
         const listParams: Stripe.InvoiceListParams = {
           limit: fetchLimit,
-          ...(startingAfter && { starting_after: startingAfter })
+          ...(startingAfter ? { starting_after: startingAfter } : {})
         };
 
         const invoices = await this.stripe.invoices.list(listParams);
         allInvoices = [...allInvoices, ...invoices.data];
         fetchedCount += invoices.data.length;
 
-        hasMore = invoices.has_more && invoices.data.length > 0 && fetchedCount < limit;
+        hasMore = !!invoices.has_more && invoices.data.length > 0 && fetchedCount < limit;
         if (hasMore && invoices.data.length > 0) {
           startingAfter = invoices.data[invoices.data.length - 1].id;
         }
@@ -92,6 +137,11 @@ export class StripeService {
     let fetchedCount = 0;
     const limit = params.limit || Infinity;
 
+    if (!this.isActive || !this.stripe) {
+      logger.warn('Stripe is not active. Cannot fetch payouts.');
+      return [];
+    }
+
     try {
       logger.info('Fetching payouts from Stripe...');
       
@@ -99,7 +149,7 @@ export class StripeService {
         const fetchLimit = Math.min(100, limit - fetchedCount);
         const listParams: Stripe.PayoutListParams = {
           limit: fetchLimit,
-          ...(startingAfter && { starting_after: startingAfter })
+          ...(startingAfter ? { starting_after: startingAfter } : {})
         };
         
         logger.debug('Making request to Stripe API for payouts', { 
@@ -112,7 +162,7 @@ export class StripeService {
         allPayouts = [...allPayouts, ...payouts.data];
         fetchedCount += payouts.data.length;
 
-        hasMore = payouts.has_more && payouts.data.length > 0 && fetchedCount < limit;
+        hasMore = !!payouts.has_more && payouts.data.length > 0 && fetchedCount < limit;
         if (hasMore && payouts.data.length > 0) {
           startingAfter = payouts.data[payouts.data.length - 1].id;
         }

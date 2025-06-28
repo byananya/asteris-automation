@@ -1,14 +1,52 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { apiReconciliationService } from '../services/apiReconciliationService';
+import { StripeService } from '../services/stripeService';
 import logger from '../utils/logger';
-import Stripe from 'stripe';
+
+declare global {
+  namespace Express {
+    interface Request {
+      stripeService: StripeService;
+    }
+  }
+}
 
 const router = Router();
 
-// Initialize Stripe with environment variable
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-05-28.basil',
-});
+// Create a map to store Stripe service instances by API key
+const stripeServiceCache = new Map<string, StripeService>();
+
+// Middleware to get or create Stripe service instance
+const getStripeService = (req: Request, res: Response, next: NextFunction) => {
+  const stripeKey = req.headers['x-stripe-key'] as string || '';
+  
+  if (!stripeKey) {
+    return res.status(400).json({
+      success: false,
+      error: 'Stripe API key is required in x-stripe-key header',
+    });
+  }
+
+  // Get or create Stripe service instance
+  if (!stripeServiceCache.has(stripeKey)) {
+    try {
+      const stripeService = new StripeService(stripeKey);
+      stripeServiceCache.set(stripeKey, stripeService);
+      logger.info('Created new Stripe service instance');
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid Stripe API key',
+      });
+    }
+  }
+
+  req.stripeService = stripeServiceCache.get(stripeKey)!;
+  next();
+};
+
+// Apply Stripe service middleware to all reconciliation routes
+router.use(getStripeService);
 
 /**
  * @swagger
@@ -17,6 +55,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
  *     summary: Get a list of invoices with optional filtering
  *     tags: [Reconciliation]
  *     parameters:
+ *       - in: header
+ *         name: x-stripe-key
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Stripe API key with read access
  *       - in: query
  *         name: startDate
  *         schema:
@@ -30,27 +74,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
  *           format: date
  *         description: End date for filtering invoices (YYYY-MM-DD)
  *       - in: query
- *         name: customer
+ *         name: customerName
  *         schema:
  *           type: string
- *         description: Filter by customer email or ID
- *       - in: query
- *         name: status
- *         schema:
- *           type: string
- *           enum: [draft, open, paid, uncollectible, void]
- *         description: Filter by invoice status
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 10
- *           minimum: 1
- *           maximum: 100
- *         description: Maximum number of invoices to return
+ *         description: Filter invoices by customer name
  *     responses:
  *       200:
- *         description: List of invoices
+ *         description: A list of invoices
  *         content:
  *           application/json:
  *             schema:
@@ -61,51 +91,92 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/StripeInvoice'
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       amount_due:
+ *                         type: number
+ *                       amount_paid:
+ *                         type: number
+ *                       customer_name:
+ *                         type: string
+ *                       created:
+ *                         type: number
+ *                       status:
+ *                         type: string
  *       400:
- *         description: Invalid request parameters
+ *         description: Invalid parameters or missing API key
  *       500:
  *         description: Server error
  */
-router.get('/invoices', async (req, res) => {
-    try {
-        const { startDate, endDate, customer, status, limit = '10' } = req.query;
-        const limitNum = Math.min(parseInt(limit as string, 10) || 10, 100);
-        
-        // Build query parameters
-        const params: Stripe.InvoiceListParams = {
-            limit: limitNum,
-        };
-        
-        // Add optional filters
-        if (status) params.status = status as Stripe.InvoiceListParams.Status;
-        if (customer) params.customer = customer as string;
-        
-        // Add date range if provided
-        if (startDate || endDate) {
-            params.created = {};
-            if (startDate) params.created.gte = Math.floor(new Date(startDate as string).getTime() / 1000);
-            if (endDate) params.created.lte = Math.ceil(new Date(endDate as string).getTime() / 1000);
-        }
-        
-        // Fetch invoices from Stripe
-        const invoices = await stripe.invoices.list(params);
-        
-        res.json({
-            success: true,
-            data: invoices.data,
-            has_more: invoices.has_more
+router.get('/invoices', async (req: Request, res: Response) => {
+  try {
+    const { startDate, endDate, customerName } = req.query;
+    const { stripeService } = req;
+    
+    // Validate date range if both dates are provided
+    if (startDate && endDate) {
+      const start = new Date(startDate as string);
+      const end = new Date(endDate as string);
+      
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid date format. Please use YYYY-MM-DD'
         });
-        
-    } catch (error) {
-        logger.error('Error fetching invoices:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch invoices',
-            details: errorMessage
+      }
+      
+      // Validate date range (max 1 year)
+      const oneYearInMs = 365 * 24 * 60 * 60 * 1000;
+      if (end.getTime() - start.getTime() > oneYearInMs) {
+        return res.status(400).json({
+          success: false,
+          error: 'Date range cannot exceed 1 year'
         });
+      }
     }
+    
+    // Get invoices using the Stripe service from the request
+    const invoices = await stripeService.getInvoices(100);
+    
+    // Apply filters
+    let filteredInvoices = [...invoices];
+    
+    if (startDate) {
+      const startTimestamp = Math.floor(new Date(startDate as string).getTime() / 1000);
+      filteredInvoices = filteredInvoices.filter(
+        inv => inv.created && inv.created >= startTimestamp
+      );
+    }
+    
+    if (endDate) {
+      const endTimestamp = Math.floor(new Date(endDate as string).getTime() / 1000);
+      filteredInvoices = filteredInvoices.filter(
+        inv => inv.created && inv.created <= endTimestamp
+      );
+    }
+    
+    if (customerName) {
+      const searchTerm = (customerName as string).toLowerCase();
+      filteredInvoices = filteredInvoices.filter(
+        inv => inv.customer_name && 
+               inv.customer_name.toLowerCase().includes(searchTerm)
+      );
+    }
+    
+    res.json({
+      success: true,
+      data: filteredInvoices
+    });
+  } catch (error) {
+    logger.error('Error fetching invoices:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch invoices',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
 });
 
 /**
@@ -114,30 +185,34 @@ router.get('/invoices', async (req, res) => {
  *   post:
  *     summary: Reconcile invoices with payouts
  *     tags: [Reconciliation]
- *     security:
- *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-stripe-key
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Stripe API key with read access
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required: [startDate, endDate]
  *             properties:
  *               startDate:
  *                 type: string
  *                 format: date
- *                 description: Start date for filtering invoices (YYYY-MM-DD)
+ *                 description: Start date for reconciliation (YYYY-MM-DD)
  *               endDate:
  *                 type: string
  *                 format: date
- *                 description: End date for filtering invoices (YYYY-MM-DD)
+ *                 description: End date for reconciliation (YYYY-MM-DD)
  *               matchThreshold:
  *                 type: number
  *                 minimum: 0.5
  *                 maximum: 1
  *                 default: 0.9
- *                 description: Confidence threshold for matching (0.5-1.0)
+ *                 description: Confidence threshold for matching
  *               customerName:
  *                 type: string
  *                 description: Filter by customer name
@@ -146,92 +221,81 @@ router.get('/invoices', async (req, res) => {
  *                 description: Filter by invoice status
  *     responses:
  *       200:
- *         description: Reconciliation results
+ *         description: Reconciliation result
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ReconciliationResult'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
  *       400:
- *         description: Invalid request parameters
+ *         description: Invalid parameters or missing API key
  *       500:
- *         description: Server error during reconciliation
+ *         description: Server error
  */
-router.post('/invoices', async (req, res) => {
-    try {
-        const { startDate, endDate, matchThreshold, customerName, status } = req.body;
-        
-        // Validate required fields
-        if (!startDate || !endDate) {
-            return res.status(400).json({ 
-                success: false,
-                error: 'startDate and endDate are required' 
-            });
-        }
-        
-        // Validate date range
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        
-        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-            return res.status(400).json({ 
-                success: false,
-                error: 'Invalid date format. Use YYYY-MM-DD' 
-            });
-        }
-        
-        if (start > end) {
-            return res.status(400).json({ 
-                success: false,
-                error: 'startDate must be before or equal to endDate' 
-            });
-        }
-        
-        // Validate matchThreshold if provided
-        if (matchThreshold && (matchThreshold < 0.5 || matchThreshold > 1)) {
-            return res.status(400).json({ 
-                success: false,
-                error: 'matchThreshold must be between 0.5 and 1.0' 
-            });
-        }
-        
-        logger.info('Starting invoice reconciliation', {
-            startDate,
-            endDate,
-            matchThreshold,
-            customerName: customerName ? 'filtered' : 'all',
-            status: status || 'all'
-        });
-        
-        // Use the API-based reconciliation service
-        const result = await apiReconciliationService.reconcileInvoices({
-            startDate,
-            endDate,
-            matchThreshold,
-            customerName,
-            status
-        });
-        
-        logger.info('Invoice reconciliation completed', {
-            invoiceCount: result.summary.totalInvoices,
-            matchedCount: result.summary.matchedInvoices,
-            processingTime: result.summary.processingTime
-        });
-        
-        res.json({
-            success: true,
-            ...result
-        });
-        
-    } catch (error) {
-        logger.error('Error during reconciliation:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error during reconciliation';
-        res.status(500).json({ 
-            success: false,
-            error: 'Failed to reconcile invoices', 
-            details: errorMessage,
-            timestamp: new Date().toISOString()
-        });
+router.post('/invoices', async (req: Request, res: Response) => {
+  try {
+    const { startDate, endDate, matchThreshold, customerName, status } = req.body;
+    const { stripeService } = req;
+    
+    // Validate required fields
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        error: 'startDate and endDate are required'
+      });
     }
+    
+    // Validate dates
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid date format. Please use YYYY-MM-DD'
+      });
+    }
+    
+    // Validate date range (max 1 year)
+    const oneYearInMs = 365 * 24 * 60 * 60 * 1000;
+    if (end.getTime() - start.getTime() > oneYearInMs) {
+      return res.status(400).json({
+        success: false,
+        error: 'Date range cannot exceed 1 year'
+      });
+    }
+    
+    // Validate match threshold
+    if (matchThreshold && (matchThreshold < 0.5 || matchThreshold > 1)) {
+      return res.status(400).json({
+        success: false,
+        error: 'matchThreshold must be between 0.5 and 1.0'
+      });
+    }
+    
+    // Call the reconciliation service with the Stripe service
+    const result = await apiReconciliationService.reconcileInvoices({
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+      matchThreshold,
+      customerName,
+      status,
+      stripeService
+    });
+    
+    res.json(result);
+  } catch (error) {
+    logger.error('Error during reconciliation:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to reconcile invoices',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
 });
 
 // Add a simple health check endpoint for the reconciliation service

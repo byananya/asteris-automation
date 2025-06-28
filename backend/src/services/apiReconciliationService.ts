@@ -2,9 +2,11 @@ import logger from '../utils/logger.js';
 import { v4 as uuidv4 } from 'uuid';
 import 'uuid'; // Ensure types are loaded
 import { StripeService } from './stripeService.js';
-
-const stripeService = new StripeService();
 import Stripe from 'stripe';
+
+// Mock data for when Stripe is not available
+const MOCK_INVOICES: any[] = [];
+const MOCK_PAYOUTS: any[] = [];
 
 // Extend the Stripe Invoice type to include payment_intent
 declare module 'stripe' {
@@ -40,6 +42,7 @@ export interface ReconciliationParams {
   matchThreshold?: number;
   customerName?: string;
   status?: string;
+  stripeService?: StripeService;
 }
 
 export interface ReconciliationResult {
@@ -67,18 +70,29 @@ export interface ReconciliationResult {
 export class ApiReconciliationService {
   async reconcileInvoices(params: ReconciliationParams = {}): Promise<ReconciliationResult> {
     const startTime = process.hrtime();
+    const { stripeService } = params;
     
     try {
       logger.info('Starting invoice reconciliation...');
       
-      // Get all invoices and payouts from Stripe
-      logger.info('Fetching invoices and payouts from Stripe...');
-      const [invoices, payouts] = await Promise.all([
-        stripeService.getAllInvoices(),
-        stripeService.getAllPayouts()
-      ]);
+      let invoices: any[] = [];
+      let payouts: any[] = [];
       
-      logger.info(`Fetched ${invoices.length} invoices and ${payouts.length} payouts`);
+      if (stripeService?.isActive) {
+        // Get all invoices and payouts from the provided Stripe service
+        logger.info('Fetching invoices and payouts from Stripe...');
+        [invoices, payouts] = await Promise.all([
+          stripeService.getAllInvoices(),
+          stripeService.getAllPayouts()
+        ]);
+        logger.info(`Fetched ${invoices.length} invoices and ${payouts.length} payouts`);
+      } else {
+        // Use mock data when Stripe is not available
+        logger.warn('Stripe is not configured or active. Using mock data for reconciliation.');
+        invoices = MOCK_INVOICES;
+        payouts = MOCK_PAYOUTS;
+        logger.info(`Using ${invoices.length} mock invoices and ${payouts.length} mock payouts`);
+      }
       
       // Log first few invoices for debugging
       if (invoices.length > 0) {
@@ -86,7 +100,7 @@ export class ApiReconciliationService {
           id: invoices[0].id,
           status: invoices[0].status,
           amount_paid: invoices[0].amount_paid,
-          customer_email: (invoices[0] as any).customer_email,
+          customer_email: (invoices[0] as any)?.customer_email,
           created: invoices[0].created,
           payment_intent: invoices[0].payment_intent
         });
