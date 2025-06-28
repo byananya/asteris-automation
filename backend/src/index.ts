@@ -44,8 +44,23 @@ const logger = createLogger({
 
 const app = express();
 const port = process.env.PORT || 3000;
-app.listen(Number(port), '0.0.0.0', () => {
-  logger.info(`Server running on port ${port}`);
+
+// Add health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Handle shutdown gracefully
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received. Shutting down gracefully');
+  server.close(() => {
+    logger.info('Process terminated');
+    process.exit(0);
+  });
 });
 
 // Configure CORS
@@ -287,6 +302,7 @@ if (frontendExists) {
 // Start the server
 const host = process.env.HOST || '0.0.0.0'; // Listen on all network interfaces
 const portNumber = typeof port === 'string' ? parseInt(port, 10) : port;
+
 const server = app.listen(portNumber, host, () => {
   logger.info(`Server is running on http://${host}:${portNumber}`);
   logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
