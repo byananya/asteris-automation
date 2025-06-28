@@ -1,8 +1,7 @@
 // API Configuration
 export const config = {
   // Use environment variable or default to production URL
-  // This ensures we always use the production API in all environments
-  apiBaseUrl: 'https://api-production-ef16.up.railway.app',
+  apiBaseUrl: process.env.NEXT_PUBLIC_API_URL || 'https://api-production-ef16.up.railway.app',
   
   // API endpoints
   apiEndpoints: {
@@ -17,11 +16,11 @@ export const config = {
 
 // Helper function to get full API URL
 const getApiUrl = (endpoint: string) => {
-  const baseUrl = 'https://api-production-ef16.up.railway.app';
+  const baseUrl = config.apiBaseUrl;
   // Remove leading slash from endpoint if present to prevent double slashes
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
   // Combine base URL with endpoint
-  const url = `${baseUrl}/${cleanEndpoint}`;
+  const url = `${baseUrl}${baseUrl.endsWith('/') ? '' : '/'}${cleanEndpoint}`;
   console.log('Generated API URL:', url); // Debug log
   return url;
 };

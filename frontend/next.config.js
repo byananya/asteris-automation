@@ -30,21 +30,9 @@ const nextConfig = {
   trailingSlash: true,
 
   // Environment variables are inlined at build time
-  publicRuntimeConfig: {
+  env: {
     // Will be available on both server and client
-    NEXT_PUBLIC_API_URL: process.env.NODE_ENV === 'production' 
-      ? 'https://api-production-ef16.up.railway.app' 
-      : 'https://api-production-ef16.up.railway.app',
-  },
-  
-  // API route rewrites
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: 'https://api-production-ef16.up.railway.app/api/:path*',
-      },
-    ];
+    NEXT_PUBLIC_API_URL: 'https://api-production-ef16.up.railway.app',
   },
   // Disable server-side rendering for static export
   trailingSlash: true,

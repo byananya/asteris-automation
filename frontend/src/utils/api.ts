@@ -57,12 +57,13 @@ export async function api<T = any>(
 ): Promise<T> {
   // Remove leading slash if present to prevent double slashes
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
-  const baseUrl = 'https://api-production-ef16.up.railway.app';
-  const url = `${baseUrl}/${cleanEndpoint}`;
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-production-ef16.up.railway.app';
+  const url = `${baseUrl}${cleanEndpoint.startsWith('/') ? '' : '/'}${cleanEndpoint}`;
   
   console.log('API Request URL:', url); // Debug log
   
   const headers: HeadersInit = {
+    ...(options.headers || {}),
     'Content-Type': 'application/json',
     ...options.headers,
   };
