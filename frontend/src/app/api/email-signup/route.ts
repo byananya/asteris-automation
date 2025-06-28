@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     // Forward the request to the backend API
     // Use localhost:3011 directly since that's where the backend is running
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:3011';
-    const apiUrl = `${backendUrl}/api/email-signup`;
+    const apiUrl = `https://api-production-ef16.up.railway.app/api/email-signup`;
     
     console.log(`Attempting to connect to backend at: ${apiUrl}`);
     console.log('Email data being sent:', JSON.stringify({

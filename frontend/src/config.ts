@@ -5,8 +5,8 @@ export const config = {
   
   // API endpoints
   apiEndpoints: {
-    reconciliation: '/api/reconciliation',
-    reconcile: '/api/reconcile',
+    reconciliation: 'https://api-production-ef16.up.railway.app/reconciliation',
+    reconcile: 'https://api-production-ef16.up.railway.app/reconcile',
   },
   
   // App info

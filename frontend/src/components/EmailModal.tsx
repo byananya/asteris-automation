@@ -76,7 +76,7 @@ const EmailModal: React.FC<EmailModalProps> = ({ onClose }) => {
       
       try {
         // Attempt to send to backend API
-        const response = await fetch(`${backendUrl}/api/email-signup`, {
+        const response = await fetch(`https://api-production-ef16.up.railway.app/api/email-signup`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

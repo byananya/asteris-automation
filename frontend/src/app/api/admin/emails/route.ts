@@ -23,7 +23,7 @@ export async function GET() {
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:3011';
     
     try {
-      const response = await fetch(`${backendUrl}/api/email-signup`, {
+      const response = await fetch(`https://api-production-ef16.up.railway.app/api/email-signup`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         cache: 'no-store',
