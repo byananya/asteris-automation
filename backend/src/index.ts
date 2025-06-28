@@ -47,7 +47,9 @@ process.on('uncaughtException', (error) => {
 const allowedOrigins = [
   'http://localhost:3000',
   'https://asteris-ai.vercel.app',
-  'https://asteris-automation.vercel.app'
+  'https://asteris-automation.vercel.app',
+  'https://app.asterisai.org',
+  'http://app.asterisai.org'
 ];
 
 // Enable CORS logging for debugging
