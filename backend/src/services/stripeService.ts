@@ -30,6 +30,14 @@ export class StripeService {
     return this.isEnabled && this.stripe !== null;
   }
 
+  /**
+   * Get the Stripe client instance
+   * @returns The Stripe client instance or null if not initialized
+   */
+  getStripeClient(): Stripe | null {
+    return this.stripe;
+  }
+
   async getInvoices(limit = 100, startingAfter?: string): Promise<Stripe.Invoice[]> {
     if (!this.isActive || !this.stripe) {
       logger.warn('Stripe is not configured. Returning empty invoice list.');

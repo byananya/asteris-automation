@@ -4,6 +4,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createLogger, format, transports } from 'winston';
 import Stripe from 'stripe';
+import { StripeService } from './services/stripeService.js';
 
 // Import routers
 import intentRouter from './api/routes/intentRouter';
@@ -103,10 +104,8 @@ const customCors = (req: express.Request, res: express.Response, next: express.N
   next();
 };
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-05-28.basil',
-});
+// Stripe will be initialized on-demand with the API key from request headers
+// No global Stripe instance is created at startup
 
 // Apply CORS and JSON middleware
 app.use(customCors);
@@ -322,12 +321,41 @@ if (frontendExists) {
 // Add a test endpoint for basic Stripe connectivity
 app.get('/api/test-stripe', async (req, res) => {
   try {
-    const balance = await stripe.balance.retrieve();
+    const stripeKey = req.headers['x-stripe-key'] as string;
+    
+    if (!stripeKey) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Stripe API key is required in x-stripe-key header'
+      });
+    }
+    
+    // Create a new Stripe service instance with the provided key
+    const stripeService = new StripeService(stripeKey);
+    
+    if (!stripeService.isActive) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Failed to initialize Stripe service with the provided key'
+      });
+    }
+    
+    // Use the Stripe service to get the balance
+    const stripeClient = stripeService.getStripeClient();
+    if (!stripeClient) {
+      throw new Error('Failed to get Stripe client');
+    }
+    const balance = await stripeClient.balance.retrieve();
+    
+    if (!balance) {
+      throw new Error('Failed to retrieve balance');
+    }
+    
     res.json({
       status: 'success',
-      available: balance.available[0].amount,
-      pending: balance.pending[0].amount,
-      currency: balance.available[0].currency
+      available: balance.available[0]?.amount || 0,
+      pending: balance.pending[0]?.amount || 0,
+      currency: balance.available[0]?.currency || 'usd'
     });
   } catch (error) {
     console.error('Stripe error:', error);
