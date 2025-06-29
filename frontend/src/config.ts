@@ -1,21 +1,21 @@
 // API Configuration
 export const config = {
-  // Hardcoded production URL
-  apiBaseUrl: 'https://api-production-ef16.up.railway.app',
-  
-  // API endpoints
+  // Use Railway/Netlify/Vercel env variable if set, otherwise fallback to production URL
+  apiBaseUrl: process.env.NEXT_PUBLIC_API_URL || 'https://api-production-ef16.up.railway.app',
+
+  // API endpoints (optional: can be removed if not used)
   apiEndpoints: {
-    reconciliation: 'https://api-production-ef16.up.railway.app/reconciliation',
-    reconcile: 'https://api-production-ef16.up.railway.app/reconcile',
+    reconciliation: (process.env.NEXT_PUBLIC_API_URL || 'https://api-production-ef16.up.railway.app') + '/reconciliation',
+    reconcile: (process.env.NEXT_PUBLIC_API_URL || 'https://api-production-ef16.up.railway.app') + '/reconcile',
   },
-  
+
   // App info
   appName: 'Asteris Automation',
   version: '1.0.0',
 };
 
 // Helper function to get full API URL
-const getApiUrl = (endpoint: string) => {
+function getApiUrl(endpoint: string) {
   const baseUrl = config.apiBaseUrl;
   // Remove leading slash from endpoint if present to prevent double slashes
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
@@ -23,7 +23,7 @@ const getApiUrl = (endpoint: string) => {
   const url = `${baseUrl}${baseUrl.endsWith('/') ? '' : '/'}${cleanEndpoint}`;
   console.log('Generated API URL:', url); // Debug log
   return url;
-};
+}
 
 // Log the API URL in development for debugging
 if (process.env.NODE_ENV !== 'production') {
