@@ -20,9 +20,9 @@ export async function GET() {
     }
     
     // For development, try to connect to the local backend
-    const backendUrl = process.env.BACKEND_URL;
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL;
 if (!backendUrl) {
-  throw new Error('BACKEND_URL environment variable is not set!');
+  throw new Error('NEXT_PUBLIC_API_URL environment variable is not set!');
 }
     
     try {
