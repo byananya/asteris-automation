@@ -49,8 +49,7 @@ interface RequestOptions extends RequestInit {
   responseType?: 'json' | 'blob' | 'text';
 }
 
-// Use environment variable if available, otherwise fallback to production
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-production-ef16.up.railway.app';
+// Always use getApiUrl from config for correct environment
 
 export async function api<T = any>(
   endpoint: string,
@@ -61,8 +60,8 @@ export async function api<T = any>(
   // Remove leading slash from endpoint if present
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
   
-  // Construct the full URL with API_URL
-  const url = `${API_URL}/${cleanEndpoint}`;
+  // Construct the full URL using getApiUrl from config
+  const url = getApiUrl(cleanEndpoint);
   
   console.log('API Request:', {
     url,
