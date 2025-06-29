@@ -62,12 +62,14 @@ export async function api<T = any>(
   
   // Construct the full URL using getApiUrl from config
   const url = getApiUrl(cleanEndpoint);
-  
-  console.log('API Request:', {
+
+  // Debug info: show API URL, env vars, and endpoint
+  console.log('[DEBUG] API Request:', {
     url,
     method,
     endpoint,
-    environment: process.env.NODE_ENV || 'production'
+    NODE_ENV: process.env.NODE_ENV,
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   });
   
   const headers: HeadersInit = {
