@@ -20,7 +20,10 @@ export async function GET() {
     }
     
     // For development, try to connect to the local backend
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3011';
+    const backendUrl = process.env.BACKEND_URL;
+if (!backendUrl) {
+  throw new Error('BACKEND_URL environment variable is not set!');
+}
     
     try {
       const response = await fetch(`https://api-production-ef16.up.railway.app/api/email-signup`, {

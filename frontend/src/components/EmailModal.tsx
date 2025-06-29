@@ -72,7 +72,10 @@ const EmailModal: React.FC<EmailModalProps> = ({ onClose }) => {
     try {
       // In production with static export, API routes don't work
       // So we'll make a direct call to the backend instead
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3011';
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+if (!backendUrl) {
+  throw new Error('NEXT_PUBLIC_BACKEND_URL environment variable is not set!');
+}
       
       try {
         // Attempt to send to backend API
