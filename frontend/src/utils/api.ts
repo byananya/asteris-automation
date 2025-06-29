@@ -138,6 +138,16 @@ export const apiClient = {
  * @returns Promise with reconciliation results
  */
 // Reconcile invoices using the Stripe API
-export const reconcileInvoices = (params: ReconciliationParams): Promise<ReconciliationResult> => {
-  return api<ReconciliationResult>('/reconcile/invoices', 'POST', params);
+export const reconcileInvoices = (
+  params: ReconciliationParams,
+  baseUrl?: string
+): Promise<ReconciliationResult> => {
+  // Always use NEXT_PUBLIC_API_URL or config.apiBaseUrl
+  const apiBaseUrl = baseUrl || process.env.NEXT_PUBLIC_API_URL || config.apiBaseUrl;
+  console.log('[DEBUG] Using API Base URL for reconciliation:', apiBaseUrl);
+  // Use getApiUrl with custom baseUrl
+  const endpoint = '/reconcile/invoices';
+  // Patch getApiUrl to accept baseUrl if needed
+  const url = `${apiBaseUrl}${apiBaseUrl.endsWith('/') ? '' : '/'}${endpoint.startsWith('/') ? endpoint.substring(1) : endpoint}`;
+  return api<ReconciliationResult>(url, 'POST', params);
 };
