@@ -25,10 +25,8 @@ function getApiUrl(endpoint: string) {
   return url;
 }
 
-// Log the API URL in development for debugging
-if (process.env.NODE_ENV !== 'production') {
-  console.log('Using API Base URL:', config.apiBaseUrl);
-}
+// Log the API URL and NODE_ENV in all environments for debugging
+console.log('Using API Base URL (ALL ENVS):', config.apiBaseUrl, 'NODE_ENV:', process.env.NODE_ENV);
 
 export { getApiUrl };
 export default config;

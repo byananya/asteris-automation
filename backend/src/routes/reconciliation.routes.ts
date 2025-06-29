@@ -360,4 +360,26 @@ router.get('/health', (req, res) => {
     });
 });
 
+// GET /api/reconcile/invoices/results
+router.get('/invoices/results', async (req: Request, res: Response) => {
+  try {
+    // TODO: Replace this mock with actual data retrieval logic
+    // For demonstration, we return a placeholder result
+    res.json({
+      success: true,
+      data: {
+        message: 'Results endpoint is live. Implement logic to fetch reconciliation results here.',
+        timestamp: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch reconciliation results',
+      details: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 export default router;
