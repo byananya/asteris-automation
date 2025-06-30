@@ -122,7 +122,33 @@ export default function ReconciliationPanel() {
             'Run Reconciliation'
           )}
         </button>
+        <button
+          onClick={async () => {
+            setError(null);
+            setIsLoading(true);
+            try {
+              const res = await fetch('https://api-production-ef16.up.railway.app/api/reconcile/invoices');
+              if (!res.ok) throw new Error(`Status ${res.status}`);
+              const data = await res.json();
+              setResponseData(data);
+            } catch (err: any) {
+              setError('Direct API call failed: ' + (err.message || err.toString()));
+            } finally {
+              setIsLoading(false);
+            }
+          }}
+          disabled={isLoading}
+          className={styles.button}
+          style={{ marginLeft: 16 }}
+        >
+          Direct API Call
+        </button>
       </div>
+      {responseData && (
+        <pre style={{ marginTop: 16, background: '#222', color: '#fff', padding: 12, borderRadius: 6 }}>
+          {JSON.stringify(responseData, null, 2)}
+        </pre>
+      )}
 
       {error && <div className={styles.error}>{error}</div>}
 
