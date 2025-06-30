@@ -174,6 +174,28 @@ app.use('/api/intent', intentRouter);
 app.use('/api/reconcile', stripeReconciliationRoutes);
 app.use('/api/email-signup', emailSignupRouter);
 
+// Debug endpoint to list all routes (development only)
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/api/routes', (req, res) => {
+    const routes: { method: string; path: string }[] = [];
+    app._router.stack.forEach((middleware) => {
+      if (middleware.route) {
+        // routes registered directly on the app
+        routes.push({ method: Object.keys(middleware.route.methods)[0].toUpperCase(), path: middleware.route.path });
+      } else if (middleware.name === 'router' && middleware.handle.stack) {
+        // router middleware
+        middleware.handle.stack.forEach((handler) => {
+          if (handler.route) {
+            routes.push({ method: Object.keys(handler.route.methods)[0].toUpperCase(), path: handler.route.path });
+          }
+        });
+      }
+    });
+    res.json({ routes });
+  });
+}
+
+
 // Serve static frontend files if they exist in the expected location
 let frontendPath: string = '';
 let frontendExists: boolean = false;
