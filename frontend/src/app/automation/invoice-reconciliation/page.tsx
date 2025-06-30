@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { getStripeApiKey } from '@/utils/stripe';
 import { useRouter } from 'next/navigation';
 import { reconcileInvoices } from '@/utils/api';
 import styles from './page.module.css';
@@ -60,12 +61,15 @@ export default function InvoiceReconciliationPage() {
     setIsLoading(true);
     
     try {
-      const apiKey = localStorage.getItem('stripeApiKey');
+      const apiKey = getStripeApiKey();
       if (!apiKey) {
         alert('Stripe API key not found. Please configure it in the settings.');
         setIsLoading(false);
         return;
       }
+
+      // Debug: Show masked API key
+      console.log('[DEBUG] Stripe API key (masked):', apiKey ? apiKey.substring(0, 4) + '...' : '(none)');
 
       // Use centralized API utility
       await reconcileInvoices({
@@ -132,192 +136,207 @@ export default function InvoiceReconciliationPage() {
         
         <div className={styles.formContainer}>
           {currentStep === 1 && (
-            <div className={styles.stepContent}>
-              <h2 className={styles.stepTitle}>
-                <FiUpload className={styles.stepIcon} />
-                Select Data Source
-              </h2>
-              <div className={styles.card}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardIcon}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M22 6l-10 7L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className={styles.cardTitle}>Stripe</h3>
-                    <p className={styles.cardDescription}>Connected</p>
-                  </div>
-                  <div className={styles.connected}>
-                    <FiCheckCircle size={14} />
-                    <span>Connected</span>
-                  </div>
-                </div>
-                <div className={styles.cardContent}>
-                  <p>Your Stripe account is connected and ready for invoice reconciliation.</p>
-                </div>
-              </div>
-            </div>
-          )}
+  <div className={styles.stepContent}>
+    <h2 className={styles.stepTitle}>
+      <FiUpload className={styles.stepIcon} />
+      Select Data Source
+    </h2>
+    <div className={styles.card}>
+      <div className={styles.cardHeader}>
+        <div className={styles.cardIcon}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M22 6l-10 7L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <h3 className={styles.cardTitle}>Stripe</h3>
+          <p className={styles.cardDescription}>Connected</p>
+        </div>
+        <div className={styles.connected}>
+          <FiCheckCircle size={14} />
+          <span>Connected</span>
+        </div>
+      </div>
+      <div className={styles.cardContent}>
+        <p>Your Stripe account is connected and ready for invoice reconciliation.</p>
+      </div>
+    </div>
+    <div style={{ marginTop: 32, display: 'flex', justifyContent: 'flex-end' }}>
+      <button className={styles.primaryButton} onClick={handleNext}>
+        Continue
+      </button>
+    </div>
+  </div>
+)}
           
           {currentStep === 2 && (
-            <div className={styles.stepContent}>
-              <h2 className={styles.stepTitle}>
-                <FiCalendar className={styles.stepIcon} />
-                Select Date Range
-              </h2>
-              <div className={styles.formGroup}>
-                <label className={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="dateRange"
-                    value="last30days"
-                    checked={formData.dateRange === 'last30days'}
-                    onChange={handleInputChange}
-                  />
-                  <span>Last 30 days</span>
-                </label>
-                <label className={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="dateRange"
-                    value="last90days"
-                    checked={formData.dateRange === 'last90days'}
-                    onChange={handleInputChange}
-                  />
-                  <span>Last 90 days</span>
-                </label>
-                <label className={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="dateRange"
-                    value="custom"
-                    checked={formData.dateRange === 'custom'}
-                    onChange={handleInputChange}
-                  />
-                  <span>Custom date range</span>
-                </label>
-                
-                {formData.dateRange === 'custom' && (
-                  <div className={styles.dateRangeContainer}>
-                    <div className={styles.inputWrapper}>
-                      <label>Start Date</label>
-                      <input
-                        type="date"
-                        name="customStartDate"
-                        className={styles.input}
-                        value={formData.customStartDate}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div className={styles.inputWrapper}>
-                      <label>End Date</label>
-                      <input
-                        type="date"
-                        name="customEndDate"
-                        className={styles.input}
-                        value={formData.customEndDate}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+  <div className={styles.stepContent}>
+    <h2 className={styles.stepTitle}>
+      <FiCalendar className={styles.stepIcon} />
+      Select Date Range
+    </h2>
+    <div className={styles.formGroup}>
+      <label className={styles.radioLabel}>
+        <input
+          type="radio"
+          name="dateRange"
+          value="last30days"
+          checked={formData.dateRange === 'last30days'}
+          onChange={handleInputChange}
+        />
+        <span>Last 30 days</span>
+      </label>
+      <label className={styles.radioLabel}>
+        <input
+          type="radio"
+          name="dateRange"
+          value="last90days"
+          checked={formData.dateRange === 'last90days'}
+          onChange={handleInputChange}
+        />
+        <span>Last 90 days</span>
+      </label>
+      <label className={styles.radioLabel}>
+        <input
+          type="radio"
+          name="dateRange"
+          value="custom"
+          checked={formData.dateRange === 'custom'}
+          onChange={handleInputChange}
+        />
+        <span>Custom date range</span>
+      </label>
+      {formData.dateRange === 'custom' && (
+        <div className={styles.dateRangeContainer}>
+          <div className={styles.inputWrapper}>
+            <label>Start Date</label>
+            <input
+              type="date"
+              name="customStartDate"
+              className={styles.input}
+              value={formData.customStartDate}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className={styles.inputWrapper}>
+            <label>End Date</label>
+            <input
+              type="date"
+              name="customEndDate"
+              className={styles.input}
+              value={formData.customEndDate}
+              onChange={handleInputChange}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+    <div style={{ marginTop: 32, display: 'flex', justifyContent: 'space-between' }}>
+      <button className={styles.primaryButton} onClick={handleBack}>
+        Back
+      </button>
+      <button className={styles.primaryButton} onClick={handleNext}>
+        Continue
+      </button>
+    </div>
+  </div>
+)}
           
           {currentStep === 3 && (
-            <div className={styles.stepContent}>
-              <h2 className={styles.stepTitle}>
-                <FiSettings className={styles.stepIcon} />
-                Configure Settings
-              </h2>
-              <div className={styles.formGroup}>
-                <h3 className={styles.sectionTitle}>Matching Options</h3>
-                <label className={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    name="includeDisputes"
-                    checked={formData.includeDisputes}
-                    onChange={handleInputChange}
-                  />
-                  <span>Include disputes in reconciliation</span>
-                </label>
-                <label className={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    name="includeRefunds"
-                    checked={formData.includeRefunds}
-                    onChange={handleInputChange}
-                  />
-                  <span>Include refunds in reconciliation</span>
-                </label>
-                
-                <div className={styles.inputWrapper}>
-                  <label>Match Threshold (0.0 - 1.0)</label>
-                  <input
-                    type="range"
-                    name="matchThreshold"
-                    min="0.5"
-                    max="1"
-                    step="0.05"
-                    value={formData.matchThreshold}
-                    onChange={handleInputChange}
-                    className={styles.rangeInput}
-                  />
-                  <div className={styles.rangeValue}>{formData.matchThreshold}</div>
-                </div>
-              </div>
-              
-              <div className={styles.formGroup}>
-                <h3 className={styles.sectionTitle}>Output Options</h3>
-                <label className={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    name="notifyOnCompletion"
-                    checked={formData.notifyOnCompletion}
-                    onChange={handleInputChange}
-                  />
-                  <span>Notify me when reconciliation is complete</span>
-                </label>
-                
-                {formData.notifyOnCompletion && (
-                  <div className={styles.inputWrapper}>
-                    <label>Email Address</label>
-                    <input
-                      type="email"
-                      name="notifyEmail"
-                      className={styles.input}
-                      value={formData.notifyEmail}
-                      onChange={handleInputChange}
-                      placeholder="your@email.com"
-                    />
-                  </div>
-                )}
-                
-                <label className={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    name="saveToDatabase"
-                    checked={formData.saveToDatabase}
-                    onChange={handleInputChange}
-                  />
-                  <span>Save results to database</span>
-                </label>
-                
-                <label className={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    name="generateReport"
-                    checked={formData.generateReport}
-                    onChange={handleInputChange}
-                  />
-                  <span>Generate downloadable report</span>
-                </label>
-              </div>
-            </div>
-          )}
+  <div className={styles.stepContent}>
+    <h2 className={styles.stepTitle}>
+      <FiSettings className={styles.stepIcon} />
+      Configure Settings
+    </h2>
+    <div className={styles.formGroup}>
+      <h3 className={styles.sectionTitle}>Matching Options</h3>
+      <label className={styles.checkboxLabel}>
+        <input
+          type="checkbox"
+          name="includeDisputes"
+          checked={formData.includeDisputes}
+          onChange={handleInputChange}
+        />
+        <span>Include disputes in reconciliation</span>
+      </label>
+      <label className={styles.checkboxLabel}>
+        <input
+          type="checkbox"
+          name="includeRefunds"
+          checked={formData.includeRefunds}
+          onChange={handleInputChange}
+        />
+        <span>Include refunds in reconciliation</span>
+      </label>
+      <div className={styles.inputWrapper}>
+        <label>Match Threshold (0.0 - 1.0)</label>
+        <input
+          type="range"
+          name="matchThreshold"
+          min="0.5"
+          max="1"
+          step="0.05"
+          value={formData.matchThreshold}
+          onChange={handleInputChange}
+          className={styles.rangeInput}
+        />
+        <div className={styles.rangeValue}>{formData.matchThreshold}</div>
+      </div>
+    </div>
+    <div className={styles.formGroup}>
+      <h3 className={styles.sectionTitle}>Output Options</h3>
+      <label className={styles.checkboxLabel}>
+        <input
+          type="checkbox"
+          name="notifyOnCompletion"
+          checked={formData.notifyOnCompletion}
+          onChange={handleInputChange}
+        />
+        <span>Notify me when reconciliation is complete</span>
+      </label>
+      {formData.notifyOnCompletion && (
+        <div className={styles.inputWrapper}>
+          <label>Email Address</label>
+          <input
+            type="email"
+            name="notifyEmail"
+            className={styles.input}
+            value={formData.notifyEmail}
+            onChange={handleInputChange}
+            placeholder="your@email.com"
+          />
+        </div>
+      )}
+      <label className={styles.checkboxLabel}>
+        <input
+          type="checkbox"
+          name="saveToDatabase"
+          checked={formData.saveToDatabase}
+          onChange={handleInputChange}
+        />
+        <span>Save results to database</span>
+      </label>
+      <label className={styles.checkboxLabel}>
+        <input
+          type="checkbox"
+          name="generateReport"
+          checked={formData.generateReport}
+          onChange={handleInputChange}
+        />
+        <span>Generate downloadable report</span>
+      </label>
+    </div>
+    <div style={{ marginTop: 32, display: 'flex', justifyContent: 'space-between' }}>
+      <button className={styles.primaryButton} onClick={handleBack}>
+        Back
+      </button>
+      <button className={styles.primaryButton} onClick={handleNext}>
+        Continue
+      </button>
+    </div>
+  </div>
+)}
           
           {currentStep === 4 && (
             <div className={styles.stepContent}>
@@ -594,7 +613,37 @@ export default function InvoiceReconciliationPage() {
             setDirectApiLoading(true);
             setDirectApiResponse(null);
             try {
-              const res = await fetch('https://api-production-ef16.up.railway.app/api/reconcile/invoices');
+              const apiKey = getStripeApiKey();
+              if (!apiKey) {
+                setDirectApiError('Stripe API key not found. Please configure it in the settings.');
+                setDirectApiLoading(false);
+                return;
+              }
+              const body = {
+                startDate: formData.customStartDate || undefined,
+                endDate: formData.customEndDate || undefined,
+                includeDisputes: formData.includeDisputes,
+                includeRefunds: formData.includeRefunds,
+                matchThreshold: formData.matchThreshold,
+                notifyOnCompletion: formData.notifyOnCompletion,
+                notifyEmail: formData.notifyEmail || undefined,
+                saveToDatabase: formData.saveToDatabase,
+                generateReport: formData.generateReport,
+              };
+              console.log('Direct API Call:', {
+  url: 'https://api-production-ef16.up.railway.app/api/reconcile/invoices',
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json', 'x-stripe-key': apiKey ? apiKey.substring(0, 4) + '...' : '(none)' },
+  body
+});
+const res = await fetch('https://api-production-ef16.up.railway.app/api/reconcile/invoices', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'x-stripe-key': apiKey
+                },
+                body: JSON.stringify(body)
+              });
               if (!res.ok) throw new Error(`Status ${res.status}`);
               const data = await res.json();
               setDirectApiResponse(data);

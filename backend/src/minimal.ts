@@ -7,6 +7,7 @@ const port = 3002;
 // CORS configuration
 const allowedOrigins = [
   'http://localhost:3000',
+  'http://localhost:3001',
   'https://asteris-ai.vercel.app', // Add your production frontend URL here
   'https://asteris-automation.vercel.app' // Add any other allowed domains
 ];
