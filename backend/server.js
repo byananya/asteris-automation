@@ -3,6 +3,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import emailSignupRouter from './src/routes/emailSignup.js';
 import emailExportRouter from './src/routes/emailExport.js';
+import reconciliationRouter from './dist/routes/reconciliation.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -15,6 +16,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Routes
 app.use('/email-signup', emailSignupRouter);
 app.use('/email-export', emailExportRouter);
+app.use('/api/reconcile', reconciliationRouter);
 
 // Health check route
 app.get('/health', (req, res) => {
