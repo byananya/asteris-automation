@@ -143,7 +143,8 @@ export const reconcileInvoices = (
   baseUrl?: string
 ): Promise<ReconciliationResult> => {
   // Always use NEXT_PUBLIC_API_URL or config.apiBaseUrl
-  const apiBaseUrl = baseUrl || process.env.NEXT_PUBLIC_API_URL || config.apiBaseUrl;
+  // Only use NEXT_PUBLIC_API_URL or production URL, never window.location or localhost
+  const apiBaseUrl = baseUrl || process.env.NEXT_PUBLIC_API_URL || 'https://api-production-ef16.up.railway.app';
   console.log('[DEBUG] Using API Base URL for reconciliation:', apiBaseUrl);
   // Use getApiUrl with custom baseUrl
   const endpoint = '/reconcile/invoices';
