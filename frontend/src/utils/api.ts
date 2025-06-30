@@ -60,8 +60,8 @@ export async function api<T = any>(
   // Remove leading slash from endpoint if present
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
   
-  // Construct the full URL using getApiUrl from config
-  const url = getApiUrl(cleanEndpoint);
+  // Always use the production API URL for all requests
+  const url = `https://api-production-ef16.up.railway.app/api/${cleanEndpoint}`;
 
   // Debug info: show API URL, env vars, and endpoint
   console.log('[DEBUG] API Request:', {
