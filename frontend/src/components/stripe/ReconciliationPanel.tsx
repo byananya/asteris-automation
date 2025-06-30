@@ -32,8 +32,9 @@ export default function ReconciliationPanel() {
       setIsLoading(true);
       setError(null);
 
-      // Make the reconciliation request using the api utility
-      const responseData = await api('/reconcile/invoices', 'POST', {
+      // Always use the production API base URL or NEXT_PUBLIC_API_URL
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-production-ef16.up.railway.app';
+      const responseData = await api(`${apiBaseUrl}/reconcile/invoices`, 'POST', {
         startDate: dateRange.startDate || undefined,
         endDate: dateRange.endDate || undefined
       }, {
