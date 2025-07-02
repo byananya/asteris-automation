@@ -61,8 +61,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy built frontend (static export goes to 'out' directory)
-COPY --from=frontend-builder /app/frontend/out /app/backend/public
+# Copy built frontend (standalone build)
+COPY --from=frontend-builder /app/frontend/.next/standalone /app/frontend/standalone
+COPY --from=frontend-builder /app/frontend/.next/static /app/frontend/.next/static
+COPY --from=frontend-builder /app/frontend/public /app/frontend/public
 
 # Copy built backend
 COPY --from=backend-builder /app/backend /app/backend
