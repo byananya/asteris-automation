@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import { format } from 'date-fns';
 
-const STRIPE_API_VERSION = '2025-05-28.basil' as const;
+const STRIPE_API_VERSION = '2025-06-30.basil' as const;
 
 type StripeInvoiceWithCharge = Stripe.Invoice & { charge?: string };
 

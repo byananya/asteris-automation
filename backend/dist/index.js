@@ -7,7 +7,7 @@ const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const winston_1 = require("winston");
-const stripe_1 = __importDefault(require("stripe"));
+const stripeService_js_1 = require("./services/stripeService.js");
 // Import routers
 const intentRouter_1 = __importDefault(require("./api/routes/intentRouter"));
 const stripeReconciliationRoutes_1 = __importDefault(require("./routes/stripeReconciliationRoutes"));
@@ -41,7 +41,9 @@ process.on('uncaughtException', (error) => {
 const allowedOrigins = [
     'http://localhost:3000',
     'https://asteris-ai.vercel.app',
-    'https://asteris-automation.vercel.app'
+    'https://asteris-automation.vercel.app',
+    'https://app.asterisai.org',
+    'http://app.asterisai.org'
 ];
 // Enable CORS logging for debugging
 console.log('CORS Configuration:');
@@ -87,10 +89,8 @@ const customCors = (req, res, next) => {
     }
     next();
 };
-// Initialize Stripe
-const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2025-05-28.basil',
-});
+// Stripe will be initialized on-demand with the API key from request headers
+// No global Stripe instance is created at startup
 // Apply CORS and JSON middleware
 app.use(customCors);
 app.use(express_1.default.json());
@@ -101,7 +101,9 @@ app.get('/health', (req, res) => {
 });
 // Log all incoming requests for debugging
 app.use((req, res, next) => {
-    logger.info(`${req.method} ${req.path}`);
+    const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+    logger.info(`[${new Date().toISOString()}] Incoming request: ${req.method} ${fullUrl}`);
+    console.log(`[${new Date().toISOString()}] Incoming request: ${req.method} ${fullUrl}`);
     next();
 });
 // Apply CORS and JSON middleware
@@ -112,7 +114,11 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 // API Routes
-app.use('/api/reconcile', reconciliation_routes_1.default);
+console.log('Mounting reconciliation router at /api/reconcile');
+app.use('/api/reconcile', (req, res, next) => {
+    console.log(`[${new Date().toISOString()}] Incoming request to: ${req.method} ${req.originalUrl}`);
+    (0, reconciliation_routes_1.default)(req, res, next);
+});
 // Health check endpoints
 app.get('/api/health', (req, res) => {
     res.status(200).json({
@@ -278,12 +284,35 @@ else {
 // Add a test endpoint for basic Stripe connectivity
 app.get('/api/test-stripe', async (req, res) => {
     try {
-        const balance = await stripe.balance.retrieve();
+        const stripeKey = req.headers['x-stripe-key'];
+        if (!stripeKey) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Stripe API key is required in x-stripe-key header'
+            });
+        }
+        // Create a new Stripe service instance with the provided key
+        const stripeService = new stripeService_js_1.StripeService(stripeKey);
+        if (!stripeService.isActive) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Failed to initialize Stripe service with the provided key'
+            });
+        }
+        // Use the Stripe service to get the balance
+        const stripeClient = stripeService.getStripeClient();
+        if (!stripeClient) {
+            throw new Error('Failed to get Stripe client');
+        }
+        const balance = await stripeClient.balance.retrieve();
+        if (!balance) {
+            throw new Error('Failed to retrieve balance');
+        }
         res.json({
             status: 'success',
-            available: balance.available[0].amount,
-            pending: balance.pending[0].amount,
-            currency: balance.available[0].currency
+            available: balance.available[0]?.amount || 0,
+            pending: balance.pending[0]?.amount || 0,
+            currency: balance.available[0]?.currency || 'usd'
         });
     }
     catch (error) {

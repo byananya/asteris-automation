@@ -13,7 +13,7 @@ export class StripeService {
         this.stripe = new Stripe(stripeKey, {
           // Using the correct API version for the Stripe SDK
           // @ts-ignore - The type definition is incorrect for the API version
-          apiVersion: '2025-05-28.basil' as const,
+          apiVersion: '2025-06-30.basil' as const,
           typescript: true
         });
         this.isEnabled = true;

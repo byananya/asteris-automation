@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.StripeReconciliationService = void 0;
 const stripe_1 = __importDefault(require("stripe"));
 const date_fns_1 = require("date-fns");
-const STRIPE_API_VERSION = '2025-05-28.basil';
+const STRIPE_API_VERSION = '2025-06-30.basil';
 class StripeReconciliationService {
     getCustomerId(customer) {
         if (typeof customer === 'string')
