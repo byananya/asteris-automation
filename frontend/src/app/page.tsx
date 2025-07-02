@@ -14,6 +14,10 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<any>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // State for invoice results
+  const [loadingInvoices, setLoadingInvoices] = useState(false);
+  const [invoiceResults, setInvoiceResults] = useState<any>(null);
+  const [invoiceError, setInvoiceError] = useState<string | null>(null);
 
   // Commented out automatic redirection to allow viewing the home page
   // useEffect(() => {
@@ -129,6 +133,46 @@ export default function HomePage() {
               initialQuery={searchQuery}
               ref={searchInputRef}
             />
+
+            {/* Get Invoice Results Button */}
+            <button
+              style={{ marginTop: '2rem', padding: '0.75rem 1.5rem', background: '#a855f7', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 600, fontSize: '1.1rem', cursor: 'pointer' }}
+              onClick={async () => {
+                setLoadingInvoices(true);
+                setInvoiceError(null);
+                setInvoiceResults(null);
+                try {
+                  // Call the backend directly to avoid double-appending URLs
+                  const response = await fetch('https://api-production-ef16.up.railway.app/api/reconcile/invoices', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'x-stripe-key': 'sk_test_51RMNxpSBLzEEIhkLwErBOsTk6L6vH8alSLB203qNjRKCKOO39k5jc5tOUOWQK75Fp7rPLYj9ygoFlq2LhM0W2zVv006Lc0BaBk',
+                    },
+                    body: JSON.stringify({}), // Add any request body if needed
+                  });
+                  if (!response.ok) throw new Error('Failed to fetch invoice results');
+                  const results = await response.json();
+                  setInvoiceResults(results);
+                } catch (err: any) {
+                  setInvoiceError(err?.message || 'Failed to fetch invoice results');
+                } finally {
+                  setLoadingInvoices(false);
+                }
+              }}
+              disabled={loadingInvoices}
+            >
+              {loadingInvoices ? 'Fetching API Reconcile Results...' : 'Get API Reconcile Results'}
+            </button>
+            {/* Show results or error */}
+            {invoiceError && (
+              <div style={{ color: 'red', marginTop: '1rem' }}>Error: {invoiceError}</div>
+            )}
+            {invoiceResults && (
+              <pre style={{ marginTop: '1rem', background: '#f3f3f3', padding: '1rem', borderRadius: '6px', maxHeight: 350, overflow: 'auto', fontSize: '0.95rem' }}>
+                {JSON.stringify(invoiceResults, null, 2)}
+              </pre>
+            )}
           </div>
         </main>
         <Footer />
