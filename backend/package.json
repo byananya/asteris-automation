@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "nodemon src/index.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "NODE_ENV=production node dist/index.js",
+    "start:backend": "NODE_ENV=production node dist/index.js",
+    "start:frontend": "NODE_ENV=production node /app/frontend/standalone/server.js",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"", 
     "start:prod": "NODE_ENV=production node dist/index.js",
     "train": "ts-node src/ml/training/train.ts",
     "postinstall": "npm rebuild @tensorflow/tfjs-node --build-from-source=false"
@@ -15,6 +17,7 @@
     "@tensorflow/tfjs-core": "^4.10.0",
     "@tensorflow/tfjs-node": "^4.10.0",
     "axios": "^1.9.0",
+    "concurrently": "^9.2.0",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "express": "^4.18.2",
