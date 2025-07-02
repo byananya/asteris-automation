@@ -55,7 +55,7 @@ USER node
 # Expose the port the app runs on
 EXPOSE 3010
 
-# Health check
+# Health check (checks backend health endpoint)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3010/api/health || exit 1
 
