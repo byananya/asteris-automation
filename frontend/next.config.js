@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Enable static exports for standalone deployment
-  output: 'export',
+  output: 'standalone',
   
   // Disable React strict mode to prevent double rendering in development
   reactStrictMode: false,
@@ -75,4 +75,7 @@ if (process.env.NODE_ENV === 'production') {
   nextConfig.compress = true;
 }
 
-module.exports = nextConfig;
+module.exports = {
+  output: 'standalone',
+  ...nextConfig
+};

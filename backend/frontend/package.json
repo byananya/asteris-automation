@@ -5,8 +5,9 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "NEXT_SKIP_TYPECHECKING=true next build",
+    "export": "next build && next export -o ../backend/public",
     "postbuild": "node copy-output.js",
-    "build:static": "next build && node copy-output.js",
+    "build:static": "next build && next export -o ../backend/public && node copy-output.js",
     "start": "next start -p 3000",
     "lint": "next lint"
   },

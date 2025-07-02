@@ -17,6 +17,7 @@ RUN npm install --legacy-peer-deps
 # Copy source files
 COPY public ./public
 COPY src ./src
+COPY copy-output.js ./
 
 # Build the application
 RUN npm run build
