@@ -76,11 +76,11 @@ RUN useradd -m appuser && \
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV PORT=3001
+ENV PORT=3000
 ENV NODE_OPTIONS=--max_old_space_size=2048
 
 # Expose port
-EXPOSE 3001
+EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
