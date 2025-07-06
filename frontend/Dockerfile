@@ -23,7 +23,7 @@ COPY copy-output.js ./
 RUN npm run build
 
 # Stage 2: Production image
-FROM node:18-slim
+FROM node:18-slim AS production
 
 WORKDIR /app
 

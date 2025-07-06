@@ -16,7 +16,7 @@ COPY backend/ ./
 RUN npm install --only=dev --legacy-peer-deps && npm run build
 
 # Stage 3: Production image
-FROM node:18-slim
+FROM node:18-slim AS production
 WORKDIR /app/backend
 
 # Install production dependencies only
@@ -42,7 +42,9 @@ CMD ["node", "dist/index.js"]
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:3001/health || exit 1
 
-# Switch to non-root user
+# Create non-root user and switch to it
+RUN useradd -m appuser
+RUN chown -R appuser:appuser /app/backend
 USER appuser
 
 # Start the backend server
