@@ -134,7 +134,7 @@ export default function HomePage() {
               ref={searchInputRef}
             />
 
-            {/* Get Invoice Results Button */}
+            {/* Get API Reconcile Results Button (API call) */}
             <button
               style={{ marginTop: '2rem', padding: '0.75rem 1.5rem', background: '#a855f7', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 600, fontSize: '1.1rem', cursor: 'pointer' }}
               onClick={async () => {
