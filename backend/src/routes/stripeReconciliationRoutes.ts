@@ -5,12 +5,12 @@ const router = Router();
 
 router.post('/invoices', async (req: Request, res: Response) => {
   try {
-    const stripeApiKey = req.headers['x-stripe-key'] as string;
     const { startDate, endDate } = req.body;
+    const stripeApiKey = process.env.STRIPE_SECRET_KEY;
 
     if (!stripeApiKey || !stripeApiKey.startsWith('sk_')) {
-      return res.status(400).json({ 
-        error: 'A valid Stripe secret API key (sk_...) is required in the x-stripe-key header.' 
+      return res.status(500).json({ 
+        error: 'Stripe secret API key is not configured on the server.' 
       });
     }
 

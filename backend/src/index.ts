@@ -58,7 +58,7 @@ console.log('CORS Configuration:');
 console.log('- NODE_ENV:', process.env.NODE_ENV);
 console.log('- Allowed origins:', allowedOrigins);
 
-// Custom CORS middleware
+// Custom CORS middleware with improved preflight handling
 const customCors = (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const origin = req.headers.origin || '';
   
@@ -67,40 +67,22 @@ const customCors = (req: express.Request, res: express.Response, next: express.N
   console.log('Origin:', origin);
   console.log('Method:', req.method);
   console.log('Path:', req.path);
-  console.log('Headers:', req.headers);
+  console.log('Headers:', JSON.stringify(req.headers));
   
   // Set CORS headers
-  if (origin) {
-    // Check if the origin is in the allowed list or matches the regex
-    // Temporarily allow all origins
-    const isAllowed = true;
-    
-    if (true) { // Temporarily allow all origins
-      // Set CORS headers for all responses
-      res.header('Access-Control-Allow-Origin', '*');
-      res.header('Access-Control-Allow-Credentials', 'true');
-      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-stripe-key, x-requested-with');
-      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-      
-      // Handle preflight requests
-      if (req.method === 'OPTIONS') {
-        console.log('Handling OPTIONS preflight request');
-        console.log('Request Headers:', req.headers);
-        return res.status(204).send();
-      }
-      
-      console.log('CORS: Allowing request from origin:', origin);
-    } else {
-      console.warn('CORS: Blocked request from origin:', origin);
-      console.log('Allowed origins:', allowedOrigins);
-      return res.status(403).json({ 
-        error: 'Not allowed by CORS',
-        requestedOrigin: origin,
-        allowedOrigins: allowedOrigins
-      });
-    }
+  // Allow requests from any origin for development
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-stripe-key');
+  
+  // Handle preflight OPTIONS requests
+  if (req.method === 'OPTIONS') {
+    console.log('Handling OPTIONS preflight request with 204 No Content');
+    res.status(204).end();
+    return;
   }
   
+  console.log('CORS: Proceeding with request');
   next();
 };
 
