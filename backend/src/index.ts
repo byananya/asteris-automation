@@ -63,40 +63,51 @@ process.on('SIGTERM', () => {
   });
 });
 
-// Configure CORS
-const allowedOrigins = process.env.CORS_ORIGIN 
-  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
-  : ['http://localhost:3000', 'https://app.asterisai.org'];
+// Configure CORS - Simplified configuration to fix preflight issues
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://app.asterisai.org',
+  'https://asteris-ai.vercel.app',
+  'https://asteris-automation.vercel.app',
+  'https://asteris-frontend-production.up.railway.app'
+];
+
+// Add any additional origins from environment variables
+if (process.env.CORS_ORIGIN) {
+  const envOrigins = process.env.CORS_ORIGIN.split(',').map(origin => origin.trim());
+  envOrigins.forEach(origin => {
+    if (!allowedOrigins.includes(origin)) {
+      allowedOrigins.push(origin);
+    }
+  });
+}
+
+// Log all allowed origins for debugging
+console.log('CORS Allowed Origins:', allowedOrigins);
 
 const corsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+  origin: function(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
     // Allow requests with no origin (like mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      console.log('CORS: Allowing request with no origin');
+      return callback(null, true);
+    }
     
-    // Check if the origin matches any of the allowed origins or is a subdomain of asterisai.org
-    const isAllowed = allowedOrigins.some(allowedOrigin => {
-      if (allowedOrigin === '*') return true;
-      if (origin === allowedOrigin) return true;
-      if (allowedOrigin === 'https://app.asterisai.org' && 
-          origin.endsWith('.asterisai.org')) {
-        return true;
-      }
-      return false;
-    });
-    
-    if (isAllowed) {
+    // Check if origin is in the allowed list
+    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+      console.log(`CORS: Allowing request from origin: ${origin}`);
       callback(null, true);
     } else {
-      console.warn('CORS request from not allowed origin:', origin);
-      console.log('Allowed origins:', allowedOrigins);
-      callback(new Error('Not allowed by CORS'));
+      console.warn(`CORS: Blocking request from non-allowed origin: ${origin}`);
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-stripe-key', 'x-requested-with'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-stripe-key', 'X-Requested-With', 'Origin', 'Accept'],
   credentials: true,
   preflightContinue: false,
-  optionsSuccessStatus: 204
+  optionsSuccessStatus: 204,
+  maxAge: 86400 // 24 hours
 };
 
 // Log CORS configuration for debugging
@@ -108,7 +119,26 @@ console.log('CORS Configuration:', {
 
 // Apply CORS with the configured options
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Enable pre-flight for all routes
+
+// Handle OPTIONS preflight requests explicitly
+app.options('*', (req, res) => {
+  console.log('Handling OPTIONS preflight request for path:', req.path);
+  // Set CORS headers manually for preflight
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  } else if (process.env.NODE_ENV !== 'production') {
+    res.header('Access-Control-Allow-Origin', '*');
+  }
+  
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-stripe-key, X-Requested-With, Origin, Accept');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Max-Age', '86400'); // 24 hours
+  
+  // Respond with 204 No Content
+  res.status(204).end();
+});
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
