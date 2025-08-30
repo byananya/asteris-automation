@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "nodemon src/index.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc && npm run copy-assets",
     "start:backend": "NODE_ENV=production node dist/index.js",
     "start:frontend": "NODE_ENV=production node /app/frontend/standalone/server.js",
     "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"", 

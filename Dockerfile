@@ -13,7 +13,7 @@ COPY backend/package*.json ./
 COPY backend/tsconfig*.json ./
 RUN npm install --omit=dev --legacy-peer-deps
 COPY backend/ ./
-RUN npm install --only=dev --legacy-peer-deps && npm run build
+RUN npm install --include=dev --legacy-peer-deps && npm run build
 
 # Stage 3: Production image
 FROM node:18-slim AS production
@@ -36,8 +36,6 @@ ENV PORT=3001
 # Expose port
 EXPOSE 3001
 
-# Start backend server
-CMD ["node", "dist/index.js"]
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:3001/health || exit 1
