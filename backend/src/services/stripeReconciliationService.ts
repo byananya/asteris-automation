@@ -41,6 +41,7 @@ export class StripeReconciliationService {
       throw new Error('Invalid Stripe API key provided');
     }
     this.stripe = new Stripe(apiKey, {
+      // @ts-ignore - The type definition is incorrect for the API version
       apiVersion: STRIPE_API_VERSION,
     });
   }

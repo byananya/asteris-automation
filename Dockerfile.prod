@@ -48,7 +48,7 @@ RUN npm install --omit=dev --legacy-peer-deps
 COPY backend/ .
 
 # Build backend
-RUN npm install --only=dev --legacy-peer-deps && \
+RUN npm install --include=dev --legacy-peer-deps && \
     npm run build
 
 # Final production image
