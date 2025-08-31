@@ -41,15 +41,21 @@ COPY backend/package*.json ./
 COPY backend/tsconfig*.json ./
 
 
-# Install production dependencies
-RUN npm install --omit=dev --legacy-peer-deps
+# Install all dependencies (including dev for build)
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm config set fetch-retries 5 && \
+    npm config set fetch-retry-factor 2 && \
+    npm config set fetch-timeout 60000 && \
+    npm install --include=dev --legacy-peer-deps
 
 # Copy source code
 COPY backend/ .
 
 # Build backend
-RUN npm install --include=dev --legacy-peer-deps && \
-    npm run build
+RUN npm run build
+
+# Clean up dev dependencies after build
+RUN npm prune --omit=dev
 
 # Final production image
 FROM node:18-slim AS production
