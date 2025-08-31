@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "nodemon src/index.ts",
-    "build": "tsc && npm run copy-assets",
+    "build": "tsc",
+    "copy-assets": "cp -r src/assets dist/ 2>/dev/null || true",
     "start:backend": "NODE_ENV=production node dist/index.js",
-    "start:frontend": "NODE_ENV=production node /app/frontend/standalone/server.js",
+    "start:frontend": "NODE_ENV=production node /app/frontend/server.js",
     "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"", 
     "start:prod": "NODE_ENV=production node dist/index.js",
     "train": "ts-node src/ml/training/train.ts",

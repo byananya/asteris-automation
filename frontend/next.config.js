@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable static exports for standalone deployment
-  output: 'export',
+  // Enable standalone output for Docker deployment
+  output: 'standalone',
   
   // Disable React strict mode to prevent double rendering in development
   reactStrictMode: false,
@@ -17,7 +17,7 @@ const nextConfig = {
     domains: ['api-production-ef16.up.railway.app'],
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60 * 60 * 24 * 7, // 1 week
-    unoptimized: true, // Required for static export
+    unoptimized: false, // Enable optimization for standalone
   },
   
   // Configure base path if needed (e.g., when deploying to a subdirectory)
@@ -26,20 +26,11 @@ const nextConfig = {
   // Configure asset prefix for CDN support
   assetPrefix: process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_BASE_URL : '',
   
-  // Add trailing slash for static export
-  trailingSlash: true,
-
   // Environment variables are inlined at build time
   env: {
     // Will be available on both server and client
     NEXT_PUBLIC_API_URL: 'https://api-production-ef16.up.railway.app',
   },
-  // Disable server-side rendering for static export
-  trailingSlash: true,
-
-
-  // Enable static HTML export
-  trailingSlash: true,
   
   // Webpack optimizations
   webpack: (config, { isServer }) => {
@@ -75,7 +66,4 @@ if (process.env.NODE_ENV === 'production') {
   nextConfig.compress = true;
 }
 
-module.exports = {
-  output: 'export',
-  ...nextConfig
-};
+module.exports = nextConfig;
