@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.StripeReconciliationService = void 0;
 const stripe_1 = __importDefault(require("stripe"));
 const date_fns_1 = require("date-fns");
-const STRIPE_API_VERSION = '2025-06-30.basil';
+const STRIPE_API_VERSION = '2025-08-27.basil';
 class StripeReconciliationService {
     getCustomerId(customer) {
         if (typeof customer === 'string')
@@ -20,6 +20,7 @@ class StripeReconciliationService {
             throw new Error('Invalid Stripe API key provided');
         }
         this.stripe = new stripe_1.default(apiKey, {
+            // @ts-ignore - The type definition is incorrect for the API version
             apiVersion: STRIPE_API_VERSION,
         });
     }
