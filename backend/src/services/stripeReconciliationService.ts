@@ -9,7 +9,7 @@ interface ExpandedInvoice extends Stripe.Invoice {
 }
 
 interface ReconciliationRecord {
-  invoiceId: string;
+  invoiceId: string | null;
   customerId: string;
   customerEmail?: string; // Made optional with ?
   invoiceAmount: number;
