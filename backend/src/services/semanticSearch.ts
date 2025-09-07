@@ -25,7 +25,7 @@ class SemanticSearchService {
       await this.semanticSearch.indexData(trainingData);
       
       this.isInitialized = true;
-      console.log('Semantic search service initialized successfully');
+      console.log('Semantic search service initialized successfully on server startup');
     } catch (error) {
       console.error('Failed to initialize semantic search service:', error);
       throw error;
