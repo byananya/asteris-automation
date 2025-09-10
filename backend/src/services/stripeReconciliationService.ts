@@ -133,11 +133,11 @@ export class StripeReconciliationService {
         summary
       };
     } catch (error) {
-      console.error('Error during Stripe reconciliation:', error);
+      console.error('Error during Stripe reconciliation: ', error);
       if (error instanceof Error) {
         throw error;
       }
-      throw new Error('Failed to run Stripe reconciliation');
+      throw new Error('Failed to run Stripe reconciliation ');
     }
   }
 } 
