@@ -1,6 +1,6 @@
-# Asteris Automation
+# Asteris 
 
-A comprehensive automation platform for managing and executing automation flows.
+automation for finance workflows
 
 
 ## Getting Started
